@@ -1,0 +1,189 @@
+/* 1. Impostazioni Generali */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f0f2f5;
+    margin: 0;
+    /* Spazio per non far finire il contenuto sotto l'header fisso */
+    padding-top: 110px; 
+}
+
+/* 2. Header Blu Fisso */
+header {
+    background: #003366;
+    color: white;
+    padding: 1rem;
+    text-align: center;
+    position: fixed; /* Rimane sempre in alto */
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.4rem;
+    line-height: 1.2;
+}
+
+/* 3. Contenitore allineato a SINISTRA */
+.layout-container {
+    display: flex;
+    justify-content: flex-start; /* Sposta tutto a sinistra */
+    max-width: 1400px;
+    margin: 0 0 0 40px; /* Margine sinistro per staccarsi dal bordo del browser */
+    gap: 30px;
+    padding: 0 20px;
+    align-items: flex-start;
+}
+
+/* 4. Box Indice Piccolo e Indipendente */
+#indice {
+    flex: 0 0 280px; 
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    
+    /* Posizionamento Sticky sotto l'header blu */
+    position: sticky;
+    top: 110px; 
+    
+    /* Scorrimento Indipendente */
+    height: 70vh; 
+    overflow-y: auto; 
+    
+    /* BLOCCA LO SCORRIMENTO DELLA PAGINA PADRE */
+    overscroll-behavior: contain; 
+    
+    font-size: 0.85rem;
+    z-index: 900;
+}
+
+/* Personalizzazione barra scorrimento indice */
+#indice::-webkit-scrollbar {
+    width: 4px;
+}
+#indice::-webkit-scrollbar-thumb {
+    background: #003366;
+    border-radius: 10px;
+}
+
+#indice h2 {
+    font-size: 1.1rem;
+    color: #003366;
+    border-bottom: 2px solid #003366;
+    padding-bottom: 8px;
+    margin-top: 0;
+}
+
+.indice-gruppo h3 {
+    font-size: 0.75rem;
+    color: #666;
+    text-transform: uppercase;
+    margin: 15px 0 8px 0;
+}
+
+#indice ul {
+    list-style-type: disc;
+    padding-left: 18px;
+    margin: 0;
+}
+
+#indice li {
+    margin-bottom: 10px;
+    color: #0066cc;
+    text-align: left;
+}
+
+#indice a {
+    text-decoration: none;
+    color: #444;
+    transition: color 0.2s;
+}
+
+#indice a:hover {
+    color: #0066cc;
+}
+
+/* 5. Area Contenuti Principale */
+main {
+    flex: 0 1 850px;
+}
+
+.volume-section {
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    margin-bottom: 40px;
+}
+
+.internal-header {
+    text-align: center;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 20px;
+}
+
+.internal-header h2 {
+    color: #003366;
+    margin: 0;
+    font-size: 1.6rem;
+}
+
+.internal-header p {
+    color: #666;
+    margin: 8px 0 0;
+    font-style: italic;
+    font-size: 1rem;
+}
+
+.volume-header {
+    background: #eef4fb;
+    color: #003366;
+    padding: 10px;
+    font-weight: bold;
+    text-align: center;
+    border: 1px solid #d1d9e6;
+    margin-bottom: 40px;
+    border-radius: 5px;
+}
+
+section {
+    margin-bottom: 50px;
+    padding: 20px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    transition: all 0.4s ease;
+    /* Assicura che il titolo arrivi sotto l'header quando clicchi l'indice */
+    scroll-margin-top: 120px; 
+}
+
+.highlight-active {
+    background-color: #f0f7ff !important;
+    border-color: #004a99 !important;
+}
+
+h2 {
+    color: #004a99;
+}
+
+/* 6. Layout Mobile */
+@media (max-width: 1100px) {
+    .layout-container {
+        flex-direction: column;
+        align-items: center;
+        margin: 0 auto; /* Ricentra su mobile */
+    }
+    #indice {
+        position: relative;
+        width: 100%;
+        max-width: 850px;
+        top: 0;
+        height: auto;
+        max-height: 400px;
+    }
+}
