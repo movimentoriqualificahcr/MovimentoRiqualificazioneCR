@@ -5,71 +5,85 @@ body {
     color: #333;
     background-color: #f0f2f5;
     margin: 0;
-    /* Spazio per non far finire il contenuto sotto l'header fisso */
     padding-top: 110px; 
 }
 
-/* 2. Header Blu Fisso */
+/* 2. Header Blu Fisso e Pulsante Back */
 header {
     background: #003366;
     color: white;
     padding: 1rem;
     text-align: center;
-    position: fixed; /* Rimane sempre in alto */
+    position: fixed;
     top: 0;
     width: 100%;
     z-index: 1000;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 70px;
 }
 
 header h1 {
     margin: 0;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     line-height: 1.2;
 }
 
-/* 3. Contenitore allineato a SINISTRA */
+.btn-back {
+    position: absolute;
+    left: 30px; 
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    text-decoration: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+    background: white;
+    color: #003366;
+    border-color: white;
+}
+
+/* Modifica al punto 3 del tuo stile */
 .layout-container {
     display: flex;
-    justify-content: flex-start; /* Sposta tutto a sinistra */
+    justify-content: center; /* Cambiato da flex-start a center per centrare tutto */
     max-width: 1400px;
-    margin: 0 0 0 40px; /* Margine sinistro per staccarsi dal bordo del browser */
-    gap: 30px;
+    margin: 40px auto; /* Centra il contenitore nella pagina e aggiunge margine sopra */
+    gap: 40px;
     padding: 0 20px;
     align-items: flex-start;
 }
 
-/* 4. Box Indice Piccolo e Indipendente */
+/* Modifica al punto 4 del tuo stile */
 #indice {
     flex: 0 0 280px; 
     background: white;
-    padding: 15px;
-    border-radius: 10px;
+    padding: 20px; /* Aumentato leggermente per respiro */
+    border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     
-    /* Posizionamento Sticky sotto l'header blu */
     position: sticky;
-    top: 110px; 
+    top: 150px; /* Aumentato da 110px a 150px per abbassarlo rispetto all'header */
     
-    /* Scorrimento Indipendente */
-    height: 70vh; 
+    height: auto; /* Permette all'indice di adattarsi al contenuto */
+    max-height: 75vh; /* Evita che diventi troppo lungo su schermi bassi */
     overflow-y: auto; 
     
-    /* BLOCCA LO SCORRIMENTO DELLA PAGINA PADRE */
     overscroll-behavior: contain; 
-    
     font-size: 0.85rem;
     z-index: 900;
 }
 
-/* Personalizzazione barra scorrimento indice */
-#indice::-webkit-scrollbar {
-    width: 4px;
-}
-#indice::-webkit-scrollbar-thumb {
-    background: #003366;
-    border-radius: 10px;
-}
+#indice::-webkit-scrollbar { width: 4px; }
+#indice::-webkit-scrollbar-thumb { background: #003366; border-radius: 10px; }
 
 #indice h2 {
     font-size: 1.1rem;
@@ -86,60 +100,33 @@ header h1 {
     margin: 15px 0 8px 0;
 }
 
-#indice ul {
-    list-style-type: disc;
-    padding-left: 18px;
-    margin: 0;
-}
+#indice ul { list-style-type: disc; padding-left: 18px; margin: 0; }
+#indice li { margin-bottom: 10px; color: #0066cc; text-align: left; }
+#indice a { text-decoration: none; color: #444; transition: color 0.2s; }
+#indice a:hover { color: #0066cc; }
 
-#indice li {
-    margin-bottom: 10px;
-    color: #0066cc;
-    text-align: left;
-}
-
-#indice a {
-    text-decoration: none;
-    color: #444;
-    transition: color 0.2s;
-}
-
-#indice a:hover {
-    color: #0066cc;
-}
-
-/* 5. Area Contenuti Principale */
+    //* Modifica al punto 5 del tuo stile */
 main {
-    flex: 0 1 850px;
+    flex: 0 1 900px; /* Leggermente più largo per bilanciare la centratura */
 }
 
 .volume-section {
     background: white;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    padding: 50px; /* Più spazio interno per un aspetto più pulito */
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
     margin-bottom: 40px;
 }
 
 .internal-header {
     text-align: center;
-    margin-bottom: 30px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 20px;
+    margin-bottom: 40px;
+    border-bottom: 2px solid #f0f2f5; /* Linea più definita */
+    padding-bottom: 30px;
 }
 
-.internal-header h2 {
-    color: #003366;
-    margin: 0;
-    font-size: 1.6rem;
-}
-
-.internal-header p {
-    color: #666;
-    margin: 8px 0 0;
-    font-style: italic;
-    font-size: 1rem;
-}
+.internal-header h2 { color: #003366; margin: 0; font-size: 1.6rem; }
+.internal-header p { color: #666; margin: 8px 0 0; font-style: italic; }
 
 .volume-header {
     background: #eef4fb;
@@ -158,32 +145,267 @@ section {
     border-radius: 8px;
     border: 2px solid transparent;
     transition: all 0.4s ease;
-    /* Assicura che il titolo arrivi sotto l'header quando clicchi l'indice */
     scroll-margin-top: 120px; 
 }
 
-.highlight-active {
-    background-color: #f0f7ff !important;
-    border-color: #004a99 !important;
+.highlight-active { background-color: #f0f7ff !important; border-color: #004a99 !important; }
+
+/* 6. Dashboard Home */
+.home-container { max-width: 1000px; margin: 40px auto; padding: 20px; text-align: center; }
+.grid-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-top: 40px; }
+
+.card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid #eee;
+    text-decoration: none;
+    color: inherit;
 }
 
-h2 {
-    color: #004a99;
-}
+.card:hover:not(.disabled) { transform: translateY(-5px); border-color: #0066cc; }
+.card.disabled { opacity: 0.7; cursor: not-allowed; background: #fafafa; }
+.card-icon { font-size: 3rem; margin-bottom: 15px; }
 
-/* 6. Layout Mobile */
-@media (max-width: 1100px) {
+/* 7. Layout Mobile */
+@media (max-width: 850px) {
+    body { padding-top: 130px; }
+    
+    header { flex-direction: column; padding: 10px; }
+    
+    .btn-back {
+        position: relative;
+        left: 0;
+        margin-bottom: 8px;
+        padding: 6px 12px;
+        width: auto;
+    }
+
     .layout-container {
         flex-direction: column;
         align-items: center;
-        margin: 0 auto; /* Ricentra su mobile */
+        margin: 0 auto;
+        padding: 10px;
     }
+
     #indice {
         position: relative;
         width: 100%;
-        max-width: 850px;
+        max-width: 100%;
         top: 0;
         height: auto;
-        max-height: 400px;
+        max-height: 250px;
+        margin-bottom: 20px;
+    }
+
+    main { width: 100%; flex: none; }
+    .volume-section { padding: 20px; }
+}
+
+/* --- Aggiornamento Sezione Video Home --- */
+
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* Card leggermente più larghe */
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.video-card {
+    background: white;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    transition: all 0.3s ease;
+    border: 1px solid #eee;
+    overflow: hidden; /* Importante per ritagliare l'immagine negli angoli */
+    display: flex;
+    flex-direction: column; /* Immagine sopra, testo sotto */
+}
+
+.video-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border-color: #ff0000; /* Rosso YouTube al passaggio del mouse */
+}
+
+/* Contenitore Anteprima con Overlay Play */
+.video-preview {
+    position: relative;
+    width: 100%;
+    height: 190px; /* Altezza fissa per l'immagine */
+    background: #000;
+}
+
+.video-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Adatta l'immagine senza distorcerla */
+}
+
+/* Pulsante Play sovrapposto all'immagine */
+.play-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 0, 0, 0.9); /* Rosso YouTube semi-trasparente */
+    color: white;
+    width: 60px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* Info Video sotto l'immagine */
+.video-info {
+    padding: 15px 20px;
+    text-align: left;
+}
+
+.video-info h4 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: #003366;
+    line-height: 1.4;
+}
+
+.video-info p {
+    margin: 5px 0 0;
+    font-size: 0.85rem;
+    color: #0066cc;
+    font-weight: 500;
+}
+
+/* 1. Impostazioni Generali - Aggiornate */
+body {
+    padding-top: 140px; /* Aumentato per fare spazio alla doppia barra */
+}
+
+/* Nuova Top Bar sottile */
+.top-bar {
+    background: #002244; /* Un blu ancora più scuro */
+    color: white;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1001;
+    font-size: 0.8rem;
+    padding: 8px 0;
+}
+
+.top-bar-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: flex-end; /* Sposta i link a destra */
+    gap: 25px;
+    padding: 0 40px;
+}
+
+.top-bar-content a {
+    color: white;
+    text-decoration: none;
+    transition: opacity 0.3s;
+    font-weight: 500;
+}
+
+.top-bar-content a:hover {
+    opacity: 0.7;
+}
+
+/* Header Blu Fisso - Pulito */
+header {
+    background: #003366;
+    color: white;
+    padding: 1rem;
+    text-align: center;
+    position: fixed;
+    top: 35px; /* Si posiziona esattamente sotto la top-bar */
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    min-height: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Rimosso .header-actions dal CSS precedente */
+
+/* Header Blu Fisso */
+header {
+    background: #003366;
+    color: white;
+    padding: 20px 0;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    min-height: 80px;
+    
+    /* Centra il titolo perfettamente */
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+    box-sizing: border-box;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.3rem;
+    line-height: 1.2;
+    text-align: center;
+    /* Assicura che il titolo non venga spostato dai pulsanti */
+    position: relative; 
+    z-index: 1;
+}
+
+/* Pulsanti bloccati all'estremo destro senza influenzare il titolo */
+.header-contacts-extreme {
+    position: absolute; 
+    right: 25px; /* Distanza dal bordo destro dello schermo */
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+
+.contact-item {
+    color: white;
+    text-decoration: none;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 6px 12px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.contact-item:hover {
+    background: white;
+    color: #003366;
+}
+
+/* Gestione schermi piccoli: evita sovrapposizioni */
+@media (max-width: 1100px) {
+    header {
+        flex-direction: column;
+        padding: 15px 0;
+    }
+    .header-contacts-extreme {
+        position: static;
+        margin-top: 15px;
     }
 }
