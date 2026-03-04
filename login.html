@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Manager - Ospedale Cremona</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="home-page">
+    <header>
+        <a href="index.html" class="btn-back">← Indietro</a>
+        <h1>Accesso Riservato Manager</h1>
+    </header>
+    <main class="layout-container" style="justify-content: center; margin-top: 100px;">
+        <div class="volume-section" style="max-width: 400px; width: 100%;">
+            <div class="internal-header">
+                <h2>Login</h2>
+                <p>Inserisci le tue credenziali</p>
+            </div>
+            <form id="loginForm">
+                <input type="text" id="username" placeholder="Username" required 
+                       style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+                <input type="password" id="password" placeholder="Password" required 
+                       style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+                <button type="submit" class="contact-item" style="width: 100%; border: none; padding: 12px; cursor: pointer;">Accedi</button>
+            </form>
+            <p id="errorMsg" style="color: #cc0000; display: none; margin-top: 15px; text-align: center;">Credenziali errate.</p>
+        </div>
+    </main>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if(document.getElementById('username').value === "admin" && 
+               document.getElementById('password').value === "cremona2026") {
+                localStorage.setItem('role', 'manager');
+                window.location.href = "dashboard.html";
+            } else {
+                document.getElementById('errorMsg').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

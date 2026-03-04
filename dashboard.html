@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Progetto Ospedale Cremona</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="home-page">
+   <header>
+    <div class="header-titles">
+        <h1>Movimento per la riqualificazione</h1>
+        <h1>dell'ospedale di Cremona</h1>
+    </div>
+
+    <div class="header-contacts-extreme">
+        <a href="mailto:movimentoriqualificahcr@gmail.com" class="contact-item">📩 Email</a>
+        <a href="https://gofund.me/79b621abe" target="_blank" class="contact-item">💰 Raccolta Fondi</a>
+        <a href="https://c.org/WYQh4sZhCH" target="_blank" class="contact-item">✍️ Firma Petizione</a>
+        
+        <a href="#" id="logout-btn" onclick="logout()" class="contact-item" style="display: none; background: #d9534f; border: 1px solid white;">Logout 🚪</a>
+    </div>
+</header>
+
+    <main class="home-container">
+        <section class="intro">
+            <h2 id="welcome-title">Dashboard di Monitoraggio Progetto</h2>
+            <p>Seleziona un'area di analisi per consultare la documentazione tecnica e le criticità rilevate.</p>
+        </section>
+
+        <div class="grid-dashboard">
+            <a href="home.html" class="card">
+                <div class="card-icon">🌿</div>
+                <div class="card-content">
+                    <h3>Studio Preliminare Ambientale</h3>
+                    <p>Analisi di impatto idrogeologico, consumo di suolo e criticità VIA.</p>
+                    <span class="btn-explore">Consulta Documenti →</span>
+                </div>
+            </a>
+
+            <div class="card disabled">
+                <div class="card-icon">🏗️</div>
+                <div class="card-content">
+                    <h3>Analisi Urbanistica</h3>
+                    <p>Parametri PGT, volumetrie e varianti urbanistiche.</p>
+                    <span class="status-label">Prossimamente</span>
+                </div>
+            </div>
+
+            <div class="card disabled">
+                <div class="card-icon">🚗</div>
+                <div class="card-content">
+                    <h3>Viabilità e Parcheggi</h3>
+                    <p>Flussi di traffico, accessi e saturazione aree di sosta.</p>
+                    <span class="status-label">Prossimamente</span>
+                </div>
+            </div>
+        </div>
+
+        <section class="footer-videos">
+            <h2>Approfondimenti Video</h2>
+            <p>Guarda i contributi del Movimento attraverso i nostri video.</p>
+            
+            <div class="video-grid">
+                <a href="https://www.youtube.com/watch?v=QtFqfwGQez8" target="_blank" class="video-card">
+                    <div class="video-preview">
+                        <img src="https://img.youtube.com/vi/QtFqfwGQez8/hqdefault.jpg" alt="Anteprima Video">
+                        <div class="play-overlay">▶</div>
+                    </div>
+                    <div class="video-info">
+                        <h4>Presentazione del Movimento</h4>
+                        <p>Guarda su YouTube →</p>
+                    </div>
+                </a>
+
+                <a href="https://www.youtube.com/watch?v=q26y6m_ByaA" target="_blank" class="video-card">
+                    <div class="video-preview">
+                        <img src="https://img.youtube.com/vi/q26y6m_ByaA/hqdefault.jpg" alt="Anteprima Video">
+                        <div class="play-overlay">▶</div>
+                    </div>
+                    <div class="video-info">
+                        <h4>Analisi Critica del Progetto</h4>
+                        <p>Guarda su YouTube →</p>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Controlliamo il ruolo salvato al login
+        const role = localStorage.getItem('role') || 'user';
+        const logoutBtn = document.getElementById('logout-btn');
+        const title = document.getElementById('welcome-title');
+
+        if (role === 'manager') {
+            // Se è manager, mostra il tasto logout aggiuntivo e cambia il titolo
+            logoutBtn.style.display = "inline-block";
+            title.innerText = "Dashboard Manager - Controllo Progetto";
+        }
+
+        function logout() {
+            localStorage.removeItem('role');
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>
