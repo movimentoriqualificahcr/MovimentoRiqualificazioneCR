@@ -7,20 +7,20 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="home-page">
-   <header>
-    <div class="header-titles">
-        <h1>Movimento per la riqualificazione</h1>
-        <h1>dell'ospedale di Cremona</h1>
-    </div>
+    <header>
+        <div class="header-titles">
+            <h1>Movimento per la riqualificazione 
+        dell'ospedale di Cremona</h1>
+        </div>
 
-    <div class="header-contacts-extreme">
-        <a href="mailto:movimentoriqualificahcr@gmail.com" class="contact-item">📩 Email</a>
-        <a href="https://gofund.me/79b621abe" target="_blank" class="contact-item">💰 Raccolta Fondi</a>
-        <a href="https://c.org/WYQh4sZhCH" target="_blank" class="contact-item">✍️ Firma Petizione</a>
-        
-        <a href="#" id="logout-btn" onclick="logout()" class="contact-item" style="display: none; background: #d9534f; border: 1px solid white;">Logout 🚪</a>
-    </div>
-</header>
+        <div class="header-contacts-extreme">
+            <a href="mailto:movimentoriqualificahcr@gmail.com" class="contact-item">📩 Email</a>
+            <a href="https://gofund.me/79b621abe" target="_blank" class="contact-item">💰 Raccolta Fondi</a>
+            <a href="https://c.org/WYQh4sZhCH" target="_blank" class="contact-item">✍️ Firma Petizione</a>
+            
+            <a href="#" id="logout-btn" onclick="logout()" class="contact-item" style="display: none; background: #d9534f; margin-left: 15px; border: 1px solid rgba(255,255,255,0.3);">Esci Manager 🚪</a>
+        </div>
+    </header>
 
     <main class="home-container">
         <section class="intro">
@@ -59,12 +59,10 @@
 
         <section class="footer-videos">
             <h2>Approfondimenti Video</h2>
-            <p>Guarda i contributi del Movimento attraverso i nostri video.</p>
-            
             <div class="video-grid">
                 <a href="https://www.youtube.com/watch?v=QtFqfwGQez8" target="_blank" class="video-card">
                     <div class="video-preview">
-                        <img src="https://img.youtube.com/vi/QtFqfwGQez8/hqdefault.jpg" alt="Anteprima Video">
+                        <img src="https://img.youtube.com/vi/QtFqfwGQez8/hqdefault.jpg" alt="Video">
                         <div class="play-overlay">▶</div>
                     </div>
                     <div class="video-info">
@@ -72,10 +70,9 @@
                         <p>Guarda su YouTube →</p>
                     </div>
                 </a>
-
                 <a href="https://www.youtube.com/watch?v=q26y6m_ByaA" target="_blank" class="video-card">
                     <div class="video-preview">
-                        <img src="https://img.youtube.com/vi/q26y6m_ByaA/hqdefault.jpg" alt="Anteprima Video">
+                        <img src="https://img.youtube.com/vi/q26y6m_ByaA/hqdefault.jpg" alt="Video">
                         <div class="play-overlay">▶</div>
                     </div>
                     <div class="video-info">
@@ -88,15 +85,16 @@
     </main>
 
     <script>
-        // Controlliamo il ruolo salvato al login
+        // Gestione dei ruoli
         const role = localStorage.getItem('role') || 'user';
         const logoutBtn = document.getElementById('logout-btn');
         const title = document.getElementById('welcome-title');
 
         if (role === 'manager') {
-            // Se è manager, mostra il tasto logout aggiuntivo e cambia il titolo
             logoutBtn.style.display = "inline-block";
-            title.innerText = "Dashboard Manager - Controllo Progetto";
+            title.innerText = "Pannello di Controllo Manager";
+            // Rimuove il "Prossimamente" e abilita le card per il manager se necessario
+            // document.querySelectorAll('.card.disabled').forEach(c => c.classList.remove('disabled'));
         }
 
         function logout() {
