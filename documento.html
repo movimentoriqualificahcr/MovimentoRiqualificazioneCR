@@ -7,54 +7,127 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* Blocco dello scorrimento esterno */
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background-color: #f0f2f5;
+        }
+
+        header {
+            flex: 0 0 auto;
+            margin: 0;
+            padding: 12px 0;
+            z-index: 1000;
+            position: relative;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            padding: 5px 20px 20px 20px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
         .doc-container {
-            max-width: 850px;
-            margin: 30px auto;
+            display: flex;
+            width: 100%;
+            max-width: 1440px;
+            margin: 0 auto;
             background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        /* Sidebar dati a sinistra */
+        .sidebar-data {
+            flex: 0 0 200px;
+            padding: 25px 20px;
+            border-right: 1px solid #f0f0f0;
+            overflow-y: auto;
+        }
+
+        /* Area principale a destra */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            /* Rimosso padding per gestire meglio l'iframe */
+            overflow: hidden;
         }
 
         .doc-content {
-            line-height: 1.7;
+            padding: 25px 25px 10px 25px;
+            line-height: 1.6;
             color: #333;
-            font-size: 1.1rem;
+            font-size: 1rem;
+            flex: 0 0 auto;
         }
 
-        .doc-content h3 {
-            color: #003366;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
-            margin-top: 30px;
+        /* Wrapper per eliminare barra verticale E orizzontale */
+        .pdf-mask {
+            flex: 1;
+            margin: 10px 25px 25px 25px;
+            overflow: hidden;
+            /* Taglia tutto ciò che esce */
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            position: relative;
         }
 
-        .doc-content a {
-            color: #007bff;
+        iframe {
+            /* Allarghiamo per spingere la barra verticale fuori a destra */
+            width: calc(100% + 20px);
+            height: 100%;
+            border: none;
+            display: block;
+            /* Impedisce all'iframe di causare scorrimento orizzontale nel padre */
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        .btn-back-header {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
             text-decoration: none;
             font-weight: bold;
+            font-size: 0.85rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: 0.3s;
         }
 
-        .back-btn {
-            display: inline-block;
-            margin-bottom: 20px;
-            text-decoration: none;
+        .btn-back-header:hover {
+            background: white;
             color: #003366;
-            font-weight: bold;
         }
     </style>
 </head>
 
 <body class="home-page">
     <header>
-        <h1>Movimento per la riqualificazione dell'ospedale di Cremona</h1>
+        <a href="index.html" class="btn-back-header">← Torna alla lista</a>
+        <h1 style="margin: 0;">Movimento per la riqualificazione<br> dell'ospedale di Cremona</h1>
     </header>
+
     <main>
-        <div class="doc-container">
-            <a href="index.html" class="back-btn">← Torna alla lista</a>
-            <div id="documento-dettaglio"></div>
+        <div class="doc-container" id="documento-container">
         </div>
     </main>
+
     <script>
         const SUPABASE_URL = 'https://ovfufqbpgxpmfxpbhjfn.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz';
@@ -62,19 +135,41 @@
 
         window.onload = async function () {
             const id = new URLSearchParams(window.location.search).get('id');
-            const { data } = await _supabase.from('documenti').select('*').eq('id', id).single();
-            const container = document.getElementById('documento-dettaglio');
+            const { data, error } = await _supabase.from('documenti').select('*').eq('id', id).single();
+            const container = document.getElementById('documento-container');
 
             if (data) {
+                let pdfSection = "";
+                if (data.pdf_url) {
+                    const { data: publicUrlData } = _supabase.storage
+                        .from('pdf_riservati')
+                        .getPublicUrl(data.pdf_url);
+
+                    // FitH adatta il PDF alla larghezza della maschera
+                    const cleanPdfUrl = publicUrlData.publicUrl + "#toolbar=0&navpanes=0&scrollbar=0&view=FitH";
+
+                    pdfSection = `
+                        <div class="pdf-mask">
+                            <iframe src="${cleanPdfUrl}" scrolling="no"></iframe>
+                        </div>`;
+                }
+
                 container.innerHTML = `
-                    <div style="border-bottom: 2px solid #eee; margin-bottom: 20px; padding-bottom: 20px;">
-                        <span style="color: #28a745; font-weight: bold; font-size: 0.9rem;">${data.argomento}</span>
-                        <h2 style="color: #003366; margin: 10px 0;">${data.titolo}</h2>
-                        <p style="color: #666;"><strong>Autore:</strong> ${data.autore} | <strong>Data:</strong> ${data.data}</p>
+                    <div class="sidebar-data">
+                        <span style="color: #28a745; font-weight: bold; font-size: 0.8rem; text-transform: uppercase;">${data.argomento}</span>
+                        <h2 style="color: #003366; margin: 10px 0; font-size: 1.3rem; line-height: 1.2;">${data.titolo}</h2>
+                        <div style="margin-top: 15px; font-size: 0.85rem; color: #555;">
+                            <p><strong>Autore:</strong><br>${data.autore}</p>
+                            <p><strong>Data:</strong><br>${data.data}</p>
+                        </div>
                     </div>
-                    <div class="doc-content">${data.testo_completo}</div>`;
+                    
+                    <div class="main-content">
+                        ${data.testo_completo ? `<div class="doc-content">${data.testo_completo}</div>` : ''}
+                        ${pdfSection}
+                    </div>`;
             } else {
-                container.innerHTML = "<h2>Documento non trovato.</h2>";
+                container.innerHTML = "<h3>Documento non trovato</h3>";
             }
         }
     </script>

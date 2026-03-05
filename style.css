@@ -127,3 +127,35 @@ header h1 {
     border-radius: 5px;
     font-size: 0.8rem;
 }
+
+/* Stile per il pulsante nell'header (già parzialmente presente nei tuoi file) */
+.btn-back {
+    position: absolute;
+    left: 25px;
+    color: white;
+    text-decoration: none;
+    border: 1px solid white;
+    padding: 6px 12px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    transition: 0.3s;
+}
+
+.btn-back:hover {
+    background: white;
+    color: #003366;
+}
+
+/* Rimuovi le linee grigie dai contenitori dei documenti */
+.doc-content h3 {
+    color: #003366;
+    border-bottom: none;
+    /* Rimuove la linea sotto i titoli h3 */
+    padding-bottom: 0;
+    margin-top: 30px;
+}
+
+.doc-container {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    /* Ombra più leggera per un look pulito */
+}

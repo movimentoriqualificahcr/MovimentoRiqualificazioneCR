@@ -40,7 +40,7 @@
 
 <body class="home-page">
     <header>
-        <h1>Movimento per la riqualificazione dell'ospedale di Cremona</h1>
+        <h1 style="margin: 0;">Movimento per la riqualificazione<br> dell'ospedale di Cremona</h1>
         <div class="header-contacts-extreme">
             <div style="display: flex; gap: 10px; align-items: center;">
                 <a href="#" class="contact-item">📩 Email</a>
@@ -111,6 +111,11 @@
                     oninput="this.value = this.value.replace(/[^0-9\/]/g, '')"
                     style="width:100%; margin:8px 0; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
 
+                <div style="margin: 10px 0; text-align: left;">
+                    <label style="font-size: 0.8rem; color: #666;">Carica PDF (Archiviazione Interna):</label>
+                    <input type="file" id="newFile" accept=".pdf" style="width:100%; padding:5px;">
+                </div>
+
                 <div class="toolbar">
                     <button onclick="insertTag('h3')">Titolo</button>
                     <button onclick="insertTag('ul')">Elenco</button>
@@ -159,6 +164,7 @@
                         <div style="font-size: 2.2rem; margin-bottom: 10px;">📄</div>
                         <h3 style="margin: 5px 0; font-size: 1.1rem;">${d.titolo}</h3>
                         <p style="color: #666; font-size: 0.8rem; margin-bottom: 10px;"><strong>${d.argomento}</strong><br>${d.autore}<br><span style="color: #999;">Data: ${d.data}</span></p>
+                        ${d.pdf_url ? '<span style="color:green; font-size:0.7rem; font-weight:bold;">📁 PDF ARCHIVIATO</span>' : ''}
                         <button onclick="preparaModifica('${d.id}')" class="contact-item" style="margin-top: auto; padding: 8px 15px; font-size: 0.85rem; width: 100%; justify-content: center; background: #003366; border: none; cursor: pointer;">Gestione →</button>
                     </div>
                 `).join('');
@@ -176,7 +182,26 @@
             const id = document.getElementById('editId').value;
             let dMan = document.getElementById('newDataManuale').value.trim();
 
+            // Gestione File PDF
+            const fileInput = document.getElementById('newFile');
+            const file = fileInput.files[0];
+            let pdfPath = null;
+
             if (!titolo) return alert("Titolo obbligatorio!");
+
+            // Se è presente un file, caricalo nel bucket riservato
+            if (file) {
+                const fileName = `${Date.now()}_${file.name}`;
+                const { data: upData, error: upErr } = await _supabase.storage
+                    .from('pdf_riservati')
+                    .upload(fileName, file);
+
+                if (upErr) {
+                    alert("Errore nel caricamento del PDF: " + upErr.message);
+                } else {
+                    pdfPath = fileName; // Salviamo il riferimento al file
+                }
+            }
 
             let dataS;
             if (dMan) {
@@ -196,6 +221,9 @@
                 testo_completo: testo,
                 timestamp: Date.now()
             };
+
+            // Se abbiamo caricato un nuovo PDF, aggiorniamo il campo
+            if (pdfPath) payload.pdf_url = pdfPath;
 
             if (id) {
                 await _supabase.from('documenti').update(payload).eq('id', id);
@@ -224,6 +252,7 @@
                 document.getElementById('newArg').value = data.argomento;
                 document.getElementById('newDataManuale').value = data.data;
                 document.getElementById('newTesto').value = data.testo_completo || "";
+                document.getElementById('newFile').value = ""; // Resetta input file per sicurezza
                 document.getElementById('modalDocumento').style.display = 'flex';
             }
         }
@@ -255,6 +284,7 @@
             document.getElementById('newArg').value = "";
             document.getElementById('newDataManuale').value = "";
             document.getElementById('newTesto').value = "";
+            document.getElementById('newFile').value = "";
             document.getElementById('modalDocumento').style.display = 'flex';
         }
 
