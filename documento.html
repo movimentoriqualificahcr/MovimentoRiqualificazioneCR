@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dettaglio Documento</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .doc-container {
+            max-width: 850px;
+            margin: 30px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .doc-content {
+            line-height: 1.7;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .doc-content h3 {
+            color: #003366;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+
+        .doc-content ul {
+            padding-left: 20px;
+        }
+
+        .doc-content a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .doc-content a:hover {
+            text-decoration: underline;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: #003366;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body class="home-page">
+    <header>
+        <h1>Movimento per la riqualificazione dell'ospedale di Cremona</h1>
+    </header>
+    <main>
+        <div class="doc-container">
+            <a href="index.html" class="back-btn">← Torna alla lista</a>
+            <div id="documento-dettaglio">
+                <p>Caricamento...</p>
+            </div>
+        </div>
+    </main>
+    <script>
+        window.onload = function () {
+            const id = new URLSearchParams(window.location.search).get('id');
+            const docs = JSON.parse(localStorage.getItem('documenti')) || [];
+            const doc = docs.find(d => String(d.timestamp) === String(id));
+            const container = document.getElementById('documento-dettaglio');
+            if (doc) {
+                container.innerHTML = `
+                    <div style="border-bottom: 2px solid #eee; margin-bottom: 20px; padding-bottom: 20px;">
+                        <span style="color: #28a745; font-weight: bold; font-size: 0.9rem;">${doc.arg}</span>
+                        <h2 style="color: #003366; margin: 10px 0;">${doc.titolo}</h2>
+                        <p style="color: #666;"><strong>Autore:</strong> ${doc.autore}<br><strong>Data:</strong> ${doc.data} ${doc.ora ? 'ore ' + doc.ora : ''}</p>
+                    </div>
+                    <div class="doc-content">${doc.testo || "<i>Nessun testo presente.</i>"}</div>`;
+            } else { container.innerHTML = "<h2>Documento non trovato.</h2>"; }
+        }
+    </script>
+</body>
+
+</html>
