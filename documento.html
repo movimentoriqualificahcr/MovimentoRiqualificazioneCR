@@ -28,13 +28,30 @@
             padding-bottom: 5px;
             margin-top: 30px;
         }
+
+        .doc-content a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: #003366;
+            font-weight: bold;
+        }
     </style>
 </head>
 
 <body class="home-page">
+    <header>
+        <h1>Movimento per la riqualificazione dell'ospedale di Cremona</h1>
+    </header>
     <main>
         <div class="doc-container">
-            <a href="index.html" style="text-decoration:none; color:#003366; font-weight:bold;">← Torna alla lista</a>
+            <a href="index.html" class="back-btn">← Torna alla lista</a>
             <div id="documento-dettaglio"></div>
         </div>
     </main>
@@ -50,12 +67,14 @@
 
             if (data) {
                 container.innerHTML = `
-                    <div style="border-bottom: 2px solid #eee; margin: 20px 0; padding-bottom: 20px;">
-                        <span style="color: #28a745; font-weight: bold;">${data.argomento}</span>
+                    <div style="border-bottom: 2px solid #eee; margin-bottom: 20px; padding-bottom: 20px;">
+                        <span style="color: #28a745; font-weight: bold; font-size: 0.9rem;">${data.argomento}</span>
                         <h2 style="color: #003366; margin: 10px 0;">${data.titolo}</h2>
                         <p style="color: #666;"><strong>Autore:</strong> ${data.autore} | <strong>Data:</strong> ${data.data}</p>
                     </div>
                     <div class="doc-content">${data.testo_completo}</div>`;
+            } else {
+                container.innerHTML = "<h2>Documento non trovato.</h2>";
             }
         }
     </script>
