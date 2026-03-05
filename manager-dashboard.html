@@ -5,334 +5,93 @@
     <meta charset="UTF-8">
     <title>Area Manager - Ospedale Cremona</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Stili per la barra degli strumenti */
-        .toolbar {
-            display: flex;
-            gap: 5px;
-            background: #f8f9fa;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-bottom: none;
-            border-radius: 8px 8px 0 0;
-            margin-top: 10px;
-        }
-
-        .toolbar button {
-            padding: 5px 10px;
-            cursor: pointer;
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-
-        .toolbar button:hover {
-            background: #e9ecef;
-        }
-
-        .card {
-            position: relative;
-        }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body class="home-page">
     <header>
-        <h1>Movimento per la riqualificazione dell'ospedale di Cremona</h1>
-        <div class="header-contacts-extreme">
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <a href="#" class="contact-item">📩 Email</a>
-                <a href="#" class="contact-item">💰 Raccolta</a>
-                <a href="#" class="contact-item">✍️ Firma</a>
-            </div>
-            <div style="width: 100%; text-align: right; margin-top: 5px; padding-right: 5px;">
-                <a href="#" onclick="logout()" class="login-sub-link" style="color: #d9534f; font-weight: bold;">Esci
-                    (Manager)</a>
-            </div>
-        </div>
+        <h1>Area Manager - Ospedale Cremona</h1>
     </header>
-
     <main>
-        <section class="filter-section">
-            <div class="filter-container"
-                style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 20px 0; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <input type="text" id="cercaManager" placeholder="Cerca titolo..."
-                    style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; min-width: 160px;">
-                <select id="fArg" style="padding: 8px;">
-                    <option value="tutti">Tutti gli argomenti</option>
-                </select>
-                <select id="fAut" style="padding: 8px;">
-                    <option value="tutti">Tutti gli autori</option>
-                </select>
-                <select id="fMese" style="padding: 8px;">
-                    <option value="tutti">Tutti i mesi</option>
-                    <option value="01">Gennaio</option>
-                    <option value="02">Febbraio</option>
-                    <option value="03">Marzo</option>
-                    <option value="04">Aprile</option>
-                    <option value="05">Maggio</option>
-                    <option value="06">Giugno</option>
-                    <option value="07">Luglio</option>
-                    <option value="08">Agosto</option>
-                    <option value="09">Settembre</option>
-                    <option value="10">Ottobre</option>
-                    <option value="11">Novembre</option>
-                    <option value="12">Dicembre</option>
-                </select>
-                <select id="fData" style="padding: 8px;">
-                    <option value="tutti">Tutti gli anni</option>
-                </select>
-            </div>
-        </section>
-
         <div class="grid-dashboard" id="main-grid"></div>
-
         <div id="modalDocumento"
             style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; justify-content:center; align-items:center;">
-            <div class="volume-section" style="max-width: 700px; width: 95%; padding: 30px; border-radius: 20px;">
-                <h3 id="modalTitle" style="margin-top:0; text-align:center;">Nuovo Documento</h3>
-                <input type="hidden" id="editTimestamp">
-
+            <div style="background:white; padding:30px; border-radius:20px; width:90%; max-width:650px;">
+                <h3 id="modalTitle">Gestione Documento Online</h3>
+                <input type="hidden" id="editId">
                 <input type="text" id="newTitolo" placeholder="Titolo"
-                    style="width:100%; margin:8px 0; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
-
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="newAutore" list="listaAutori" placeholder="Autore"
-                        style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
-                    <input type="text" id="newArg" list="listaArgomenti" placeholder="Argomento"
-                        style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
+                    style="width:100%; margin-bottom:10px; padding:10px;">
+                <div style="display:flex; gap:10px; margin-bottom:10px;">
+                    <input type="text" id="newAutore" placeholder="Autore" style="flex:1; padding:10px;">
+                    <input type="text" id="newArg" placeholder="Argomento" style="flex:1; padding:10px;">
                 </div>
-                <datalist id="listaAutori"></datalist>
-                <datalist id="listaArgomenti"></datalist>
-
-                <input type="text" id="newDataManuale" placeholder="Anno (2024) o Data (05/03/2026)"
-                    oninput="this.value = this.value.replace(/[^0-9\/]/g, '')"
-                    style="width:100%; margin:8px 0; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
-
-                <div class="toolbar">
-                    <button onclick="insertTag('h3')">Titolo</button>
-                    <button onclick="insertTag('ul')">Elenco</button>
-                    <button onclick="insertTag('li')">Punto</button>
-                    <button onclick="insertAnchor()">Link Indice</button>
-                    <button onclick="insertTarget()">Punto Arrivo</button>
-                </div>
-                <textarea id="newTesto" placeholder="Contenuto del documento..."
-                    style="width:100%; padding:12px; border:1px solid #ddd; border-radius: 0 0 8px 8px; height: 250px; font-family: inherit; font-size: 1rem; box-sizing:border-box; resize:vertical;"></textarea>
-
+                <input type="text" id="newData" placeholder="Data (es: 05/03/2026)"
+                    style="width:100%; margin-bottom:10px; padding:10px;">
+                <textarea id="newTesto" placeholder="Contenuto..."
+                    style="width:100%; height:250px; padding:10px; font-family:inherit;"></textarea>
                 <div style="display:flex; gap:10px; margin-top:20px;">
-                    <button onclick="salvaDocumento()" class="contact-item"
-                        style="background:#28a745; flex:1; padding:15px; border:none; font-weight:bold; cursor:pointer;">Salva</button>
-                    <button onclick="chiudiModal()" class="contact-item"
-                        style="background:#6c757d; flex:1; padding:15px; border:none; font-weight:bold; cursor:pointer;">Annulla</button>
+                    <button onclick="salvaOnline()"
+                        style="background:#28a745; color:white; flex:1; padding:12px; border:none; cursor:pointer; border-radius:8px;">Salva
+                        Online</button>
+                    <button onclick="chiudiModal()"
+                        style="background:#6c757d; color:white; flex:1; padding:12px; border:none; cursor:pointer; border-radius:8px;">Annulla</button>
                 </div>
             </div>
         </div>
     </main>
-
     <script>
-        if (localStorage.getItem('role') !== 'manager') { window.location.replace("login.html"); }
+        const SUPABASE_URL = 'https://ovfufqbpgxpmfxpbhjfn.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz			'; // Copiala da image_31baa6.png
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const dBase = [
-            { titolo: "Studio Preliminare Ambientale", autore: "Movimento Riqualificazione", arg: "Ambiente", data: "05/03/2026", ora: "10:30", testo: "", timestamp: 1 },
-            { titolo: "Raccolta Firme Riqualificazione", autore: "Comitato Cittadini", arg: "Urbanistica", data: "2024", ora: "", testo: "", timestamp: 0 }
-        ];
-
-        function rendering() {
-            let docs = JSON.parse(localStorage.getItem('documenti')) || dBase;
+        async function caricaDati() {
+            const { data } = await _supabase.from('documenti').select('*').order('timestamp', { ascending: false });
             const grid = document.getElementById('main-grid');
-            docs.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-            let htmlContent = `
-                <div class="card" id="card-aggiungi" onclick="apriModal()" style="cursor: pointer; border: 1px solid #eee; background: white; order: -1; padding: 15px; min-height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
-                    <div style="font-size: 2.2rem; color: #28a745; margin-bottom: 10px;">➕</div>
-                    <h3 style="color: #28a745; margin: 5px 0; font-size: 1.1rem;">Aggiungi Nuovo</h3>
-                    <p style="color: #666; font-size: 0.8rem; margin: 0;">Crea un nuovo documento</p>
-                </div>
-            `;
-
-            htmlContent += docs.map((d) => `
-                <div class="card" data-arg="${d.arg}" data-aut="${d.autore}" data-data="${d.data}" style="padding: 15px; min-height: 200px; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                    <button onclick="elimina('${d.timestamp}')" style="position:absolute; top:10px; right:10px; background:#d9534f; color:white; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer; font-size: 0.8rem; display:flex; align-items:center; justify-content:center; z-index: 10;">✕</button>
-                    <div style="font-size: 2.2rem; margin-bottom: 10px;">📄</div>
-                    <h3 style="margin: 5px 0; font-size: 1.1rem;">${d.titolo}</h3>
-                    <p style="color: #666; font-size: 0.8rem; margin-bottom: 10px;"><strong>${d.arg}</strong><br>${d.autore}<br><span style="color: #999;">Data: ${d.data} ${d.ora ? 'ore ' + d.ora : ''}</span></p>
-                    <button onclick="preparaModifica('${d.timestamp}')" class="contact-item" style="margin-top: auto; padding: 8px 15px; font-size: 0.85rem; width: 100%; justify-content: center; background: #003366; border: none; cursor: pointer;">Gestione →</button>
-                </div>
-            `).join('');
-
-            grid.innerHTML = htmlContent;
-            popolaTendine(docs);
-            aggiornaSuggerimenti(docs);
-        }
-
-        function insertTag(tag) {
-            const area = document.getElementById('newTesto');
-            const start = area.selectionStart;
-            const end = area.selectionEnd;
-            const text = area.value;
-            const selected = text.substring(start, end);
-            const replacement = `<${tag}>${selected}</${tag}>`;
-            area.value = text.substring(0, start) + replacement + text.substring(end);
-            area.focus();
-        }
-
-        function insertAnchor() {
-            const area = document.getElementById('newTesto');
-            const id = prompt("Nome riferimento (es: p1):");
-            if (id) {
-                const replacement = `<li><a href="#${id}">Testo del Link</a></li>`;
-                area.value += replacement;
+            grid.innerHTML = '<div class="card" onclick="apriModal()" style="cursor:pointer; text-align:center;"><h2>➕</h2><h3>Aggiungi Nuovo</h3></div>';
+            if (data) {
+                data.forEach(d => {
+                    grid.innerHTML += `
+                    <div class="card" style="position:relative; text-align:center; padding:15px;">
+                        <button onclick="eliminaDoc('${d.id}')" style="position:absolute; top:10px; right:10px; background:#d9534f; color:white; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer;">✕</button>
+                        <h3>${d.titolo}</h3>
+                        <p>${d.argomento}<br>${d.autore}<br>${d.data}</p>
+                        <button onclick="preparaModifica('${d.id}')" style="background:#003366; color:white; padding:10px; border:none; border-radius:5px; cursor:pointer; width:100%;">Gestione →</button>
+                    </div>`;
+                });
             }
         }
 
-        function insertTarget() {
-            const area = document.getElementById('newTesto');
-            const id = prompt("Nome riferimento creato prima (es: p1):");
-            if (id) {
-                const replacement = `<h3 id="${id}">Titolo Sezione</h3>\n<p>Contenuto...</p>`;
-                area.value += replacement;
-            }
+        async function salvaOnline() {
+            const id = document.getElementById('editId').value;
+            const payload = {
+                titolo: document.getElementById('newTitolo').value,
+                autore: document.getElementById('newAutore').value,
+                argomento: document.getElementById('newArg').value,
+                data: document.getElementById('newData').value,
+                testo_completo: document.getElementById('newTesto').value,
+                timestamp: Date.now()
+            };
+            if (id) { await _supabase.from('documenti').update(payload).eq('id', id); }
+            else { await _supabase.from('documenti').insert([payload]); }
+            chiudiModal(); caricaDati();
         }
 
-        function salvaDocumento() {
-            const t = document.getElementById('newTitolo').value;
-            const testo = document.getElementById('newTesto').value;
-            const editTs = document.getElementById('editTimestamp').value;
-            let dMan = document.getElementById('newDataManuale').value.trim();
-            if (!t) return alert("Titolo obbligatorio!");
-
-            let dataS, oraS;
-            const oraAttuale = new Date();
-            if (dMan) {
-                if (!/^\d{4}$/.test(dMan) && !/^\d{2}\/\d{2}\/\d{4}$/.test(dMan)) {
-                    return alert("Usa formato AAAA o GG/MM/AAAA");
-                }
-                dataS = dMan; oraS = "";
-            } else {
-                dataS = oraAttuale.toLocaleDateString('it-IT');
-                oraS = oraAttuale.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-            }
-
-            let docs = JSON.parse(localStorage.getItem('documenti')) || dBase;
-            if (editTs) {
-                const index = docs.findIndex(d => String(d.timestamp) === String(editTs));
-                if (index !== -1) {
-                    docs[index].titolo = t;
-                    docs[index].autore = document.getElementById('newAutore').value || "Manager";
-                    docs[index].arg = document.getElementById('newArg').value || "Generale";
-                    docs[index].data = dataS;
-                    docs[index].ora = oraS;
-                    docs[index].testo = testo;
-                }
-            } else {
-                docs.push({ titolo: t, autore: document.getElementById('newAutore').value || "Manager", arg: document.getElementById('newArg').value || "Generale", data: dataS, ora: oraS, testo: testo, timestamp: Date.now() });
-            }
-            localStorage.setItem('documenti', JSON.stringify(docs));
-            chiudiModal();
-            rendering();
-        }
-
-        function preparaModifica(ts) {
-            const docs = JSON.parse(localStorage.getItem('documenti')) || dBase;
-            const doc = docs.find(d => String(d.timestamp) === String(ts));
-            if (doc) {
-                document.getElementById('modalTitle').innerText = "Modifica Documento";
-                document.getElementById('editTimestamp').value = ts;
-                document.getElementById('newTitolo').value = doc.titolo;
-                document.getElementById('newAutore').value = doc.autore;
-                document.getElementById('newArg').value = doc.arg;
-                document.getElementById('newDataManuale').value = doc.data;
-                document.getElementById('newTesto').value = doc.testo || "";
+        async function eliminaDoc(id) { if (confirm("Eliminare?")) { await _supabase.from('documenti').delete().eq('id', id); caricaDati(); } }
+        async function preparaModifica(id) {
+            const { data } = await _supabase.from('documenti').select('*').eq('id', id).single();
+            if (data) {
+                document.getElementById('editId').value = data.id;
+                document.getElementById('newTitolo').value = data.titolo;
+                document.getElementById('newAutore').value = data.autore;
+                document.getElementById('newArg').value = data.argomento;
+                document.getElementById('newData').value = data.data;
+                document.getElementById('newTesto').value = data.testo_completo;
                 document.getElementById('modalDocumento').style.display = 'flex';
             }
         }
-
-        function apriModal() {
-            document.getElementById('modalTitle').innerText = "Nuovo Documento";
-            document.getElementById('editTimestamp').value = "";
-            document.getElementById('newTitolo').value = "";
-            document.getElementById('newAutore').value = "";
-            document.getElementById('newArg').value = "";
-            document.getElementById('newDataManuale').value = "";
-            document.getElementById('newTesto').value = "";
-            document.getElementById('modalDocumento').style.display = 'flex';
-        }
-
+        function apriModal() { document.getElementById('editId').value = ""; document.getElementById('modalDocumento').style.display = 'flex'; }
         function chiudiModal() { document.getElementById('modalDocumento').style.display = 'none'; }
-        function logout() { localStorage.removeItem('role'); window.location.replace("index.html"); }
-
-        function popolaTendine(docs) {
-            const riempi = (id, chiave) => {
-                const s = document.getElementById(id);
-                if (id === 'fMese') return;
-                s.innerHTML = `<option value="tutti">Tutti ${id === 'fData' ? 'gli anni' : (id === 'fAut' ? 'gli autori' : 'gli argomenti')}</option>`;
-                let vals;
-                if (chiave === 'data') {
-                    vals = [...new Set(docs.map(d => d.data.split('/').pop()))].sort((a, b) => b - a);
-                } else {
-                    vals = [...new Set(docs.map(d => d[chiave]))].sort((a, b) => a.localeCompare(b));
-                }
-                vals.forEach(v => { if (v) s.innerHTML += `<option value="${v}">${v}</option>`; });
-            };
-            riempi('fArg', 'arg'); riempi('fAut', 'autore'); riempi('fData', 'data');
-        }
-
-        function applicaFiltri() {
-            const t = document.getElementById('cercaManager').value.toLowerCase().trim();
-            const a = document.getElementById('fArg').value;
-            const u = document.getElementById('fAut').value;
-            const m = document.getElementById('fMese').value;
-            const d = document.getElementById('fData').value;
-            let trovati = 0;
-            document.querySelectorAll('.card').forEach(c => {
-                if (c.id === 'card-aggiungi') return;
-                const dCard = c.getAttribute('data-data');
-                const matchT = t === "" || c.querySelector('h3').innerText.toLowerCase().includes(t);
-                const matchA = a === 'tutti' || c.getAttribute('data-arg') === a;
-                const matchU = u === 'tutti' || c.getAttribute('data-aut') === u;
-                const matchM = m === 'tutti' || (dCard.includes('/') && dCard.split('/')[1] === m);
-                const matchD = d === 'tutti' || dCard.endsWith(d);
-                if (matchT && matchA && matchU && matchM && matchD) {
-                    c.style.display = "flex"; trovati++;
-                } else c.style.display = "none";
-            });
-            aggiornaMessaggioVuoto(trovati);
-        }
-
-        function aggiornaMessaggioVuoto(totale) {
-            let msg = document.getElementById('no-results-msg');
-            if (totale === 0) {
-                if (!msg) {
-                    msg = document.createElement('div');
-                    msg.id = 'no-results-msg';
-                    msg.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 30px; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);"><h3 style="color: #666; font-size: 1rem;">Nessun documento trovato</h3></div>`;
-                    document.getElementById('main-grid').appendChild(msg);
-                }
-            } else if (msg) msg.remove();
-        }
-
-        function aggiornaSuggerimenti(docs) {
-            document.getElementById('listaAutori').innerHTML = [...new Set(docs.map(d => d.autore))].sort().map(a => `<option value="${a}">`).join('');
-            document.getElementById('listaArgomenti').innerHTML = [...new Set(docs.map(d => d.arg))].sort().map(a => `<option value="${a}">`).join('');
-        }
-
-        function elimina(ts) {
-            if (confirm("Eliminare?")) {
-                let docs = JSON.parse(localStorage.getItem('documenti')) || dBase;
-                docs = docs.filter(d => String(d.timestamp) !== String(ts));
-                localStorage.setItem('documenti', JSON.stringify(docs));
-                rendering();
-            }
-        }
-
-        document.getElementById('cercaManager').addEventListener('input', applicaFiltri);
-        document.getElementById('fArg').addEventListener('change', applicaFiltri);
-        document.getElementById('fAut').addEventListener('change', applicaFiltri);
-        document.getElementById('fMese').addEventListener('change', applicaFiltri);
-        document.getElementById('fData').addEventListener('change', applicaFiltri);
-        window.onload = rendering;
+        window.onload = caricaDati;
     </script>
 </body>
 
