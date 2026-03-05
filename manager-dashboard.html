@@ -6,56 +6,103 @@
     <title>Area Manager - Ospedale Cremona</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .toolbar {
+            display: flex;
+            gap: 5px;
+            background: #f8f9fa;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            margin-top: 10px;
+        }
+
+        .toolbar button {
+            padding: 5px 10px;
+            cursor: pointer;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
 </head>
 
 <body class="home-page">
     <header>
         <h1>Area Manager - Ospedale Cremona</h1>
     </header>
+
     <main>
-        <div class="grid-dashboard" id="main-grid"></div>
-        <div id="modalDocumento"
-            style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; justify-content:center; align-items:center;">
-            <div style="background:white; padding:30px; border-radius:20px; width:90%; max-width:650px;">
-                <h3 id="modalTitle">Gestione Documento Online</h3>
+        <div class="grid-dashboard" id="main-grid" style="margin-top: 15px;"></div>
+
+        <div id="modalDocumento" class="modal">
+            <div style="background:white; padding:30px; border-radius:20px; width:90%; max-width:700px;">
+                <h3 id="modalTitle" style="text-align:center;">Gestione Documento Online</h3>
                 <input type="hidden" id="editId">
                 <input type="text" id="newTitolo" placeholder="Titolo"
-                    style="width:100%; margin-bottom:10px; padding:10px;">
-                <div style="display:flex; gap:10px; margin-bottom:10px;">
-                    <input type="text" id="newAutore" placeholder="Autore" style="flex:1; padding:10px;">
-                    <input type="text" id="newArg" placeholder="Argomento" style="flex:1; padding:10px;">
+                    style="width:100%; margin:8px 0; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="newAutore" placeholder="Autore"
+                        style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                    <input type="text" id="newArg" placeholder="Argomento"
+                        style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px;">
                 </div>
                 <input type="text" id="newData" placeholder="Data (es: 05/03/2026)"
-                    style="width:100%; margin-bottom:10px; padding:10px;">
+                    style="width:100%; margin:8px 0; padding:10px; border:1px solid #ddd; border-radius:8px;">
+
+                <div class="toolbar">
+                    <button onclick="insertTag('h3')">Titolo</button>
+                    <button onclick="insertTag('ul')">Elenco</button>
+                    <button onclick="insertTag('li')">Punto</button>
+                    <button onclick="insertAnchor()">Link Indice</button>
+                </div>
                 <textarea id="newTesto" placeholder="Contenuto..."
-                    style="width:100%; height:250px; padding:10px; font-family:inherit;"></textarea>
+                    style="width:100%; padding:12px; border:1px solid #ddd; border-radius: 0 0 8px 8px; height: 250px; font-family: inherit;"></textarea>
+
                 <div style="display:flex; gap:10px; margin-top:20px;">
                     <button onclick="salvaOnline()"
-                        style="background:#28a745; color:white; flex:1; padding:12px; border:none; cursor:pointer; border-radius:8px;">Salva
+                        style="background:#28a745; color:white; flex:1; padding:15px; border:none; font-weight:bold; cursor:pointer; border-radius:8px;">Salva
                         Online</button>
                     <button onclick="chiudiModal()"
-                        style="background:#6c757d; color:white; flex:1; padding:12px; border:none; cursor:pointer; border-radius:8px;">Annulla</button>
+                        style="background:#6c757d; color:white; flex:1; padding:15px; border:none; font-weight:bold; cursor:pointer; border-radius:8px;">Annulla</button>
                 </div>
             </div>
         </div>
     </main>
+
     <script>
         const SUPABASE_URL = 'https://ovfufqbpgxpmfxpbhjfn.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz'; // Copiala da image_31baa6.png
+        const SUPABASE_KEY = 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         async function caricaDati() {
             const { data } = await _supabase.from('documenti').select('*').order('timestamp', { ascending: false });
             const grid = document.getElementById('main-grid');
-            grid.innerHTML = '<div class="card" onclick="apriModal()" style="cursor:pointer; text-align:center;"><h2>➕</h2><h3>Aggiungi Nuovo</h3></div>';
+            grid.innerHTML = '<div class="card" onclick="apriModal()" style="cursor:pointer; text-align:center; padding:20px; background:white; border-radius:12px;"><h2>➕</h2><h3>Aggiungi Nuovo</h3></div>';
             if (data) {
                 data.forEach(d => {
                     grid.innerHTML += `
-                    <div class="card" style="position:relative; text-align:center; padding:15px;">
+                    <div class="card" style="position:relative; text-align:center; padding:15px; background:white; border-radius:12px;">
                         <button onclick="eliminaDoc('${d.id}')" style="position:absolute; top:10px; right:10px; background:#d9534f; color:white; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer;">✕</button>
                         <h3>${d.titolo}</h3>
-                        <p>${d.argomento}<br>${d.autore}<br>${d.data}</p>
-                        <button onclick="preparaModifica('${d.id}')" style="background:#003366; color:white; padding:10px; border:none; border-radius:5px; cursor:pointer; width:100%;">Gestione →</button>
+                        <p style="font-size:0.8rem; color:#666;">${d.argomento}<br>${d.autore}<br>${d.data}</p>
+                        <button onclick="preparaModifica('${d.id}')" style="background:#003366; color:white; padding:8px; border:none; border-radius:5px; cursor:pointer; width:100%;">Modifica</button>
                     </div>`;
                 });
             }
@@ -89,6 +136,18 @@
                 document.getElementById('modalDocumento').style.display = 'flex';
             }
         }
+
+        function insertTag(tag) {
+            const area = document.getElementById('newTesto');
+            const start = area.selectionStart; const end = area.selectionEnd;
+            area.value = area.value.substring(0, start) + `<${tag}>` + area.value.substring(start, end) + `</${tag}>` + area.value.substring(end);
+        }
+
+        function insertAnchor() {
+            const id = prompt("Nome riferimento (es: p1):");
+            if (id) document.getElementById('newTesto').value += `<li><a href="#${id}">Testo del Link</a></li>`;
+        }
+
         function apriModal() { document.getElementById('editId').value = ""; document.getElementById('modalDocumento').style.display = 'flex'; }
         function chiudiModal() { document.getElementById('modalDocumento').style.display = 'none'; }
         window.onload = caricaDati;
