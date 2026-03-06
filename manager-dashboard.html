@@ -175,11 +175,26 @@
             grid.innerHTML = html;
         }
 
-        function caricaAnteprima(id) {
-            const area = document.getElementById('areaAnteprima');
-            // Carica direttamente la pagina documento.html dentro l'iframe per l'anteprima
-            area.innerHTML = `<iframe src="documento.html?id=${id}"></iframe>`;
-        }
+      async function caricaAnteprima(id) {
+    const area = document.getElementById('areaAnteprima');
+    area.innerHTML = `<div style="display:flex; height:100%; align-items:center; justify-content:center; color:#003366; font-size:0.8rem;">Caricamento documento...</div>`;
+    
+    // Recuperiamo i dati del documento per ottenere l'URL del PDF
+    const { data: d, error } = await _supabase.from('documenti').select('pdf_url').eq('id', id).single();
+    
+    if (d && d.pdf_url) {
+        // Otteniamo l'URL pubblico dal bucket di Supabase
+        const { data: publicUrlData } = _supabase.storage
+            .from('pdf_riservati')
+            .getPublicUrl(d.pdf_url);
+
+        // Visualizziamo solo il PDF nell'iframe
+        // toolbar=0 nasconde i controlli extra del browser per una visualizzazione pulita
+        area.innerHTML = `<iframe src="${publicUrlData.publicUrl}#toolbar=0&navpanes=0" style="width:100%; height:100%; border:none;"></iframe>`;
+    } else {
+        area.innerHTML = `<div style="display:flex; height:100%; align-items:center; justify-content:center; color:#d9534f; font-size:0.8rem; padding:20px;">Nessun PDF allegato a questo documento</div>`;
+    }
+}
 
         function toggleSelezione(id) {
             const index = correlatiSelezionati.indexOf(id);
@@ -283,3 +298,4 @@
     </script>
 </body>
 </html>
+
