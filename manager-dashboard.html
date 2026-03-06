@@ -138,12 +138,30 @@
     </main>
 
     <script>
-        if (localStorage.getItem('role') !== 'manager') { window.location.replace("login.html"); }
-
         // Configurazione Supabase
         const SUPABASE_URL = 'https://ovfufqbpgxpmfxpbhjfn.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // CONTROLLO DI SICUREZZA ALL'AVVIO
+        window.onload = async function () {
+            const { data: { session } } = await _supabase.auth.getSession();
+
+            if (!session) {
+                // Se non c'è una sessione attiva su Supabase, rimanda al login
+                window.location.replace("login.html");
+                return;
+            }
+            
+            // Se la sessione esiste, carica i documenti
+            rendering();
+        }
+
+        // Funzione Logout ufficiale Supabase
+        async function logout() {
+            await _supabase.auth.signOut();
+            window.location.replace("index.html");
+        }
 
         async function rendering() {
             const { data, error } = await _supabase.from('documenti').select('*').order('timestamp', { ascending: false });
@@ -182,14 +200,12 @@
             const id = document.getElementById('editId').value;
             let dMan = document.getElementById('newDataManuale').value.trim();
 
-            // Gestione File PDF
             const fileInput = document.getElementById('newFile');
             const file = fileInput.files[0];
             let pdfPath = null;
 
             if (!titolo) return alert("Titolo obbligatorio!");
 
-            // Se è presente un file, caricalo nel bucket riservato
             if (file) {
                 const fileName = `${Date.now()}_${file.name}`;
                 const { data: upData, error: upErr } = await _supabase.storage
@@ -199,7 +215,7 @@
                 if (upErr) {
                     alert("Errore nel caricamento del PDF: " + upErr.message);
                 } else {
-                    pdfPath = fileName; // Salviamo il riferimento al file
+                    pdfPath = fileName;
                 }
             }
 
@@ -222,7 +238,6 @@
                 timestamp: Date.now()
             };
 
-            // Se abbiamo caricato un nuovo PDF, aggiorniamo il campo
             if (pdfPath) payload.pdf_url = pdfPath;
 
             if (id) {
@@ -252,7 +267,7 @@
                 document.getElementById('newArg').value = data.argomento;
                 document.getElementById('newDataManuale').value = data.data;
                 document.getElementById('newTesto').value = data.testo_completo || "";
-                document.getElementById('newFile').value = ""; // Resetta input file per sicurezza
+                document.getElementById('newFile').value = "";
                 document.getElementById('modalDocumento').style.display = 'flex';
             }
         }
@@ -289,7 +304,6 @@
         }
 
         function chiudiModal() { document.getElementById('modalDocumento').style.display = 'none'; }
-        function logout() { localStorage.removeItem('role'); window.location.replace("index.html"); }
 
         function popolaTendine(docs) {
             const riempi = (id, chiave) => {
@@ -351,7 +365,6 @@
         document.getElementById('fAut').addEventListener('change', applicaFiltri);
         document.getElementById('fMese').addEventListener('change', applicaFiltri);
         document.getElementById('fData').addEventListener('change', applicaFiltri);
-        window.onload = rendering;
     </script>
 </body>
 
