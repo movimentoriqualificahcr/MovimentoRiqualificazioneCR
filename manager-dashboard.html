@@ -192,18 +192,20 @@
             });
         }
 
-    function popolaSelettore(selezionati = []) {
+function popolaSelettore(selezionati = []) {
     const s = document.getElementById('newCorrelati');
     const currentId = document.getElementById('editId').value;
 
-    // Filtriamo i documenti per non collegare un file a se stesso
+    // Filtriamo i documenti per non visualizzare quello che stiamo modificando
     s.innerHTML = docsGlobali
         .filter(d => d.id !== currentId) 
         .map(d => {
-            // Creiamo una descrizione chiara: Titolo | Data | Argomento
-            const infoAggiuntive = `${d.data} - ${d.argomento}`;
+            // Creiamo una stringa leggibile: [DATA] TITOLO (Autore)
+            const dataEtichetta = d.data ? `[${d.data}] ` : '';
+            const autoreEtichetta = d.autore ? ` (${d.autore})` : '';
+            
             return `<option value="${d.id}" ${selezionati.includes(d.id) ? 'selected' : ''}>
-                ${d.titolo} (${infoAggiuntive})
+                ${dataEtichetta}${d.titolo}${autoreEtichetta}
             </option>`;
         }).join('');
 }
@@ -310,6 +312,7 @@ async function salvaOnline() {
     </script>
 </body>
 </html>
+
 
 
 
