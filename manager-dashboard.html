@@ -225,26 +225,38 @@ async function salvaOnline() {
 
     let finalId = currentId;
 
-    // 2. Salva o Aggiorna il documento principale
+    // 2. SALVATAGGIO DOCUMENTO PRINCIPALE
     if (currentId) {
+        // Se stiamo modificando un documento esistente
         await _supabase.from('documenti').update(payload).eq('id', currentId);
     } else {
-        const { data: insertData } = await _supabase.from('documenti').insert([payload]).select();
-        if (insertData) finalId = insertData[0].id;
+        // Se è un nuovo documento, lo inseriamo e recuperiamo l'ID generato
+        const { data: insertData, error: insErr } = await _supabase.from('documenti').insert([payload]).select();
+        if (insErr) {
+            console.error("Errore inserimento:", insErr);
+            return;
+        }
+        if (insertData && insertData.length > 0) finalId = insertData[0].id;
     }
 
-    // 3. LOGICA VICEVERSA: Aggiorna i documenti correlati selezionati
+    // 3. LOGICA "VICEVERSA" (AUTOMATISMO BIDIREZIONALE)
     if (finalId && selectedCorrelatiIds.length > 0) {
         for (const otherId of selectedCorrelatiIds) {
-            // Recupera i correlati attuali dell'altro documento
+            // Recuperiamo i correlati attuali del documento "destinatario"
             const { data: otherDoc } = await _supabase.from('documenti').select('correlati').eq('id', otherId).single();
             
-            let existingCorrelati = otherDoc.correlati || [];
-            
-            // Se il documento corrente non è già presente nell'altro, lo aggiungiamo
-            if (!existingCorrelati.includes(finalId)) {
-                existingCorrelati.push(finalId);
-                await _supabase.from('documenti').update({ correlati: existingCorrelati }).eq('id', otherId);
+            if (otherDoc) {
+                let existingCorrelati = otherDoc.correlati || [];
+                
+                // Se il link non esiste già, lo aggiungiamo
+                if (!existingCorrelati.includes(finalId)) {
+                    existingCorrelati.push(finalId);
+                    
+                    // Aggiorniamo l'altro documento aggiungendo il riferimento al file corrente
+                    await _supabase.from('documenti')
+                        .update({ correlati: existingCorrelati })
+                        .eq('id', otherId);
+                }
             }
         }
     }
@@ -290,4 +302,5 @@ async function salvaOnline() {
     </script>
 </body>
 </html>
+
 
