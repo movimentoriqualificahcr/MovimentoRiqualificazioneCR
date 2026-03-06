@@ -197,30 +197,61 @@
             s.innerHTML = docsGlobali.map(d => `<option value="${d.id}" ${selezionati.includes(d.id) ? 'selected' : ''}>${d.titolo}</option>`).join('');
         }
 
-        async function salvaOnline() {
-            const file = document.getElementById('newFile').files[0];
-            let pdfPath = null;
-            if (file) {
-                const name = `${Date.now()}_${file.name}`;
-                const { data: upData, error: upErr } = await _supabase.storage.from('pdf_riservati').upload(name, file);
-                if (!upErr) pdfPath = name;
+async function salvaOnline() {
+    const file = document.getElementById('newFile').files[0];
+    let pdfPath = null;
+    
+    // 1. Caricamento eventuale PDF
+    if (file) {
+        const name = `${Date.now()}_${file.name}`;
+        const { data: upData, error: upErr } = await _supabase.storage.from('pdf_riservati').upload(name, file);
+        if (!upErr) pdfPath = name;
+    }
+
+    const currentId = document.getElementById('editId').value;
+    const selectedCorrelatiIds = Array.from(document.getElementById('newCorrelati').selectedOptions).map(o => o.value);
+    
+    const payload = {
+        titolo: document.getElementById('newTitolo').value,
+        autore: document.getElementById('newAutore').value || "Manager",
+        argomento: document.getElementById('newArg').value || "Generale",
+        data: document.getElementById('newDataManuale').value || new Date().toLocaleDateString('it-IT'),
+        testo_completo: document.getElementById('newTesto').value,
+        correlati: selectedCorrelatiIds,
+        timestamp: Date.now()
+    };
+
+    if (pdfPath) payload.pdf_url = pdfPath;
+
+    let finalId = currentId;
+
+    // 2. Salva o Aggiorna il documento principale
+    if (currentId) {
+        await _supabase.from('documenti').update(payload).eq('id', currentId);
+    } else {
+        const { data: insertData } = await _supabase.from('documenti').insert([payload]).select();
+        if (insertData) finalId = insertData[0].id;
+    }
+
+    // 3. LOGICA VICEVERSA: Aggiorna i documenti correlati selezionati
+    if (finalId && selectedCorrelatiIds.length > 0) {
+        for (const otherId of selectedCorrelatiIds) {
+            // Recupera i correlati attuali dell'altro documento
+            const { data: otherDoc } = await _supabase.from('documenti').select('correlati').eq('id', otherId).single();
+            
+            let existingCorrelati = otherDoc.correlati || [];
+            
+            // Se il documento corrente non è già presente nell'altro, lo aggiungiamo
+            if (!existingCorrelati.includes(finalId)) {
+                existingCorrelati.push(finalId);
+                await _supabase.from('documenti').update({ correlati: existingCorrelati }).eq('id', otherId);
             }
-            const correlatiIds = Array.from(document.getElementById('newCorrelati').selectedOptions).map(o => o.value);
-            const payload = {
-                titolo: document.getElementById('newTitolo').value,
-                autore: document.getElementById('newAutore').value || "Manager",
-                argomento: document.getElementById('newArg').value || "Generale",
-                data: document.getElementById('newDataManuale').value || new Date().toLocaleDateString('it-IT'),
-                testo_completo: document.getElementById('newTesto').value,
-                correlati: correlatiIds,
-                timestamp: Date.now()
-            };
-            if (pdfPath) payload.pdf_url = pdfPath;
-            const id = document.getElementById('editId').value;
-            if (id) await _supabase.from('documenti').update(payload).eq('id', id);
-            else await _supabase.from('documenti').insert([payload]);
-            chiudiModal(); rendering();
         }
+    }
+    
+    chiudiModal(); 
+    rendering();
+}
 
         async function preparaModifica(id) {
             const { data } = await _supabase.from('documenti').select('*').eq('id', id).single();
@@ -259,3 +290,4 @@
     </script>
 </body>
 </html>
+
