@@ -42,14 +42,41 @@
             align-items:center;
         }
 
-        .select-correlati {
-            width: 100%;
-            height: 80px;
-            margin: 8px 0;
-            padding: 8px;
-            border-radius: 8px;
+        /* Nuovo stile per la tabella dei correlati */
+        .container-tabella-correlati {
+            max-height: 200px;
+            overflow-y: auto;
             border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 5px;
+            background: #fff;
+        }
+
+        .tabella-correlati {
+            width: 100%;
+            border-collapse: collapse;
             font-size: 0.85rem;
+            text-align: left;
+        }
+
+        .tabella-correlati thead {
+            background: #f1f1f1;
+            position: sticky;
+            top: 0;
+        }
+
+        .tabella-correlati th, .tabella-correlati td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .tabella-correlati tr:hover {
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+
+        .tabella-correlati tr.selected {
+            background-color: #e3f2fd;
         }
 
         .card { position: relative; }
@@ -100,8 +127,21 @@
                 <input type="text" id="newDataManuale" placeholder="Data (es. 06/03/2026)" style="width:100%; margin:8px 0; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
                 
                 <div style="text-align: left; margin-top: 10px;">
-                    <label style="font-size: 0.8rem; color: #666;">Collega Documenti (Ctrl+Click):</label>
-                    <select id="newCorrelati" class="select-correlati" multiple></select>
+                    <label style="font-size: 0.8rem; color: #666; font-weight: bold;">Seleziona Documenti Correlati:</label>
+                    <div class="container-tabella-correlati">
+                        <table class="tabella-correlati">
+                            <thead>
+                                <tr>
+                                    <th style="width: 30px;">Sel.</th>
+                                    <th>Titolo</th>
+                                    <th>Data</th>
+                                    <th>Autore</th>
+                                    <th>Argomento</th>
+                                </tr>
+                            </thead>
+                            <tbody id="corpoTabellaCorrelati"></tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div style="margin: 10px 0; text-align: left;">
@@ -126,6 +166,7 @@
     <script>
         const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
         let docsGlobali = [];
+        let correlatiSelezionati = []; // Array per gestire le selezioni della tabella
 
         window.onload = async function () {
             const { data: { session } } = await _supabase.auth.getSession();
@@ -192,88 +233,93 @@
             });
         }
 
-function popolaSelettore(selezionati = []) {
-    const s = document.getElementById('newCorrelati');
-    const currentId = document.getElementById('editId').value;
+        function popolaTabellaCorrelati(selezionati = []) {
+            correlatiSelezionati = selezionati;
+            const corpo = document.getElementById('corpoTabellaCorrelati');
+            const currentId = document.getElementById('editId').value;
 
-    // Filtriamo i documenti per non visualizzare quello che stiamo modificando
-    s.innerHTML = docsGlobali
-        .filter(d => d.id !== currentId) 
-        .map(d => {
-            // Creiamo una stringa leggibile: [DATA] TITOLO (Autore)
-            const dataEtichetta = d.data ? `[${d.data}] ` : '';
-            const autoreEtichetta = d.autore ? ` (${d.autore})` : '';
-            
-            return `<option value="${d.id}" ${selezionati.includes(d.id) ? 'selected' : ''}>
-                ${dataEtichetta}${d.titolo}${autoreEtichetta}
-            </option>`;
-        }).join('');
-}
+            corpo.innerHTML = docsGlobali
+                .filter(d => d.id !== currentId)
+                .map(d => {
+                    const isSelected = correlatiSelezionati.includes(d.id);
+                    return `
+                        <tr id="row-${d.id}" class="${isSelected ? 'selected' : ''}" onclick="toggleSelezione('${d.id}')">
+                            <td><input type="checkbox" id="check-${d.id}" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleSelezione('${d.id}')"></td>
+                            <td>${d.titolo}</td>
+                            <td>${d.data || '-'}</td>
+                            <td>${d.autore || '-'}</td>
+                            <td>${d.argomento || '-'}</td>
+                        </tr>
+                    `;
+                }).join('');
+        }
 
-async function salvaOnline() {
-    const file = document.getElementById('newFile').files[0];
-    let pdfPath = null;
-    
-    // 1. Caricamento eventuale PDF
-    if (file) {
-        const name = `${Date.now()}_${file.name}`;
-        const { data: upData, error: upErr } = await _supabase.storage.from('pdf_riservati').upload(name, file);
-        if (!upErr) pdfPath = name;
-    }
+        function toggleSelezione(id) {
+            const index = correlatiSelezionati.indexOf(id);
+            const row = document.getElementById(`row-${id}`);
+            const checkbox = document.getElementById(`check-${id}`);
 
-    const currentId = document.getElementById('editId').value;
-    const selectedCorrelatiIds = Array.from(document.getElementById('newCorrelati').selectedOptions).map(o => o.value);
-    
-    const payload = {
-        titolo: document.getElementById('newTitolo').value,
-        autore: document.getElementById('newAutore').value || "Manager",
-        argomento: document.getElementById('newArg').value || "Generale",
-        data: document.getElementById('newDataManuale').value || new Date().toLocaleDateString('it-IT'),
-        testo_completo: document.getElementById('newTesto').value,
-        correlati: selectedCorrelatiIds,
-        timestamp: Date.now()
-    };
-
-    if (pdfPath) payload.pdf_url = pdfPath;
-
-    let finalId = currentId;
-
-    // 2. SALVATAGGIO DOCUMENTO PRINCIPALE (A)
-    if (currentId) {
-        await _supabase.from('documenti').update(payload).eq('id', currentId);
-    } else {
-        const { data: insertData } = await _supabase.from('documenti').insert([payload]).select();
-        if (insertData && insertData.length > 0) finalId = insertData[0].id;
-    }
-
-    // 3. LOGICA VICEVERSA: Aggiorna i documenti correlati selezionati (B)
-    if (finalId && selectedCorrelatiIds.length > 0) {
-        for (const otherId of selectedCorrelatiIds) {
-            // Recupera i correlati attuali del documento B
-            const { data: otherDoc } = await _supabase.from('documenti')
-                .select('correlati')
-                .eq('id', otherId)
-                .single();
-            
-            if (otherDoc) {
-                let existingCorrelati = otherDoc.correlati || [];
-                
-                // Se il Documento A non è già presente in B, lo aggiungiamo
-                if (!existingCorrelati.includes(finalId)) {
-                    existingCorrelati.push(finalId);
-                    
-                    // Scriviamo nel Documento B che ora è collegato ad A
-                    await _supabase.from('documenti')
-                        .update({ correlati: existingCorrelati })
-                        .eq('id', otherId);
-                }
+            if (index > -1) {
+                correlatiSelezionati.splice(index, 1);
+                row.classList.remove('selected');
+                checkbox.checked = false;
+            } else {
+                correlatiSelezionati.push(id);
+                row.classList.add('selected');
+                checkbox.checked = true;
             }
         }
-    }
-    
-    chiudiModal(); 
-    rendering();
-}
+
+        async function salvaOnline() {
+            const file = document.getElementById('newFile').files[0];
+            let pdfPath = null;
+            
+            if (file) {
+                const name = `${Date.now()}_${file.name}`;
+                const { data: upData, error: upErr } = await _supabase.storage.from('pdf_riservati').upload(name, file);
+                if (!upErr) pdfPath = name;
+            }
+
+            const currentId = document.getElementById('editId').value;
+            
+            const payload = {
+                titolo: document.getElementById('newTitolo').value,
+                autore: document.getElementById('newAutore').value || "Manager",
+                argomento: document.getElementById('newArg').value || "Generale",
+                data: document.getElementById('newDataManuale').value || new Date().toLocaleDateString('it-IT'),
+                testo_completo: document.getElementById('newTesto').value,
+                correlati: correlatiSelezionati, // Usiamo l'array della tabella
+                timestamp: Date.now()
+            };
+
+            if (pdfPath) payload.pdf_url = pdfPath;
+
+            let finalId = currentId;
+
+            if (currentId) {
+                await _supabase.from('documenti').update(payload).eq('id', currentId);
+            } else {
+                const { data: insertData } = await _supabase.from('documenti').insert([payload]).select();
+                if (insertData && insertData.length > 0) finalId = insertData[0].id;
+            }
+
+            // Logica Viceversa
+            if (finalId && correlatiSelezionati.length > 0) {
+                for (const otherId of correlatiSelezionati) {
+                    const { data: otherDoc } = await _supabase.from('documenti').select('correlati').eq('id', otherId).single();
+                    if (otherDoc) {
+                        let existing = otherDoc.correlati || [];
+                        if (!existing.includes(finalId)) {
+                            existing.push(finalId);
+                            await _supabase.from('documenti').update({ correlati: existing }).eq('id', otherId);
+                        }
+                    }
+                }
+            }
+            
+            chiudiModal(); 
+            rendering();
+        }
 
         async function preparaModifica(id) {
             const { data } = await _supabase.from('documenti').select('*').eq('id', id).single();
@@ -285,19 +331,23 @@ async function salvaOnline() {
                 document.getElementById('newArg').value = data.argomento;
                 document.getElementById('newDataManuale').value = data.data;
                 document.getElementById('newTesto').value = data.testo_completo || "";
-                popolaSelettore(data.correlati || []);
+                popolaTabellaCorrelati(data.correlati || []);
                 document.getElementById('modalDocumento').style.display = 'flex';
             }
         }
 
         function apriModal() { 
             document.getElementById('modalTitle').innerText = "Nuovo Documento";
-            document.getElementById('editId').value = ""; document.getElementById('newTitolo').value = ""; document.getElementById('newTesto').value = "";
-            popolaSelettore([]); document.getElementById('modalDocumento').style.display = 'flex'; 
+            document.getElementById('editId').value = ""; 
+            document.getElementById('newTitolo').value = ""; 
+            document.getElementById('newTesto').value = "";
+            popolaTabellaCorrelati([]); 
+            document.getElementById('modalDocumento').style.display = 'flex'; 
         }
 
         function chiudiModal() { document.getElementById('modalDocumento').style.display = 'none'; }
         async function eliminaDoc(id) { if(confirm("Eliminare?")) { await _supabase.from('documenti').delete().eq('id', id); rendering(); } }
+        
         function insertTag(t) {
             const a = document.getElementById('newTesto');
             const s = a.selectionStart; const e = a.selectionEnd;
@@ -312,8 +362,3 @@ async function salvaOnline() {
     </script>
 </body>
 </html>
-
-
-
-
-
