@@ -153,23 +153,27 @@
 
             if (data) {
                 // RECUPERO DOCUMENTI CORRELATI
-                let correlatiHtml = "";
-                if (data.correlati && data.correlati.length > 0) {
-                    const { data: docsCorrelati } = await _supabase
-                        .from('documenti')
-                        .select('id, titolo')
-                        .in('id', data.correlati);
+     // Recupero e visualizzazione documenti correlati con data
+let correlatiHtml = "";
+if (data.correlati && data.correlati.length > 0) {
+    const { data: docsCorrelati } = await _supabase
+        .from('documenti')
+        .select('id, titolo, data') // Assicurati di selezionare anche il campo 'data'
+        .in('id', data.correlati);
 
-                    if (docsCorrelati && docsCorrelati.length > 0) {
-                        correlatiHtml = `
-                            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-                                <h4 style="font-size: 0.8rem; color: #003366; text-transform: uppercase; margin-bottom: 12px;">Documenti Correlati</h4>
-                                ${docsCorrelati.map(dc => `
-                                    <a href="documento.html?id=${dc.id}" class="correlati-link">📄 ${dc.titolo}</a>
-                                `).join('')}
-                            </div>`;
-                    }
-                }
+    if (docsCorrelati && docsCorrelati.length > 0) {
+        correlatiHtml = `
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                <h4 style="font-size: 0.8rem; color: #003366; text-transform: uppercase; margin-bottom: 12px;">Documenti Correlati</h4>
+                ${docsCorrelati.map(dc => `
+                    <a href="documento.html?id=${dc.id}" class="correlati-link" style="margin-bottom: 15px; display: block;">
+                        <span style="display: block;">📄 ${dc.titolo}</span>
+                        <span style="font-size: 0.75rem; color: #888; margin-left: 22px;">Data: ${dc.data || 'N/D'}</span>
+                    </a>
+                `).join('')}
+            </div>`;
+    }
+}
 
                 let pdfSection = "";
                 if (data.pdf_url) {
@@ -209,3 +213,4 @@
 </body>
 
 </html>
+
