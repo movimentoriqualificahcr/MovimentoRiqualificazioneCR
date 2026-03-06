@@ -158,4 +158,37 @@ header h1 {
 .doc-container {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     /* Ombra più leggera per un look pulito */
+
+}
+
+.btn-consulta {
+    margin-top: auto;
+    width: 100%;
+    padding: 12px;
+    background-color: #003366;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 51, 102, 0.1);
+}
+
+.btn-consulta:hover {
+    background-color: #004a99;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 51, 102, 0.2);
+}
+
+.btn-consulta span {
+    transition: transform 0.3s ease;
+}
+
+.btn-consulta:hover span {
+    transform: translateX(4px);
 }
