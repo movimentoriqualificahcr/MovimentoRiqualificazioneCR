@@ -7,78 +7,20 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        .toolbar {
-            display: flex;
-            gap: 5px;
-            background: #f8f9fa;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-bottom: none;
-            border-radius: 8px 8px 0 0;
-            margin-top: 10px;
-        }
+        .toolbar { display: flex; gap: 5px; background: #f8f9fa; padding: 8px; border: 1px solid #ddd; border-bottom: none; border-radius: 8px 8px 0 0; margin-top: 10px; }
+        .toolbar button { padding: 5px 10px; cursor: pointer; background: white; border: 1px solid #ccc; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        #modalDocumento { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; justify-content:center; align-items:center; }
+        
+        /* Layout a due colonne per la sezione correlati */
+        .wrapper-correlati { display: flex; gap: 15px; margin-top: 10px; }
+        .container-tabella-correlati { flex: 2; max-height: 250px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px; background: #fff; }
+        .anteprima-correlato { flex: 1; border: 1px solid #003366; border-radius: 8px; background: #f0f4f8; padding: 15px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; font-size: 0.85rem; }
 
-        .toolbar button {
-            padding: 5px 10px;
-            cursor: pointer;
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-
-        #modalDocumento {
-            display:none; 
-            position:fixed; 
-            top:0; 
-            left:0; 
-            width:100%; 
-            height:100%; 
-            background:rgba(0,0,0,0.6); 
-            z-index:2000; 
-            justify-content:center; 
-            align-items:center;
-        }
-
-        /* Stile Tabella Correlati */
-        .container-tabella-correlati {
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-top: 5px;
-            background: #fff;
-        }
-
-        .tabella-correlati {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-            text-align: left;
-        }
-
-        .tabella-correlati thead {
-            background: #f1f1f1;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .tabella-correlati th, .tabella-correlati td {
-            padding: 8px 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .tabella-correlati tr:hover {
-            background-color: #f9f9f9;
-            cursor: pointer;
-        }
-
-        .tabella-correlati tr.selected {
-            background-color: #e3f2fd;
-        }
-
+        .tabella-correlati { width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left; }
+        .tabella-correlati thead { background: #f1f1f1; position: sticky; top: 0; z-index: 10; }
+        .tabella-correlati th, .tabella-correlati td { padding: 8px; border-bottom: 1px solid #eee; }
+        .tabella-correlati tr:hover { background-color: #f1faff; cursor: pointer; }
+        .tabella-correlati tr.selected { background-color: #e3f2fd; }
         .card { position: relative; }
     </style>
 </head>
@@ -99,54 +41,43 @@
     </header>
 
     <main>
-        <section class="filter-section">
-            <div class="filter-container" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 20px 0; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <input type="text" id="cercaManager" placeholder="Cerca titolo..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; min-width: 160px;">
-                <select id="fArg" style="padding: 8px;"><option value="tutti">Tutti gli argomenti</option></select>
-                <select id="fAut" style="padding: 8px;"><option value="tutti">Tutti gli autori</option></select>
-                <select id="fMese" style="padding: 8px;">
-                    <option value="tutti">Tutti i mesi</option>
-                    <option value="01">Gennaio</option><option value="02">Febbraio</option><option value="03">Marzo</option><option value="04">Aprile</option><option value="05">Maggio</option><option value="06">Giugno</option>
-                    <option value="07">Luglio</option><option value="08">Agosto</option><option value="09">Settembre</option><option value="10">Ottobre</option><option value="11">Novembre</option><option value="12">Dicembre</option>
-                </select>
-                <select id="fData" style="padding: 8px;"><option value="tutti">Tutti gli anni</option></select>
-            </div>
-        </section>
-
         <div class="grid-dashboard" id="main-grid"></div>
 
         <div id="modalDocumento">
-            <div class="volume-section" style="max-width: 700px; width: 95%; padding: 30px; border-radius: 20px;">
+            <div class="volume-section" style="max-width: 900px; width: 95%; padding: 30px; border-radius: 20px;">
                 <h3 id="modalTitle" style="margin-top:0; text-align:center;">Gestione Documento</h3>
                 <input type="hidden" id="editId">
-                <input type="text" id="newTitolo" placeholder="Titolo" style="width:100%; margin:8px 0; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="newAutore" placeholder="Autore" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
-                    <input type="text" id="newArg" placeholder="Argomento" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
-                </div>
-                <input type="text" id="newDataManuale" placeholder="Data (es. 06/03/2026)" style="width:100%; margin:8px 0; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
                 
-                <div style="text-align: left; margin-top: 10px;">
-                    <label style="font-size: 0.8rem; color: #666; font-weight: bold;">Seleziona Documenti Correlati (Clicca sulla data per ordinare):</label>
-                    <div class="container-tabella-correlati">
-                        <table class="tabella-correlati">
-                            <thead>
-                                <tr>
-                                    <th style="width: 30px;">Sel.</th>
-                                    <th onclick="ordinaTabella('titolo')" style="cursor:pointer;">Titolo ↕</th>
-                                    <th onclick="ordinaTabella('data')" style="cursor:pointer;">Data ↕</th>
-                                    <th onclick="ordinaTabella('autore')" style="cursor:pointer;">Autore ↕</th>
-                                    <th onclick="ordinaTabella('argomento')" style="cursor:pointer;">Argomento ↕</th>
-                                </tr>
-                            </thead>
-                            <tbody id="corpoTabellaCorrelati"></tbody>
-                        </table>
+                <input type="text" id="newTitolo" placeholder="Titolo" style="width:100%; margin:8px 0; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
+                
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="newAutore" placeholder="Autore" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd;">
+                    <input type="text" id="newArg" placeholder="Argomento" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd;">
+                </div>
+
+                <div style="text-align: left; margin-top: 15px;">
+                    <label style="font-size: 0.8rem; color: #666; font-weight: bold;">Collega e Anteprima Documenti:</label>
+                    <div class="wrapper-correlati">
+                        <div class="container-tabella-correlati">
+                            <table class="tabella-correlati">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 20px;">Sel.</th>
+                                        <th onclick="ordinaTabella('titolo')" style="cursor:pointer;">Titolo ↕</th>
+                                        <th onclick="ordinaTabella('data')" style="cursor:pointer;">Data ↕</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="corpoTabellaCorrelati"></tbody>
+                            </table>
+                        </div>
+                        <div class="anteprima-correlato" id="boxAnteprima">
+                            <p style="color: #999;">Clicca su un file per vederne i dettagli</p>
+                        </div>
                     </div>
                 </div>
 
-                <div style="margin: 10px 0; text-align: left;">
-                    <label style="font-size: 0.8rem; color: #666;">Allega PDF:</label>
-                    <input type="file" id="newFile" accept=".pdf" style="width:100%; padding:5px;">
+                <div style="margin: 15px 0; text-align: left;">
+                    <input type="file" id="newFile" accept=".pdf" style="width:100%;">
                 </div>
 
                 <div class="toolbar">
@@ -154,7 +85,8 @@
                     <button onclick="insertTag('ul')">Elenco</button>
                     <button onclick="insertTag('li')">Punto</button>
                 </div>
-                <textarea id="newTesto" placeholder="Contenuto..." style="width:100%; padding:12px; border:1px solid #ddd; border-radius: 0 0 8px 8px; height: 180px; box-sizing:border-box;"></textarea>
+                <textarea id="newTesto" placeholder="Contenuto..." style="width:100%; padding:12px; border:1px solid #ddd; height: 120px; box-sizing:border-box;"></textarea>
+
                 <div style="display:flex; gap:10px; margin-top:20px;">
                     <button onclick="salvaOnline()" class="contact-item" style="background:#28a745; flex:1; justify-content:center; border:none; cursor:pointer;">Salva Online</button>
                     <button onclick="chiudiModal()" class="contact-item" style="background:#6c757d; flex:1; justify-content:center; border:none; cursor:pointer;">Annulla</button>
@@ -167,7 +99,7 @@
         const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
         let docsGlobali = [];
         let correlatiSelezionati = [];
-        let ordineCorrente = { colonna: 'timestamp', crescente: false };
+        let ordineCorrente = { colonna: 'data', crescente: false };
 
         window.onload = async function () {
             const { data: { session } } = await _supabase.auth.getSession();
@@ -187,54 +119,52 @@
                         </div>`;
             if (data) {
                 html += data.map(d => `
-                    <div class="card" data-arg="${d.argomento}" data-aut="${d.autore}" data-data="${d.data}" style="padding: 15px; min-height: 200px; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                    <div class="card" style="padding: 15px; min-height: 200px; display: flex; flex-direction: column; align-items: center; text-align: center;">
                         <button onclick="eliminaDoc('${d.id}')" style="position:absolute; top:10px; right:10px; background:#d9534f; color:white; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer;">✕</button>
                         <div style="font-size: 2.2rem; margin-bottom: 10px;">📄</div>
-                        <h3 style="margin: 5px 0; font-size: 1.1rem;">${d.titolo}</h3>
-                        <p style="color: #666; font-size: 0.8rem; margin-bottom: 10px;"><strong>${d.argomento}</strong><br>${d.autore}<br><span style="color: #999;">Data: ${d.data}</span></p>
-                        ${d.pdf_url ? '<span style="color:green; font-size:0.7rem; font-weight:bold;">📁 PDF ARCHIVIATO</span>' : ''}
+                        <h3>${d.titolo}</h3>
+                        <p style="color: #666; font-size: 0.8rem; margin-bottom: 10px;"><strong>${d.argomento}</strong><br>${d.autore}<br>Data: ${d.data}</p>
                         <button onclick="preparaModifica('${d.id}')" class="contact-item" style="margin-top: auto; padding: 8px 15px; font-size: 0.85rem; width: 100%; justify-content: center; background: #003366; border: none; cursor: pointer;">Gestione →</button>
                     </div>`).join('');
-                popolaTendine(data);
             }
             grid.innerHTML = html;
         }
 
-        // Logica di Ordinamento Tabella
-        function ordinaTabella(colonna) {
-            if (ordineCorrente.colonna === colonna) {
-                ordineCorrente.crescente = !ordineCorrente.crescente;
-            } else {
-                ordineCorrente.colonna = colonna;
-                ordineCorrente.crescente = true;
+        function mostraAnteprima(id) {
+            const d = docsGlobali.find(doc => doc.id === id);
+            const box = document.getElementById('boxAnteprima');
+            if (d) {
+                box.innerHTML = `
+                    <h4 style="margin: 0 0 10px 0; color: #003366;">Dettagli File</h4>
+                    <p style="margin: 5px 0;"><strong>Autore:</strong> ${d.autore}</p>
+                    <p style="margin: 5px 0;"><strong>Argomento:</strong> ${d.argomento}</p>
+                    <p style="margin: 5px 0;"><strong>Data:</strong> ${d.data}</p>
+                    <a href="documento.html?id=${d.id}" target="_blank" style="margin-top: 10px; padding: 5px 10px; background: #003366; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">Apri Documento ↗</a>
+                `;
             }
+        }
 
-            docsGlobali.sort((a, b) => {
-                let valA = (a[colonna] || "").toString().toLowerCase();
-                let valB = (b[colonna] || "").toString().toLowerCase();
-                
-                if (colonna === 'data') {
-                    const converti = (d) => {
-                        if (!d || !d.includes('/')) return 0;
-                        const [g, m, a] = d.split('/');
-                        return new Date(a, m - 1, g).getTime();
-                    };
-                    valA = converti(a.data); valB = converti(b.data);
-                }
-
-                if (valA < valB) return ordineCorrente.crescente ? -1 : 1;
-                if (valA > valB) return ordineCorrente.crescente ? 1 : -1;
-                return 0;
-            });
-
-            popolaTabellaCorrelati(correlatiSelezionati);
+        function toggleSelezione(id) {
+            const index = correlatiSelezionati.indexOf(id);
+            const row = document.getElementById(`row-${id}`);
+            const checkbox = document.getElementById(`check-${id}`);
+            
+            if (index > -1) {
+                correlatiSelezionati.splice(index, 1);
+                row.classList.remove('selected');
+                checkbox.checked = false;
+            } else {
+                correlatiSelezionati.push(id);
+                row.classList.add('selected');
+                checkbox.checked = true;
+            }
+            mostraAnteprima(id); // Aggiorna l'anteprima quando si seleziona
         }
 
         function popolaTabellaCorrelati(selezionati = []) {
             correlatiSelezionati = selezionati;
             const corpo = document.getElementById('corpoTabellaCorrelati');
             const currentId = document.getElementById('editId').value;
-
             corpo.innerHTML = docsGlobali
                 .filter(d => d.id !== currentId)
                 .map(d => {
@@ -244,24 +174,25 @@
                             <td><input type="checkbox" id="check-${d.id}" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleSelezione('${d.id}')"></td>
                             <td>${d.titolo}</td>
                             <td>${d.data || '-'}</td>
-                            <td>${d.autore || '-'}</td>
-                            <td>${d.argomento || '-'}</td>
                         </tr>
                     `;
                 }).join('');
         }
 
-        function toggleSelezione(id) {
-            const index = correlatiSelezionati.indexOf(id);
-            const row = document.getElementById(`row-${id}`);
-            const checkbox = document.getElementById(`check-${id}`);
-            if (index > -1) {
-                correlatiSelezionati.splice(index, 1);
-                row.classList.remove('selected'); checkbox.checked = false;
-            } else {
-                correlatiSelezionati.push(id);
-                row.classList.add('selected'); checkbox.checked = true;
-            }
+        function ordinaTabella(colonna) {
+            if (ordineCorrente.colonna === colonna) { ordineCorrente.crescente = !ordineCorrente.crescente; } 
+            else { ordineCorrente.colonna = colonna; ordineCorrente.crescente = true; }
+
+            docsGlobali.sort((a, b) => {
+                let valA = (a[colonna] || "").toString().toLowerCase();
+                let valB = (b[colonna] || "").toString().toLowerCase();
+                if (colonna === 'data') {
+                    const conv = (d) => d && d.includes('/') ? new Date(d.split('/')[2], d.split('/')[1]-1, d.split('/')[0]).getTime() : 0;
+                    valA = conv(a.data); valB = conv(b.data);
+                }
+                return (valA < valB ? -1 : 1) * (ordineCorrente.crescente ? 1 : -1);
+            });
+            popolaTabellaCorrelati(correlatiSelezionati);
         }
 
         async function salvaOnline() {
@@ -272,7 +203,6 @@
                 const { data: upData, error: upErr } = await _supabase.storage.from('pdf_riservati').upload(name, file);
                 if (!upErr) pdfPath = name;
             }
-
             const currentId = document.getElementById('editId').value;
             const payload = {
                 titolo: document.getElementById('newTitolo').value,
@@ -283,65 +213,22 @@
                 correlati: correlatiSelezionati,
                 timestamp: Date.now()
             };
-
             if (pdfPath) payload.pdf_url = pdfPath;
             let finalId = currentId;
-
-            if (currentId) {
-                await _supabase.from('documenti').update(payload).eq('id', currentId);
-            } else {
-                const { data: insertData } = await _supabase.from('documenti').insert([payload]).select();
-                if (insertData && insertData.length > 0) finalId = insertData[0].id;
-            }
-
+            if (currentId) { await _supabase.from('documenti').update(payload).eq('id', currentId); } 
+            else { const { data } = await _supabase.from('documenti').insert([payload]).select(); if (data) finalId = data[0].id; }
+            
+            // Logica Viceversa
             if (finalId && correlatiSelezionati.length > 0) {
                 for (const otherId of correlatiSelezionati) {
                     const { data: otherDoc } = await _supabase.from('documenti').select('correlati').eq('id', otherId).single();
                     if (otherDoc) {
                         let existing = otherDoc.correlati || [];
-                        if (!existing.includes(finalId)) {
-                            existing.push(finalId);
-                            await _supabase.from('documenti').update({ correlati: existing }).eq('id', otherId);
-                        }
+                        if (!existing.includes(finalId)) { existing.push(finalId); await _supabase.from('documenti').update({ correlati: existing }).eq('id', otherId); }
                     }
                 }
             }
             chiudiModal(); rendering();
-        }
-
-        // Funzioni di supporto esistenti
-        function popolaTendine(docs) {
-            const riempi = (id, chiave) => {
-                const s = document.getElementById(id);
-                if (id === 'fMese') return;
-                s.innerHTML = `<option value="tutti">Tutti ${id === 'fData' ? 'gli anni' : (id === 'fAut' ? 'gli autori' : 'gli argomenti')}</option>`;
-                let vals;
-                if (chiave === 'data') {
-                    vals = [...new Set(docs.map(d => d.data.split('/').pop()))].sort((a, b) => b - a);
-                } else {
-                    vals = [...new Set(docs.map(d => d[chiave === 'arg' ? 'argomento' : chiave]))].sort((a, b) => a.localeCompare(b));
-                }
-                vals.forEach(v => { if (v) s.innerHTML += `<option value="${v}">${v}</option>`; });
-            };
-            riempi('fArg', 'arg'); riempi('fAut', 'autore'); riempi('fData', 'data');
-        }
-
-        function applicaFiltri() {
-            const t = document.getElementById('cercaManager').value.toLowerCase().trim();
-            const a = document.getElementById('fArg').value;
-            const u = document.getElementById('fAut').value;
-            const m = document.getElementById('fMese').value;
-            const d = document.getElementById('fData').value;
-            document.querySelectorAll('.card').forEach(c => {
-                if (c.onclick && c.onclick.name === "apriModal") return;
-                const dCard = c.getAttribute('data-data');
-                const matchT = t === "" || c.querySelector('h3').innerText.toLowerCase().includes(t);
-                const matchA = a === 'tutti' || c.getAttribute('data-arg') === a;
-                const matchU = u === 'tutti' || c.getAttribute('data-aut') === u;
-                const matchM = m === 'tutti' || (dCard.includes('/') && dCard.split('/')[1] === m);
-                const matchD = d === 'tutti' || dCard.endsWith(d);
-                c.style.display = (matchT && matchA && matchU && matchM && matchD) ? "flex" : "none";
-            });
         }
 
         async function preparaModifica(id) {
@@ -356,28 +243,20 @@
                 document.getElementById('newTesto').value = data.testo_completo || "";
                 popolaTabellaCorrelati(data.correlati || []);
                 document.getElementById('modalDocumento').style.display = 'flex';
+                document.getElementById('boxAnteprima').innerHTML = '<p style="color: #999;">Clicca su un file per vederne i dettagli</p>';
             }
         }
 
-        function apriModal() { 
+        function apriModal() {
             document.getElementById('modalTitle').innerText = "Nuovo Documento";
             document.getElementById('editId').value = ""; document.getElementById('newTitolo').value = ""; document.getElementById('newTesto').value = "";
-            popolaTabellaCorrelati([]); document.getElementById('modalDocumento').style.display = 'flex'; 
+            popolaTabellaCorrelati([]); document.getElementById('modalDocumento').style.display = 'flex';
+            document.getElementById('boxAnteprima').innerHTML = '<p style="color: #999;">Clicca su un file per vederne i dettagli</p>';
         }
 
         function chiudiModal() { document.getElementById('modalDocumento').style.display = 'none'; }
         async function eliminaDoc(id) { if(confirm("Eliminare?")) { await _supabase.from('documenti').delete().eq('id', id); rendering(); } }
-        function insertTag(t) {
-            const a = document.getElementById('newTesto');
-            const s = a.selectionStart; const e = a.selectionEnd;
-            a.value = a.value.substring(0, s) + `<${t}>${a.value.substring(s, e)}</${t}>` + a.value.substring(e);
-        }
-
-        document.getElementById('cercaManager').addEventListener('input', applicaFiltri);
-        document.getElementById('fArg').addEventListener('change', applicaFiltri);
-        document.getElementById('fAut').addEventListener('change', applicaFiltri);
-        document.getElementById('fMese').addEventListener('change', applicaFiltri);
-        document.getElementById('fData').addEventListener('change', applicaFiltri);
+        function insertTag(t) { const a = document.getElementById('newTesto'); a.value += `<${t}></${t}>`; }
     </script>
 </body>
 </html>
