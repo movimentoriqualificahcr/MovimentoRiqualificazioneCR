@@ -3,48 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Area Manager - Ospedale Cremona</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Ripristino stile originale del modal */
-        #modalDocumento {
-            display:none; 
-            position:fixed; 
-            top:0; 
-            left:0; 
-            width:100%; 
-            height:100%; 
-            background:rgba(0,0,0,0.6); 
-            z-index:2000; 
-            justify-content:center; 
-            align-items:center;
-        }
-
-        .volume-section {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-            width: 95%;
-            max-width: 700px;
-            text-align: center;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .select-correlati {
-            width: 100%;
-            height: 100px;
-            margin: 8px 0;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            font-size: 0.9rem;
-            box-sizing: border-box;
-        }
-
+        /* Ripristino stile originale del modal e degli elementi aggiuntivi */
         .toolbar {
             display: flex;
             gap: 5px;
@@ -66,26 +29,30 @@
             font-weight: bold;
         }
 
-        textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 0 0 8px 8px;
-            height: 250px;
-            font-family: inherit;
-            font-size: 1rem;
-            box-sizing: border-box;
-            resize: vertical;
+        #modalDocumento {
+            display:none; 
+            position:fixed; 
+            top:0; 
+            left:0; 
+            width:100%; 
+            height:100%; 
+            background:rgba(0,0,0,0.6); 
+            z-index:2000; 
+            justify-content:center; 
+            align-items:center;
         }
 
-        input[type="text"], input[type="file"] {
+        .select-correlati {
             width: 100%;
+            height: 80px;
             margin: 8px 0;
-            padding: 10px;
+            padding: 8px;
             border-radius: 8px;
             border: 1px solid #ddd;
-            box-sizing: border-box;
+            font-size: 0.85rem;
         }
+
+        .card { position: relative; }
     </style>
 </head>
 
@@ -105,44 +72,49 @@
     </header>
 
     <main>
-        <div class="filter-container" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 20px 0; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-            <input type="text" id="cercaManager" placeholder="Cerca titolo..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; min-width: 160px; font-size: 0.9rem;">
-            <select id="fArg" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 0.9rem;"><option value="tutti">Tutti gli argomenti</option></select>
-            <select id="fAut" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 0.9rem;"><option value="tutti">Tutti gli autori</option></select>
-            <select id="fMese" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 0.9rem;">
-                <option value="tutti">Tutti i mesi</option>
-                <option value="01">Gennaio</option><option value="02">Febbraio</option><option value="03">Marzo</option><option value="04">Aprile</option><option value="05">Maggio</option><option value="06">Giugno</option>
-                <option value="07">Luglio</option><option value="08">Agosto</option><option value="09">Settembre</option><option value="10">Ottobre</option><option value="11">Novembre</option><option value="12">Dicembre</option>
-            </select>
-            <select id="fData" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 0.9rem;"><option value="tutti">Tutti gli anni</option></select>
-        </div>
+        <section class="filter-section">
+            <div class="filter-container" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 20px 0; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <input type="text" id="cercaManager" placeholder="Cerca titolo..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; min-width: 160px;">
+                <select id="fArg" style="padding: 8px;"><option value="tutti">Tutti gli argomenti</option></select>
+                <select id="fAut" style="padding: 8px;"><option value="tutti">Tutti gli autori</option></select>
+                <select id="fMese" style="padding: 8px;">
+                    <option value="tutti">Tutti i mesi</option>
+                    <option value="01">Gennaio</option><option value="02">Febbraio</option><option value="03">Marzo</option><option value="04">Aprile</option><option value="05">Maggio</option><option value="06">Giugno</option>
+                    <option value="07">Luglio</option><option value="08">Agosto</option><option value="09">Settembre</option><option value="10">Ottobre</option><option value="11">Novembre</option><option value="12">Dicembre</option>
+                </select>
+                <select id="fData" style="padding: 8px;"><option value="tutti">Tutti gli anni</option></select>
+            </div>
+        </section>
 
         <div class="grid-dashboard" id="main-grid"></div>
 
         <div id="modalDocumento">
-            <div class="volume-section">
-                <h3 id="modalTitle" style="margin-top:0;">Nuovo Documento</h3>
+            <div class="volume-section" style="max-width: 700px; width: 95%; padding: 30px; border-radius: 20px;">
+                <h3 id="modalTitle" style="margin-top:0; text-align:center;">Gestione Documento</h3>
                 <input type="hidden" id="editId">
-                <input type="text" id="newTitolo" placeholder="Titolo">
+                <input type="text" id="newTitolo" placeholder="Titolo" style="width:100%; margin:8px 0; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
                 <div style="display: flex; gap: 10px;">
-                    <input type="text" id="newAutore" placeholder="Autore" style="flex:1;">
-                    <input type="text" id="newArg" placeholder="Argomento" style="flex:1;">
+                    <input type="text" id="newAutore" placeholder="Autore" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
+                    <input type="text" id="newArg" placeholder="Argomento" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
                 </div>
-                <input type="text" id="newDataManuale" placeholder="Anno (2024) o Data (05/03/2026)">
+                <input type="text" id="newDataManuale" placeholder="Data (es. 06/03/2026)" style="width:100%; margin:8px 0; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
+                
                 <div style="text-align: left; margin-top: 10px;">
                     <label style="font-size: 0.8rem; color: #666;">Collega Documenti (Ctrl+Click):</label>
                     <select id="newCorrelati" class="select-correlati" multiple></select>
                 </div>
+
                 <div style="margin: 10px 0; text-align: left;">
-                    <label style="font-size: 0.8rem; color: #666;">Carica PDF (Archiviazione Interna):</label>
-                    <input type="file" id="newFile" accept=".pdf">
+                    <label style="font-size: 0.8rem; color: #666;">Allega PDF:</label>
+                    <input type="file" id="newFile" accept=".pdf" style="width:100%; padding:5px;">
                 </div>
+
                 <div class="toolbar">
                     <button onclick="insertTag('h3')">Titolo</button>
                     <button onclick="insertTag('ul')">Elenco</button>
                     <button onclick="insertTag('li')">Punto</button>
                 </div>
-                <textarea id="newTesto" placeholder="Contenuto del documento..."></textarea>
+                <textarea id="newTesto" placeholder="Contenuto..." style="width:100%; padding:12px; border:1px solid #ddd; border-radius: 0 0 8px 8px; height: 180px; box-sizing:border-box;"></textarea>
                 <div style="display:flex; gap:10px; margin-top:20px;">
                     <button onclick="salvaOnline()" class="contact-item" style="background:#28a745; flex:1; justify-content:center; border:none; cursor:pointer;">Salva Online</button>
                     <button onclick="chiudiModal()" class="contact-item" style="background:#6c757d; flex:1; justify-content:center; border:none; cursor:pointer;">Annulla</button>
@@ -209,7 +181,7 @@
             const m = document.getElementById('fMese').value;
             const d = document.getElementById('fData').value;
             document.querySelectorAll('.card').forEach(c => {
-                if (c.querySelector('h3').innerText === 'Aggiungi Nuovo') return;
+                if (c.onclick && c.onclick.name === "apriModal") return;
                 const dCard = c.getAttribute('data-data');
                 const matchT = t === "" || c.querySelector('h3').innerText.toLowerCase().includes(t);
                 const matchA = a === 'tutti' || c.getAttribute('data-arg') === a;
