@@ -3,11 +3,12 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Area Manager - Ospedale Cremona</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Correzione Layout Modal per renderlo largo e moderno */
+        /* Ripristino stile originale del modal */
         #modalDocumento {
             display:none; 
             position:fixed; 
@@ -15,85 +16,76 @@
             left:0; 
             width:100%; 
             height:100%; 
-            background:rgba(0,0,0,0.7); 
+            background:rgba(0,0,0,0.6); 
             z-index:2000; 
             justify-content:center; 
             align-items:center;
-            padding: 20px;
         }
 
-        .modal-content-box {
+        .volume-section {
             background: white;
-            width: 100%;
-            max-width: 850px; /* Larghezza aumentata per evitare l'effetto stretto */
             padding: 30px;
             border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 95%;
+            max-width: 700px;
+            text-align: center;
             max-height: 90vh;
             overflow-y: auto;
-            position: relative;
         }
 
-        .input-full {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 1rem;
-        }
-
-        .row {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
-
-        .row input {
-            flex: 1;
-        }
-
-        /* Stile selettore multiplo correlati */
+        /* Stile per i nuovi campi */
         .select-correlati {
             width: 100%;
-            height: 110px;
-            margin: 10px 0;
+            height: 100px;
+            margin: 8px 0;
             padding: 10px;
-            border: 1px solid #ddd;
             border-radius: 8px;
-            background: #fdfdfd;
+            border: 1px solid #ddd;
             font-size: 0.9rem;
+            box-sizing: border-box;
         }
 
         .toolbar {
             display: flex;
             gap: 5px;
-            background: #f1f1f1;
-            padding: 10px;
+            background: #f8f9fa;
+            padding: 8px;
             border: 1px solid #ddd;
             border-bottom: none;
             border-radius: 8px 8px 0 0;
+            margin-top: 10px;
         }
 
         .toolbar button {
-            padding: 5px 12px;
+            padding: 5px 10px;
+            cursor: pointer;
             background: white;
             border: 1px solid #ccc;
             border-radius: 4px;
-            cursor: pointer;
             font-size: 0.8rem;
+            font-weight: bold;
         }
 
         textarea {
             width: 100%;
-            height: 200px;
-            padding: 15px;
+            padding: 12px;
             border: 1px solid #ddd;
             border-radius: 0 0 8px 8px;
-            box-sizing: border-box;
+            height: 250px;
             font-family: inherit;
+            font-size: 1rem;
+            box-sizing: border-box;
             resize: vertical;
+        }
+
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            margin: 8px 0;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
         }
     </style>
 </head>
@@ -102,52 +94,67 @@
     <header>
         <h1 style="margin: 0;">Movimento per la riqualificazione<br> dell'ospedale di Cremona</h1>
         <div class="header-contacts-extreme">
-             <a href="#" onclick="logout()" class="contact-item" style="background:#d9534f; border:none;">Esci Manager 🚪</a>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <a href="#" class="contact-item">📩 Email</a>
+                <a href="#" class="contact-item">💰 Raccolta</a>
+                <a href="#" class="contact-item">✍️ Firma</a>
+            </div>
+            <div style="width: 100%; text-align: right; margin-top: 5px; padding-right: 5px;">
+                <a href="#" onclick="logout()" class="login-sub-link" style="color: #d9534f; font-weight: bold;">Esci (Manager)</a>
+            </div>
         </div>
     </header>
 
     <main>
-        <div class="grid-dashboard" id="main-grid" style="margin-top: 30px;"></div>
+        <section class="filter-section">
+            <div class="filter-container" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 20px 0; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <input type="text" id="cercaManager" placeholder="Cerca titolo..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; min-width: 160px;">
+                <select id="fArg" style="padding: 8px;"><option value="tutti">Tutti gli argomenti</option></select>
+                <select id="fAut" style="padding: 8px;"><option value="tutti">Tutti gli autori</option></select>
+                <select id="fMese" style="padding: 8px;">
+                    <option value="tutti">Tutti i mesi</option>
+                    <option value="01">Gennaio</option><option value="02">Febbraio</option><option value="03">Marzo</option>
+                </select>
+                <select id="fData" style="padding: 8px;"><option value="tutti">Tutti gli anni</option></select>
+            </div>
+        </section>
+
+        <div class="grid-dashboard" id="main-grid"></div>
 
         <div id="modalDocumento">
-            <div class="modal-content-box">
-                <h2 id="modalTitle" style="margin-top:0; color: #003366; text-align: center;">Gestione Documento</h2>
+            <div class="volume-section">
+                <h3 id="modalTitle" style="margin-top:0;">Nuovo Documento</h3>
                 <input type="hidden" id="editId">
 
-                <label style="font-weight: bold; font-size: 0.9rem;">Titolo principale</label>
-                <input type="text" id="newTitolo" class="input-full" placeholder="Es: Analisi Ambientale Fase 1">
+                <input type="text" id="newTitolo" placeholder="Titolo">
 
-                <div class="row">
-                    <div>
-                        <label style="font-weight: bold; font-size: 0.9rem;">Autore</label>
-                        <input type="text" id="newAutore" class="input-full" placeholder="Nome o Ente">
-                    </div>
-                    <div>
-                        <label style="font-weight: bold; font-size: 0.9rem;">Argomento</label>
-                        <input type="text" id="newArg" class="input-full" placeholder="Es: Urbanistica">
-                    </div>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="newAutore" placeholder="Autore" style="flex:1;">
+                    <input type="text" id="newArg" placeholder="Argomento" style="flex:1;">
                 </div>
 
-                <label style="font-weight: bold; font-size: 0.9rem;">Data o Anno di riferimento</label>
-                <input type="text" id="newDataManuale" class="input-full" placeholder="Es: Marzo 2026 o 06/03/2026">
+                <input type="text" id="newDataManuale" placeholder="Anno (2024) o Data (05/03/2026)">
 
-                <label style="font-weight: bold; font-size: 0.9rem; color: #003366;">🔗 Collega Documenti Correlati (Ctrl+Click per più file)</label>
-                <select id="newCorrelati" class="select-correlati" multiple></select>
+                <div style="text-align: left; margin-top: 10px;">
+                    <label style="font-size: 0.8rem; color: #666;">Collega Documenti (Ctrl+Click):</label>
+                    <select id="newCorrelati" class="select-correlati" multiple></select>
+                </div>
 
-                <label style="font-weight: bold; font-size: 0.9rem; display: block; margin-top: 15px;">Carica allegato PDF</label>
-                <input type="file" id="newFile" accept=".pdf" style="margin-bottom: 20px;">
+                <div style="margin: 10px 0; text-align: left;">
+                    <label style="font-size: 0.8rem; color: #666;">Carica PDF (Archiviazione Interna):</label>
+                    <input type="file" id="newFile" accept=".pdf">
+                </div>
 
                 <div class="toolbar">
-                    <button onclick="insertTag('h3')">Titolo Sezione</button>
-                    <button onclick="insertTag('p')">Paragrafo</button>
-                    <button onclick="insertTag('ul')">Lista</button>
-                    <button onclick="insertTag('li')">Punto Elenco</button>
+                    <button onclick="insertTag('h3')">Titolo</button>
+                    <button onclick="insertTag('ul')">Elenco</button>
+                    <button onclick="insertTag('li')">Punto</button>
                 </div>
-                <textarea id="newTesto" placeholder="Inserisci il contenuto descrittivo qui..."></textarea>
+                <textarea id="newTesto" placeholder="Contenuto del documento..."></textarea>
 
-                <div style="display:flex; gap:15px; margin-top:25px;">
-                    <button onclick="salvaOnline()" class="contact-item" style="background:#28a745; flex:2; justify-content:center; padding: 15px; font-size: 1rem;">Salva Documento Online</button>
-                    <button onclick="chiudiModal()" class="contact-item" style="background:#6c757d; flex:1; justify-content:center; padding: 15px; font-size: 1rem;">Chiudi</button>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button onclick="salvaOnline()" class="contact-item" style="background:#28a745; flex:1; justify-content:center; border:none; cursor:pointer;">Salva Online</button>
+                    <button onclick="chiudiModal()" class="contact-item" style="background:#6c757d; flex:1; justify-content:center; border:none; cursor:pointer;">Annulla</button>
                 </div>
             </div>
         </div>
@@ -169,18 +176,19 @@
             const { data } = await _supabase.from('documenti').select('*').order('timestamp', { ascending: false });
             docsGlobali = data || [];
             const grid = document.getElementById('main-grid');
-            let html = `<div class="card" onclick="apriModal()" style="cursor:pointer; border: 2px dashed #28a745; background: #f9fff9;">
-                            <div style="font-size: 3rem; color: #28a745;">+</div>
-                            <h3 style="color: #28a745;">Aggiungi Nuovo</h3>
+            let html = `<div class="card" onclick="apriModal()" style="cursor: pointer; border: 1px solid #eee; background: white; padding: 15px; min-height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+                            <div style="font-size: 2.2rem; color: #28a745; margin-bottom: 10px;">➕</div>
+                            <h3 style="color: #28a745; margin: 5px 0; font-size: 1.1rem;">Aggiungi Nuovo</h3>
                         </div>`;
             if (data) {
                 html += data.map(d => `
-                    <div class="card">
-                        <button onclick="eliminaDoc('${d.id}')" style="position:absolute; top:10px; right:10px; background:red; color:white; border:none; border-radius:50%; width:25px; height:25px; cursor:pointer;">✕</button>
-                        <div style="font-size: 2.2rem;">📄</div>
-                        <h3>${d.titolo}</h3>
-                        <p style="font-size:0.8rem; color:#666;">${d.argomento} - ${d.autore}<br>${d.data}</p>
-                        <button onclick="preparaModifica('${d.id}')" class="contact-item" style="width:100%; justify-content:center; background:#003366; margin-top:auto;">Gestione →</button>
+                    <div class="card" style="padding: 15px; min-height: 200px; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                        <button onclick="eliminaDoc('${d.id}')" style="position:absolute; top:10px; right:10px; background:#d9534f; color:white; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer;">✕</button>
+                        <div style="font-size: 2.2rem; margin-bottom: 10px;">📄</div>
+                        <h3 style="margin: 5px 0; font-size: 1.1rem;">${d.titolo}</h3>
+                        <p style="color: #666; font-size: 0.8rem; margin-bottom: 10px;"><strong>${d.argomento}</strong><br>${d.autore}<br><span style="color: #999;">Data: ${d.data}</span></p>
+                        ${d.pdf_url ? '<span style="color:green; font-size:0.7rem; font-weight:bold;">📁 PDF ARCHIVIATO</span>' : ''}
+                        <button onclick="preparaModifica('${d.id}')" class="contact-item" style="margin-top: auto; padding: 8px 15px; font-size: 0.85rem; width: 100%; justify-content: center; background: #003366; border: none; cursor: pointer;">Gestione →</button>
                     </div>`).join('');
             }
             grid.innerHTML = html;
@@ -200,7 +208,7 @@
                 if (!upErr) pdfPath = name;
             }
 
-            const correlati = Array.from(document.getElementById('newCorrelati').selectedOptions).map(o => o.value);
+            const correlatiIds = Array.from(document.getElementById('newCorrelati').selectedOptions).map(o => o.value);
             
             const payload = {
                 titolo: document.getElementById('newTitolo').value,
@@ -208,7 +216,7 @@
                 argomento: document.getElementById('newArg').value || "Generale",
                 data: document.getElementById('newDataManuale').value || new Date().toLocaleDateString('it-IT'),
                 testo_completo: document.getElementById('newTesto').value,
-                correlati: correlati,
+                correlati: correlatiIds,
                 timestamp: Date.now()
             };
 
@@ -216,13 +224,13 @@
             const id = document.getElementById('editId').value;
             if (id) await _supabase.from('documenti').update(payload).eq('id', id);
             else await _supabase.from('documenti').insert([payload]);
-            
             chiudiModal(); rendering();
         }
 
         async function preparaModifica(id) {
             const { data } = await _supabase.from('documenti').select('*').eq('id', id).single();
             if (data) {
+                document.getElementById('modalTitle').innerText = "Modifica Documento";
                 document.getElementById('editId').value = data.id;
                 document.getElementById('newTitolo').value = data.titolo;
                 document.getElementById('newAutore').value = data.autore;
