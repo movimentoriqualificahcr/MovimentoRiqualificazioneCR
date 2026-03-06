@@ -60,7 +60,6 @@
             display: flex;
             flex-direction: column;
             padding: 0;
-            /* Rimosso padding per gestire meglio l'iframe */
             overflow: hidden;
         }
 
@@ -77,19 +76,16 @@
             flex: 1;
             margin: 10px 25px 25px 25px;
             overflow: hidden;
-            /* Taglia tutto ciò che esce */
             border-radius: 8px;
             border: 1px solid #ddd;
             position: relative;
         }
 
         iframe {
-            /* Allarghiamo per spingere la barra verticale fuori a destra */
             width: calc(100% + 20px);
             height: 100%;
             border: none;
             display: block;
-            /* Impedisce all'iframe di causare scorrimento orizzontale nel padre */
             position: absolute;
             left: 0;
             top: 0;
@@ -114,13 +110,30 @@
             background: white;
             color: #003366;
         }
+
+        /* Stile per i link correlati */
+        .correlati-link {
+            text-decoration: none;
+            color: #0056b3;
+            font-size: 0.85rem;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 12px;
+            line-height: 1.3;
+            transition: 0.2s;
+        }
+
+        .correlati-link:hover {
+            color: #003366;
+            text-decoration: underline;
+        }
     </style>
 </head>
 
 <body class="home-page">
     <header>
         <a href="index.html" class="btn-back-header">← Torna alla lista</a>
-        <h1 style="margin: 0;">Movimento per la riqualificazione<br> dell'ospedale di Cremona</h1>
+        <h1 style="margin: 0; text-align: center;">Movimento per la riqualificazione<br> dell'ospedale di Cremona</h1>
     </header>
 
     <main>
@@ -139,13 +152,31 @@
             const container = document.getElementById('documento-container');
 
             if (data) {
+                // RECUPERO DOCUMENTI CORRELATI
+                let correlatiHtml = "";
+                if (data.correlati && data.correlati.length > 0) {
+                    const { data: docsCorrelati } = await _supabase
+                        .from('documenti')
+                        .select('id, titolo')
+                        .in('id', data.correlati);
+
+                    if (docsCorrelati && docsCorrelati.length > 0) {
+                        correlatiHtml = `
+                            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                                <h4 style="font-size: 0.8rem; color: #003366; text-transform: uppercase; margin-bottom: 12px;">Documenti Correlati</h4>
+                                ${docsCorrelati.map(dc => `
+                                    <a href="documento.html?id=${dc.id}" class="correlati-link">📄 ${dc.titolo}</a>
+                                `).join('')}
+                            </div>`;
+                    }
+                }
+
                 let pdfSection = "";
                 if (data.pdf_url) {
                     const { data: publicUrlData } = _supabase.storage
                         .from('pdf_riservati')
                         .getPublicUrl(data.pdf_url);
 
-                    // FitH adatta il PDF alla larghezza della maschera
                     const cleanPdfUrl = publicUrlData.publicUrl + "#toolbar=0&navpanes=0&scrollbar=0&view=FitH";
 
                     pdfSection = `
@@ -162,6 +193,8 @@
                             <p><strong>Autore:</strong><br>${data.autore}</p>
                             <p><strong>Data:</strong><br>${data.data}</p>
                         </div>
+                        
+                        ${correlatiHtml}
                     </div>
                     
                     <div class="main-content">
@@ -169,7 +202,7 @@
                         ${pdfSection}
                     </div>`;
             } else {
-                container.innerHTML = "<h3>Documento non trovato</h3>";
+                container.innerHTML = "<h3 style='padding: 20px;'>Documento non trovato</h3>";
             }
         }
     </script>
