@@ -78,7 +78,31 @@
                 popolaTendine(data);
             }
         }
+async function caricaDocumentiPubblici() {
+    const { data, error } = await _supabase
+        .from('documenti')
+        .select('*')
+        .order('timestamp', { ascending: false });
 
+    if (data) {
+        const grid = document.getElementById('main-grid');
+        grid.innerHTML = data.map(d => `
+            <div class="card" style="padding: 20px; display: flex; flex-direction: column; align-items: center; text-align: center; transition: transform 0.2s;">
+                <div style="font-size: 2.5rem; margin-bottom: 10px;">📄</div>
+                <h3 style="margin: 10px 0; font-size: 1.2rem; color: #003366;">${d.titolo}</h3>
+                <p style="color: #666; font-size: 0.85rem; margin-bottom: 20px;">
+                    <strong>${d.argomento}</strong><br>
+                    ${d.autore}<br>
+                    <span style="color: #999;">Data: ${d.data}</span>
+                </p>
+                
+                <a href="documento.html?id=${d.id}" class="btn-consulta">
+                    Consulta documento <span>→</span>
+                </a>
+            </div>
+        `).join('');
+    }
+}
         function popolaTendine(docs) {
             const riempi = (id, chiave) => {
                 const s = document.getElementById(id);
@@ -138,5 +162,6 @@
         window.onload = rendering;
     </script>
 </body>
+
 
 </html>
