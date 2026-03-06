@@ -202,3 +202,77 @@ header h1 {
     border: 1px solid #ddd;
     font-size: 0.9rem;
 }
+
+/* --- REGOLE PER IL SITO RESPONSIVE --- */
+
+/* 1. Griglia delle Card: si adatta al numero di colonne in base allo spazio */
+.grid-dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+/* 2. Adattamenti per schermi piccoli (Mobile e Tablet verticali) */
+@media (max-width: 768px) {
+    
+    /* Header più compatto */
+    header h1 {
+        font-size: 1.2rem;
+        padding: 0 10px;
+    }
+
+    .header-contacts-extreme {
+        position: static;
+        text-align: center;
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Filtri impilati verticalmente */
+    .filter-container {
+        flex-direction: column;
+        width: 90%;
+        margin: 10px auto;
+        gap: 10px;
+    }
+
+    .filter-container input, 
+    .filter-container select {
+        width: 100% !important;
+        min-width: unset !important;
+    }
+
+    /* Modal (finestra di gestione) adattata allo schermo */
+    .volume-section {
+        width: 95% !important;
+        padding: 15px !important;
+        margin: 10px;
+    }
+
+    /* Tabella e Anteprima: una sopra l'altra invece che affiancate */
+    .wrapper-correlati {
+        flex-direction: column;
+        height: auto !important;
+    }
+
+    .container-tabella-correlati {
+        width: 100%;
+        max-height: 200px;
+    }
+
+    .anteprima-embed {
+        width: 100%;
+        height: 300px;
+        margin-top: 15px;
+    }
+
+    /* Input del modal a tutta larghezza */
+    .volume-section input[type="text"], 
+    .volume-section textarea {
+        font-size: 16px; /* Evita lo zoom automatico su iPhone */
+    }
+}
