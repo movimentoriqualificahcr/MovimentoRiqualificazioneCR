@@ -62,22 +62,26 @@
         const SUPABASE_KEY = 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function rendering() {
-            const { data, error } = await _supabase.from('documenti').select('*').order('timestamp', { ascending: false });
-            const grid = document.getElementById('main-grid');
+async function rendering() {
+    const { data, error } = await _supabase.from('documenti').select('*').order('timestamp', { ascending: false });
+    const grid = document.getElementById('main-grid');
 
-            if (data) {
-                grid.innerHTML = data.map(d => `
-                    <div class="card" data-arg="${d.argomento}" data-aut="${d.autore}" data-data="${d.data}" style="padding: 15px; min-height: 200px; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                        <div style="font-size: 2.2rem; margin-bottom: 10px;">📄</div>
-                        <h3 style="margin: 5px 0; font-size: 1.1rem;">${d.titolo}</h3>
-                        <p style="color: #666; font-size: 0.8rem; margin-bottom: 10px;"><strong>${d.argomento}</strong><br>${d.autore}<br><span style="color: #999;">Data: ${d.data}</span></p>
-                        <a href="documento.html?id=${d.id}" class="contact-item" style="margin-top: auto; padding: 8px 15px; font-size: 0.85rem; width: 100%; justify-content: center; background: #003366; border: none; cursor: pointer; text-decoration: none; color: white;">Consulta →</a>
-                    </div>
-                `).join('');
-                popolaTendine(data);
-            }
-        }
+    if (data) {
+        grid.innerHTML = data.map(d => `
+            <div class="card" data-arg="${d.argomento}" data-aut="${d.autore}" data-data="${d.data}" style="padding: 15px; min-height: 200px; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                <div style="font-size: 2.2rem; margin-bottom: 10px;">📄</div>
+                <h3 style="margin: 5px 0; font-size: 1.1rem;">${d.titolo}</h3>
+                <p style="color: #666; font-size: 0.8rem; margin-bottom: 10px;"><strong>${d.argomento}</strong><br>${d.autore}<br><span style="color: #999;">Data: ${d.data}</span></p>
+                
+                <a href="documento.html?id=${d.id}" class="contact-item" 
+                   style="margin-top: auto; padding: 8px 15px; font-size: 0.85rem; width: 100%; justify-content: center; background: #003366; border: none; cursor: pointer; text-decoration: none; color: white; box-sizing: border-box;">
+                   Consulta documento →
+                </a>
+            </div>
+        `).join('');
+        popolaTendine(data);
+    }
+}
 async function caricaDocumentiPubblici() {
     const { data, error } = await _supabase
         .from('documenti')
@@ -165,3 +169,4 @@ async function caricaDocumentiPubblici() {
 
 
 </html>
+
