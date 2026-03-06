@@ -192,10 +192,21 @@
             });
         }
 
-        function popolaSelettore(selezionati = []) {
-            const s = document.getElementById('newCorrelati');
-            s.innerHTML = docsGlobali.map(d => `<option value="${d.id}" ${selezionati.includes(d.id) ? 'selected' : ''}>${d.titolo}</option>`).join('');
-        }
+    function popolaSelettore(selezionati = []) {
+    const s = document.getElementById('newCorrelati');
+    const currentId = document.getElementById('editId').value;
+
+    // Filtriamo i documenti per non collegare un file a se stesso
+    s.innerHTML = docsGlobali
+        .filter(d => d.id !== currentId) 
+        .map(d => {
+            // Creiamo una descrizione chiara: Titolo | Data | Argomento
+            const infoAggiuntive = `${d.data} - ${d.argomento}`;
+            return `<option value="${d.id}" ${selezionati.includes(d.id) ? 'selected' : ''}>
+                ${d.titolo} (${infoAggiuntive})
+            </option>`;
+        }).join('');
+}
 
 async function salvaOnline() {
     const file = document.getElementById('newFile').files[0];
@@ -299,6 +310,7 @@ async function salvaOnline() {
     </script>
 </body>
 </html>
+
 
 
 
