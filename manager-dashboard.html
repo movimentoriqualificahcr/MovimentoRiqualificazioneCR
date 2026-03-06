@@ -225,34 +225,31 @@ async function salvaOnline() {
 
     let finalId = currentId;
 
-    // 2. SALVATAGGIO DOCUMENTO PRINCIPALE
+    // 2. SALVATAGGIO DOCUMENTO PRINCIPALE (A)
     if (currentId) {
-        // Se stiamo modificando un documento esistente
         await _supabase.from('documenti').update(payload).eq('id', currentId);
     } else {
-        // Se è un nuovo documento, lo inseriamo e recuperiamo l'ID generato
-        const { data: insertData, error: insErr } = await _supabase.from('documenti').insert([payload]).select();
-        if (insErr) {
-            console.error("Errore inserimento:", insErr);
-            return;
-        }
+        const { data: insertData } = await _supabase.from('documenti').insert([payload]).select();
         if (insertData && insertData.length > 0) finalId = insertData[0].id;
     }
 
-    // 3. LOGICA "VICEVERSA" (AUTOMATISMO BIDIREZIONALE)
+    // 3. LOGICA VICEVERSA: Aggiorna i documenti correlati selezionati (B)
     if (finalId && selectedCorrelatiIds.length > 0) {
         for (const otherId of selectedCorrelatiIds) {
-            // Recuperiamo i correlati attuali del documento "destinatario"
-            const { data: otherDoc } = await _supabase.from('documenti').select('correlati').eq('id', otherId).single();
+            // Recupera i correlati attuali del documento B
+            const { data: otherDoc } = await _supabase.from('documenti')
+                .select('correlati')
+                .eq('id', otherId)
+                .single();
             
             if (otherDoc) {
                 let existingCorrelati = otherDoc.correlati || [];
                 
-                // Se il link non esiste già, lo aggiungiamo
+                // Se il Documento A non è già presente in B, lo aggiungiamo
                 if (!existingCorrelati.includes(finalId)) {
                     existingCorrelati.push(finalId);
                     
-                    // Aggiorniamo l'altro documento aggiungendo il riferimento al file corrente
+                    // Scriviamo nel Documento B che ora è collegato ad A
                     await _supabase.from('documenti')
                         .update({ correlati: existingCorrelati })
                         .eq('id', otherId);
@@ -302,5 +299,6 @@ async function salvaOnline() {
     </script>
 </body>
 </html>
+
 
 
