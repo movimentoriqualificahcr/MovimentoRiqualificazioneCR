@@ -117,28 +117,21 @@ header h1 {
     text-align: center;
 }
 
+/* --- FIX POSIZIONAMENTO PULSANTE TORNA ALLA LISTA --- */
 .btn-back {
     position: absolute;
     left: 25px;
+    top: 50%; /* Centra verticalmente rispetto all'header */
+    transform: translateY(-50%);
     color: white;
     text-decoration: none;
     border: 1px solid white;
-    padding: 6px 12px;
-    border-radius: 5px;
-    font-size: 0.8rem;
-}
-
-/* Stile per il pulsante nell'header (già parzialmente presente nei tuoi file) */
-.btn-back {
-    position: absolute;
-    left: 25px;
-    color: white;
-    text-decoration: none;
-    border: 1px solid white;
-    padding: 6px 12px;
-    border-radius: 5px;
-    font-size: 0.8rem;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: bold;
     transition: 0.3s;
+    z-index: 1001; /* Sopra l'header */
 }
 
 .btn-back:hover {
@@ -150,15 +143,12 @@ header h1 {
 .doc-content h3 {
     color: #003366;
     border-bottom: none;
-    /* Rimuove la linea sotto i titoli h3 */
     padding-bottom: 0;
     margin-top: 30px;
 }
 
 .doc-container {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    /* Ombra più leggera per un look pulito */
-
 }
 
 .btn-consulta {
@@ -205,7 +195,6 @@ header h1 {
 
 /* --- REGOLE PER IL SITO RESPONSIVE --- */
 
-/* 1. Griglia delle Card: si adatta al numero di colonne in base allo spazio */
 .grid-dashboard {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -213,13 +202,26 @@ header h1 {
     padding: 20px;
 }
 
-/* 2. Adattamenti per schermi piccoli (Mobile e Tablet verticali) */
 @media (max-width: 768px) {
     
-    /* Header più compatto */
+    /* FIX PULSANTE BACK SU MOBILE */
+    .btn-back {
+        position: static; /* Si posiziona naturalmente nel flusso */
+        transform: none;
+        display: inline-block;
+        margin: 10px 0;
+        text-align: center;
+    }
+
+    header {
+        flex-direction: column;
+        padding: 15px 0;
+    }
+
     header h1 {
         font-size: 1.2rem;
         padding: 0 10px;
+        max-width: 90%;
     }
 
     .header-contacts-extreme {
@@ -232,7 +234,6 @@ header h1 {
         gap: 10px;
     }
 
-    /* Filtri impilati verticalmente */
     .filter-container {
         flex-direction: column;
         width: 90%;
@@ -246,14 +247,12 @@ header h1 {
         min-width: unset !important;
     }
 
-    /* Modal (finestra di gestione) adattata allo schermo */
     .volume-section {
         width: 95% !important;
         padding: 15px !important;
         margin: 10px;
     }
 
-    /* Tabella e Anteprima: una sopra l'altra invece che affiancate */
     .wrapper-correlati {
         flex-direction: column;
         height: auto !important;
@@ -270,9 +269,8 @@ header h1 {
         margin-top: 15px;
     }
 
-    /* Input del modal a tutta larghezza */
     .volume-section input[type="text"], 
     .volume-section textarea {
-        font-size: 16px; /* Evita lo zoom automatico su iPhone */
+        font-size: 16px;
     }
 }
