@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Area Manager - Ospedale Cremona</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -21,7 +22,7 @@
             gap: 15px;
             margin-top: 10px;
             align-items: stretch;
-            height: 350px; /* Altezza aumentata per vedere bene il documento */
+            height: 350px; 
         }
 
         .container-tabella-correlati {
@@ -54,6 +55,16 @@
         .tabella-correlati tr.selected { background-color: #e3f2fd; }
 
         .card { position: relative; }
+
+        /* Stile per il box upload */
+        .upload-box {
+            margin: 15px 0; 
+            text-align: left; 
+            background: #f8f9fa; 
+            padding: 10px; 
+            border-radius: 8px; 
+            border: 1px dashed #ccc;
+        }
     </style>
 </head>
 
@@ -101,7 +112,7 @@
                 <input type="text" id="newDataManuale" placeholder="Data (es. 06/03/2026)" style="width:100%; margin:8px 0; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
                 
                 <div style="text-align: left; margin-top: 10px;">
-                    <label style="font-size: 0.8rem; color: #666; font-weight: bold;">Seleziona e Anteprima Immediata:</label>
+                    <label style="font-size: 0.8rem; color: #666; font-weight: bold;">Seleziona e Anteprima Correlati:</label>
                     <div class="wrapper-correlati">
                         <div class="container-tabella-correlati">
                             <table class="tabella-correlati">
@@ -117,13 +128,18 @@
                         </div>
                         <div class="anteprima-embed" id="areaAnteprima">
                             <div style="display:flex; height:100%; align-items:center; justify-content:center; color:#999;">
-                                Seleziona un file per caricarlo qui
+                                Seleziona un file per l'anteprima
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="toolbar" style="margin-top: 15px;">
+                <div class="upload-box">
+                    <label style="font-size: 0.8rem; color: #666; font-weight: bold; display: block; margin-bottom: 5px;">Allega PDF:</label>
+                    <input type="file" id="newFile" accept=".pdf" style="width:100%; font-size: 0.85rem;">
+                </div>
+
+                <div class="toolbar">
                     <button onclick="insertTag('h3')">Titolo</button>
                     <button onclick="insertTag('ul')">Elenco</button>
                     <button onclick="insertTag('li')">Punto</button>
@@ -169,32 +185,21 @@
                         <p style="color: #666; font-size: 0.8rem; margin-bottom: 10px;"><strong>${d.argomento}</strong><br>${d.autore}<br><span style="color: #999;">Data: ${d.data}</span></p>
                         <button onclick="preparaModifica('${d.id}')" class="contact-item" style="margin-top: auto; padding: 8px 15px; font-size: 0.85rem; width: 100%; justify-content: center; background: #003366; border: none; cursor: pointer;">Gestione →</button>
                     </div>`).join('');
-                popolaTendine(data);
-                aggiornaSuggerimenti(data);
             }
             grid.innerHTML = html;
         }
 
-      async function caricaAnteprima(id) {
-    const area = document.getElementById('areaAnteprima');
-    area.innerHTML = `<div style="display:flex; height:100%; align-items:center; justify-content:center; color:#003366; font-size:0.8rem;">Caricamento documento...</div>`;
-    
-    // Recuperiamo i dati del documento per ottenere l'URL del PDF
-    const { data: d, error } = await _supabase.from('documenti').select('pdf_url').eq('id', id).single();
-    
-    if (d && d.pdf_url) {
-        // Otteniamo l'URL pubblico dal bucket di Supabase
-        const { data: publicUrlData } = _supabase.storage
-            .from('pdf_riservati')
-            .getPublicUrl(d.pdf_url);
-
-        // Visualizziamo solo il PDF nell'iframe
-        // toolbar=0 nasconde i controlli extra del browser per una visualizzazione pulita
-        area.innerHTML = `<iframe src="${publicUrlData.publicUrl}#toolbar=0&navpanes=0" style="width:100%; height:100%; border:none;"></iframe>`;
-    } else {
-        area.innerHTML = `<div style="display:flex; height:100%; align-items:center; justify-content:center; color:#d9534f; font-size:0.8rem; padding:20px;">Nessun PDF allegato a questo documento</div>`;
-    }
-}
+        async function caricaAnteprima(id) {
+            const area = document.getElementById('areaAnteprima');
+            area.innerHTML = `<div style="display:flex; height:100%; align-items:center; justify-content:center; color:#003366; font-size:0.8rem;">Caricamento documento...</div>`;
+            const { data: d } = await _supabase.from('documenti').select('pdf_url').eq('id', id).single();
+            if (d && d.pdf_url) {
+                const { data: publicUrlData } = _supabase.storage.from('pdf_riservati').getPublicUrl(d.pdf_url);
+                area.innerHTML = `<iframe src="${publicUrlData.publicUrl}#toolbar=0&navpanes=0"></iframe>`;
+            } else {
+                area.innerHTML = `<div style="display:flex; height:100%; align-items:center; justify-content:center; color:#d9534f; font-size:0.8rem; padding:20px;">Nessun PDF disponibile</div>`;
+            }
+        }
 
         function toggleSelezione(id) {
             const index = correlatiSelezionati.indexOf(id);
@@ -207,7 +212,7 @@
                 correlatiSelezionati.push(id);
                 row.classList.add('selected'); checkbox.checked = true;
             }
-            caricaAnteprima(id); // Caricamento immediato al clic
+            caricaAnteprima(id); 
         }
 
         function popolaTabellaCorrelati(selezionati = []) {
@@ -242,6 +247,16 @@
         }
 
         async function salvaOnline() {
+            const file = document.getElementById('newFile').files[0];
+            let pdfPath = null;
+            
+            // Caricamento PDF se selezionato
+            if (file) {
+                const name = `${Date.now()}_${file.name}`;
+                const { data: upData, error: upErr } = await _supabase.storage.from('pdf_riservati').upload(name, file);
+                if (!upErr) pdfPath = name;
+            }
+
             const currentId = document.getElementById('editId').value;
             const payload = {
                 titolo: document.getElementById('newTitolo').value,
@@ -252,16 +267,27 @@
                 correlati: correlatiSelezionati,
                 timestamp: Date.now()
             };
+
+            if (pdfPath) payload.pdf_url = pdfPath;
             let finalId = currentId;
-            if (currentId) { await _supabase.from('documenti').update(payload).eq('id', currentId); } 
-            else { const { data } = await _supabase.from('documenti').insert([payload]).select(); if (data) finalId = data[0].id; }
-            
+
+            if (currentId) {
+                await _supabase.from('documenti').update(payload).eq('id', currentId);
+            } else {
+                const { data: insertData } = await _supabase.from('documenti').insert([payload]).select();
+                if (insertData) finalId = insertData[0].id;
+            }
+
+            // Logica Viceversa
             if (finalId && correlatiSelezionati.length > 0) {
                 for (const otherId of correlatiSelezionati) {
                     const { data: otherDoc } = await _supabase.from('documenti').select('correlati').eq('id', otherId).single();
                     if (otherDoc) {
                         let existing = otherDoc.correlati || [];
-                        if (!existing.includes(finalId)) { existing.push(finalId); await _supabase.from('documenti').update({ correlati: existing }).eq('id', otherId); }
+                        if (!existing.includes(finalId)) {
+                            existing.push(finalId);
+                            await _supabase.from('documenti').update({ correlati: existing }).eq('id', otherId);
+                        }
                     }
                 }
             }
@@ -271,6 +297,7 @@
         async function preparaModifica(id) {
             const { data } = await _supabase.from('documenti').select('*').eq('id', id).single();
             if (data) {
+                document.getElementById('modalTitle').innerText = "Modifica Documento";
                 document.getElementById('editId').value = data.id;
                 document.getElementById('newTitolo').value = data.titolo;
                 document.getElementById('newAutore').value = data.autore;
@@ -284,6 +311,7 @@
         }
 
         function apriModal() {
+            document.getElementById('modalTitle').innerText = "Nuovo Documento";
             document.getElementById('editId').value = ""; document.getElementById('newTitolo').value = ""; document.getElementById('newTesto').value = "";
             popolaTabellaCorrelati([]); document.getElementById('modalDocumento').style.display = 'flex';
             document.getElementById('areaAnteprima').innerHTML = `<div style="display:flex; height:100%; align-items:center; justify-content:center; color:#999;">Seleziona un file per l'anteprima</div>`;
@@ -292,10 +320,6 @@
         function chiudiModal() { document.getElementById('modalDocumento').style.display = 'none'; }
         async function eliminaDoc(id) { if(confirm("Eliminare?")) { await _supabase.from('documenti').delete().eq('id', id); rendering(); } }
         function insertTag(t) { const a = document.getElementById('newTesto'); a.value += `<${t}></${t}>`; }
-        function popolaTendine(docs) { /* logica tendine */ }
-        function applicaFiltri() { /* logica filtri */ }
-        function aggiornaSuggerimenti(docs) { /* logica datalist */ }
     </script>
 </body>
 </html>
-
