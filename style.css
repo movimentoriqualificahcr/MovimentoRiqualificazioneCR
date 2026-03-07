@@ -274,3 +274,46 @@ header h1 {
         font-size: 16px;
     }
 }
+
+/* --- FIX DEFINITIVO PULSANTE TORNA ALLA LISTA --- */
+.btn-back {
+    position: absolute !important; /* Forza la posizione assoluta */
+    left: 20px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    background-color: transparent !important;
+    color: white !important; /* Colore bianco per risaltare sul blu */
+    text-decoration: none !important;
+    border: 1px solid white !important; /* Bordo bianco sottile */
+    padding: 8px 15px !important;
+    border-radius: 6px !important;
+    font-size: 0.85rem !important;
+    font-weight: bold !important;
+    z-index: 2000 !important; /* Lo porta sopra tutto nell'header */
+    display: flex !important;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+    background-color: white !important;
+    color: #003366 !important; /* Inverte i colori al passaggio del mouse */
+}
+
+/* --- ADATTAMENTO MOBILE PER IL PULSANTE --- */
+@media (max-width: 768px) {
+    .btn-back {
+        position: relative !important;
+        left: 0 !important;
+        top: 0 !important;
+        transform: none !important;
+        margin: 10px auto !important;
+        display: inline-flex !important;
+    }
+    
+    header {
+        flex-direction: column !important;
+        padding-top: 10px !important;
+    }
+}
+
