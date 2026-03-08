@@ -8,7 +8,7 @@ body {
     padding-top: 120px;
 }
 
-/* --- HEADER E PULSANTE RITORNO --- */
+/* --- HEADER --- */
 header {
     background: #003366;
     color: white;
@@ -28,10 +28,58 @@ header h1 {
     margin: 0;
     font-size: 1.4rem;
     text-align: center;
-    max-width: 50%;
+    max-width: 45%; /* Leggermente ridotto per non toccare i bottoni */
 }
 
-/* FIX DEFINITIVO PULSANTE RITORNO */
+/* --- PULSANTI CONTATTI (Email, Raccolta, Firma) --- */
+.header-contacts-extreme {
+    position: absolute !important;
+    right: 25px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px; /* Spazio tra i bottoni e il link login */
+}
+
+/* Trasformazione link in Bottoni a Pillola */
+.contact-item {
+    background-color: #0056b3 !important; 
+    color: white !important;
+    padding: 8px 18px !important;
+    border-radius: 50px !important; 
+    font-size: 0.75rem !important;
+    font-weight: bold !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    text-decoration: none !important;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.contact-item:hover {
+    background-color: white !important;
+    color: #003366 !important;
+    transform: scale(1.05);
+}
+
+/* --- AREA MANAGER LOGIN (Sistemazione colore e posizione) --- */
+.login-sub-link {
+    color: rgba(255, 255, 255, 0.7) !important; /* Grigio chiaro per non distrarre dai bottoni */
+    font-size: 0.7rem !important;
+    font-weight: bold !important;
+    text-decoration: none !important;
+    margin-top: 4px;
+    display: block;
+}
+
+.login-sub-link:hover {
+    color: white !important;
+    text-decoration: underline !important;
+}
+
+/* --- PULSANTE RITORNO (Nelle pagine interne) --- */
 header a.btn-back {
     position: absolute !important;
     left: 20px !important;
@@ -48,28 +96,12 @@ header a.btn-back {
     z-index: 2000 !important;
     display: flex !important;
     align-items: center !important;
+    transition: all 0.3s ease;
 }
 
 header a.btn-back:hover {
     background-color: white !important;
     color: #003366 !important;
-}
-
-/* --- LOGIN LINK NELL'HEADER --- */
-.header-contacts-extreme {
-    position: absolute;
-    right: 25px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-}
-
-.login-sub-link {
-    color: rgba(255, 255, 255, 0.8) !important;
-    font-size: 0.75rem !important;
-    font-weight: bold !important;
-    text-decoration: none !important;
-    margin-top: 5px;
 }
 
 /* --- CARD DOCUMENTI --- */
@@ -97,12 +129,33 @@ header a.btn-back:hover {
     color: inherit;
 }
 
-.card:hover { transform: translateY(-8px); box-shadow: 0 12px 30px rgba(0,0,0,0.12); }
+.card:hover { 
+    transform: translateY(-8px); 
+    box-shadow: 0 12px 30px rgba(0,0,0,0.12); 
+}
 
 /* --- RESPONSIVE --- */
 @media (max-width: 768px) {
     header { flex-direction: column; padding: 15px 0; height: auto; }
-    header a.btn-back { position: relative !important; left: 0 !important; top: 0 !important; transform: none !important; margin-bottom: 10px !important; }
-    .header-contacts-extreme { position: static; align-items: center; margin-top: 10px; }
-    .wrapper-correlati { flex-direction: column; height: auto !important; }
+    
+    header h1 { 
+        max-width: 90%; 
+        font-size: 1.2rem; 
+        margin: 10px 0; 
+    }
+
+    header a.btn-back { 
+        position: relative !important; 
+        left: 0 !important; 
+        top: 0 !important; 
+        transform: none !important; 
+        margin-bottom: 15px !important; 
+    }
+
+    .header-contacts-extreme { 
+        position: static; 
+        align-items: center; 
+        margin-top: 10px; 
+        transform: none;
+    }
 }
