@@ -1,94 +1,54 @@
-/* --- RESET E BODY --- */
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.6;
-    color: #333;
-    background-color: #f0f2f5;
-    margin: 0;
-    padding-top: 120px;
+/* RESET TOTALE PER I PULSANTI NELL'HEADER */
+header a, 
+header a:visited, 
+header .btn-back, 
+header .contact-item {
+    text-decoration: none !important;
+    color: white !important;
+    outline: none !important;
 }
 
-/* --- HEADER FISSO --- */
-header {
-    background: #003366;
-    color: white;
-    padding: 20px 0;
-    position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: 1000;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 80px;
-}
-
-header h1 {
-    margin: 0;
-    font-size: 1.4rem;
-    text-align: center;
-    max-width: 60%;
-}
-
-/* --- FIX PULSANTE RITORNO (Sostituisce il viola piccolo) --- */
-.btn-back {
+/* STILE DEFINITIVO PULSANTE RITORNO (Sostituisce il viola) */
+header a.btn-back {
     position: absolute !important;
     left: 20px !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
     background-color: rgba(255, 255, 255, 0.15) !important;
-    color: white !important;
-    text-decoration: none !important;
     border: 1.5px solid white !important;
-    padding: 10px 20px !important;
+    padding: 10px 22px !important;
     border-radius: 50px !important;
-    font-size: 0.9rem !important;
+    font-size: 0.85rem !important;
     font-weight: bold !important;
-    z-index: 2000 !important;
+    z-index: 9999 !important; /* Forza il pulsante in primo piano */
     display: flex !important;
-    align-items: center;
-    transition: all 0.3s ease !important;
+    align-items: center !important;
 }
 
-.btn-back:hover {
+header a.btn-back:hover {
     background-color: white !important;
     color: #003366 !important;
 }
 
-/* --- CARD DOCUMENTI MODERNE --- */
+/* STILE CARD DOCUMENTI (Moderno e Pulito) */
 .grid-dashboard {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 30px;
-    padding: 30px;
+    padding: 40px 20px;
     max-width: 1200px;
     margin: 0 auto;
 }
 
 .card {
-    background: white;
-    padding: 30px 20px;
-    border-radius: 20px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    border: 1px solid #eee;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    text-decoration: none;
-    color: inherit;
+    background: white !important;
+    border-radius: 20px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06) !important;
+    border: 1px solid #eee !important;
+    padding: 30px 20px !important;
+    transition: transform 0.3s ease !important;
 }
 
 .card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
-}
-
-/* --- RESPONSIVE --- */
-@media (max-width: 768px) {
-    header { flex-direction: column; padding: 15px 0; height: auto; }
-    .btn-back { position: relative !important; left: 0 !important; top: 0 !important; transform: none !important; margin-bottom: 10px !important; }
-    header h1 { font-size: 1.1rem; }
+    transform: translateY(-8px) !important;
 }
