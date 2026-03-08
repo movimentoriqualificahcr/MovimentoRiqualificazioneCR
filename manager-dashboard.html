@@ -296,13 +296,21 @@
             }
         }
 
-        function apriModal() {
-            document.getElementById('modalTitle').innerText = "Nuovo Documento";
-            document.getElementById('editId').value = ""; 
-            document.getElementById('newTitolo').value = "";
-            popolaTabellaCorrelati([]); 
-            document.getElementById('modalDocumento').style.display = 'flex';
-        }
+function apriModal() {
+    document.getElementById('modalTitle').innerText = "Nuovo Documento";
+    document.getElementById('editId').value = ""; 
+    document.getElementById('newTitolo').value = "";
+    
+    // SVUOTA QUESTI DUE CAMPI
+    document.getElementById('newAutore').value = ""; 
+    document.getElementById('newArg').value = "";
+    
+    document.getElementById('newDataManuale').value = ""; // Svuota anche la data se necessario
+    
+    popolaTabellaCorrelati([]); 
+    document.getElementById('modalDocumento').style.display = 'flex';
+    document.getElementById('areaAnteprima').innerHTML = `<div style="display:flex; height:100%; align-items:center; justify-content:center; color:#999;">Seleziona un file per l'anteprima</div>`;
+}
 
         function chiudiModal() { document.getElementById('modalDocumento').style.display = 'none'; }
         async function eliminaDoc(id) { if(confirm("Eliminare?")) { await _supabase.from('documenti').delete().eq('id', id); rendering(); } }
@@ -351,3 +359,4 @@
     </script>
 </body>
 </html>
+
