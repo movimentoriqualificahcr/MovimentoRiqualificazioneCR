@@ -5,18 +5,18 @@ body {
     color: #333;
     background-color: #f0f2f5;
     margin: 0;
-    padding-top: 120px; /* Spazio per l'header fisso */
+    padding-top: 140px; /* Aumentato per dare respiro sotto l'header fisso */
 }
 
 /* --- HEADER FISSO --- */
 header {
-    background: #003366;
-    color: white;
+    background: #003366 !important;
+    color: white !important;
     padding: 20px 0;
     position: fixed;
     top: 0;
     width: 100%;
-    z-index: 1000;
+    z-index: 2000; /* Aumentato per stare sopra tutto */
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     display: flex;
     justify-content: center;
@@ -30,30 +30,26 @@ header h1 {
     line-height: 1.4;
     text-align: center;
     max-width: 50%;
-}
-
-/* --- FIX DEFINITIVO PULSANTI HEADER (Elimina il viola) --- */
-header a, 
-header a:visited, 
-header .btn-back, 
-header .contact-item {
-    text-decoration: none !important;
     color: white !important;
-    outline: none !important;
 }
 
-header a.btn-back {
+/* --- FIX TOTALE BOTTONI HEADER (Elimina il viola e corregge la posizione) --- */
+/* Selettore ultra-specifico per sovrascrivere tutto */
+header a.btn-back, 
+header .btn-back {
     position: absolute !important;
-    left: 20px !important;
+    left: 30px !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
     background-color: rgba(255, 255, 255, 0.15) !important;
+    color: white !important;
+    text-decoration: none !important;
     border: 1.5px solid white !important;
     padding: 10px 22px !important;
     border-radius: 50px !important;
     font-size: 0.85rem !important;
     font-weight: bold !important;
-    z-index: 9999 !important;
+    z-index: 2100 !important;
     display: flex !important;
     align-items: center !important;
     transition: all 0.3s ease !important;
@@ -64,23 +60,27 @@ header a.btn-back:hover {
     color: #003366 !important;
 }
 
-/* --- CONTATTI E LINK SECONDARI NELL'HEADER --- */
+/* Bottoni contatti a destra */
 .header-contacts-extreme {
-    position: absolute;
-    right: 25px;
+    position: absolute !important;
+    right: 30px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 5px;
+    gap: 8px;
 }
 
 .contact-item {
-    font-size: 0.75rem;
-    font-weight: 600;
-    background: #0056b3;
-    padding: 8px 14px;
-    border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    background: #0056b3 !important;
+    color: white !important;
+    padding: 8px 16px !important;
+    border-radius: 6px !important;
+    text-decoration: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
     transition: all 0.3s ease;
     white-space: nowrap;
 }
@@ -90,33 +90,22 @@ header a.btn-back:hover {
     color: #003366 !important;
 }
 
-.login-sub-link {
-    font-size: 0.7rem;
-    font-weight: bold;
-    color: rgba(255, 255, 255, 0.7) !important;
-}
-
-.login-sub-link:hover {
-    color: white !important;
-    text-decoration: underline !important;
-}
-
-/* --- GRIGLIA DASHBOARD E CARD MODERNE --- */
+/* --- GRIGLIA E CARD MODERNE --- */
 .grid-dashboard {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 30px;
-    padding: 30px;
-    max-width: 1200px;
-    margin: 40px auto 0 auto;
+    padding: 40px 20px;
+    max-width: 1300px;
+    margin: 0 auto;
 }
 
 .card {
     background: white;
-    padding: 30px 20px;
+    padding: 30px;
     border-radius: 20px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -128,36 +117,23 @@ header a.btn-back:hover {
 }
 
 .card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    transform: translateY(-10px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
 }
 
-/* --- MODAL E GESTIONE DOCUMENTO --- */
-.volume-section {
-    background: white;
-    padding: 40px;
-    border-radius: 16px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-    width: 90%;
-    max-width: 1000px;
-}
-
-.upload-box {
-    margin: 15px 0;
-    text-align: left;
-    background: #f8f9fa;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px dashed #ccc;
-}
-
-/* --- REGOLE RESPONSIVE (Smartphone e Tablet) --- */
-@media (max-width: 768px) {
-    body { padding-top: 140px; }
+/* --- RESPONSIVE PER SMARTPHONE --- */
+@media (max-width: 850px) {
+    header {
+        flex-direction: column;
+        padding: 15px 0;
+        height: auto;
+    }
     
-    header { flex-direction: column; padding: 15px 0; height: auto; }
-    
-    header h1 { font-size: 1.1rem; max-width: 90%; margin: 10px 0; }
+    header h1 {
+        max-width: 90%;
+        font-size: 1.1rem;
+        margin: 15px 0;
+    }
 
     header a.btn-back {
         position: relative !important;
@@ -165,23 +141,12 @@ header a.btn-back:hover {
         top: 0 !important;
         transform: none !important;
         margin-bottom: 15px !important;
-        display: inline-flex !important;
     }
 
     .header-contacts-extreme {
-        position: static;
+        position: static !important;
+        transform: none !important;
         align-items: center;
         margin-top: 10px;
-    }
-
-    .wrapper-correlati {
-        flex-direction: column;
-        height: auto !important;
-    }
-
-    .anteprima-embed {
-        width: 100%;
-        height: 300px;
-        margin-top: 15px;
     }
 }
