@@ -4,13 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Movimento Ospedale Cremona</title>
-    <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding-top: 120px; }
+        header { background: #003366; color: white; padding: 20px 0; position: fixed; top: 0; width: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center; min-height: 100px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        header h1 { margin: 0; font-size: 1.4rem; text-align: center; max-width: 45%; }
+        .header-contacts-extreme { position: absolute; right: 25px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+        .contact-item { background-color: #0056b3; color: white !important; padding: 8px 18px; border-radius: 50px; font-size: 0.75rem; font-weight: bold; border: 1px solid rgba(255,255,255,0.3); text-decoration: none; transition: 0.3s; }
+        .contact-item:hover { background-color: white; color: #003366 !important; transform: scale(1.05); }
+        .login-sub-link { color: rgba(255,255,255,0.7) !important; font-size: 0.7rem; font-weight: bold; text-decoration: none; margin-top: 4px; }
+        .login-sub-link:hover { color: white !important; text-decoration: underline; }
+        .grid-dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 30px; max-width: 1200px; margin: 0 auto; }
+        .card { background: white; padding: 30px 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eef0f2; display: flex; flex-direction: column; align-items: center; text-align: center; transition: 0.3s; text-decoration: none; color: inherit; }
+        .card:hover { transform: translateY(-8px); box-shadow: 0 12px 30px rgba(0,0,0,0.12); }
+        .btn-consulta { margin-top: auto; width: 100%; padding: 12px; background-color: #003366; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 0.9rem; }
+    </style>
 </head>
-<body class="home-page">
+<body>
     <header>
         <h1>Movimento per la riqualificazione<br> dell'ospedale di Cremona</h1>
-        
         <div class="header-contacts-extreme">
             <div style="display: flex; gap: 8px;">
                 <a href="#" class="contact-item">📩 Email</a>
@@ -20,40 +32,24 @@
             <a href="login.html" class="login-sub-link">Area Manager Login</a>
         </div>
     </header>
-
     <main>
-        <section class="filter-section">
-            <div class="filter-container" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 20px 0; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <input type="text" id="cercaTitolo" placeholder="Cerca titolo..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
-                <select id="fArg" style="padding: 8px;"><option value="tutti">Tutti gli argomenti</option></select>
-                <select id="fAut" style="padding: 8px;"><option value="tutti">Tutti gli autori</option></select>
-                <select id="fMese" style="padding: 8px;"><option value="tutti">Tutti i mesi</option></select>
-                <select id="fData" style="padding: 8px;"><option value="tutti">Tutti gli anni</option></select>
-            </div>
-        </section>
-
-        <div class="grid-dashboard" id="grid-pubblica">
-            </div>
+        <div class="grid-dashboard" id="grid-pubblica"></div>
     </main>
-
     <script>
         const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
-
-        async function caricaDocumenti() {
-            const { data, error } = await _supabase.from('documenti').select('*').order('timestamp', { ascending: false });
+        async function caricaDocs() {
+            const { data } = await _supabase.from('documenti').select('*').order('timestamp', { ascending: false });
             if (data) {
-                const grid = document.getElementById('grid-pubblica');
-                grid.innerHTML = data.map(d => `
-                    <div class="card" data-arg="${d.argomento}" data-aut="${d.autore}" data-data="${d.data}">
+                document.getElementById('grid-pubblica').innerHTML = data.map(d => `
+                    <div class="card">
                         <div style="font-size: 2.5rem; margin-bottom: 15px;">📄</div>
                         <h3>${d.titolo}</h3>
-                        <p>${d.argomento}<br>${d.autore}<br><span style="color: #999; font-size: 0.8rem;">Data: ${d.data}</span></p>
+                        <p>${d.argomento}<br>${d.autore}<br><span style="color: #999;">${d.data}</span></p>
                         <a href="documento.html?id=${d.id}" class="btn-consulta">Consulta documento →</a>
-                    </div>
-                `).join('');
+                    </div>`).join('');
             }
         }
-        window.onload = caricaDocumenti;
+        window.onload = caricaDocs;
     </script>
 </body>
 </html>
