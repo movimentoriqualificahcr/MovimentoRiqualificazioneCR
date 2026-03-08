@@ -6,13 +6,83 @@
     <title>Dettaglio Documento</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding-top: 120px; background: #f0f2f5; }
-        header { background: #003366; color: white; padding: 20px 0; position: fixed; top: 0; width: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center; min-height: 100px; }
+        /* --- STILE INTERNO DETTAGLIO --- */
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            padding-top: 120px; 
+            background: #f0f2f5; 
+            /* Rimuove lo scorrimento dalla pagina principale */
+            overflow: hidden; 
+            height: 100vh;
+        }
+
+        header { 
+            background: #003366; 
+            color: white; 
+            padding: 20px 0; 
+            position: fixed; 
+            top: 0; 
+            width: 100%; 
+            z-index: 1000; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100px; 
+        }
+
         header h1 { margin: 0; font-size: 1.4rem; text-align: center; }
-        .btn-back { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.15); color: white !important; border: 1.5px solid white; padding: 10px 22px; border-radius: 50px; text-decoration: none; font-weight: bold; }
-        main { display: flex; padding: 20px; gap: 20px; max-width: 1400px; margin: 0 auto; }
-        .sidebar-data { flex: 0 0 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); height: fit-content; }
-        .pdf-section { flex: 1; background: white; border-radius: 12px; overflow: hidden; height: 85vh; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+
+        .btn-back { 
+            position: absolute; 
+            left: 20px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            background: rgba(255,255,255,0.15); 
+            color: white !important; 
+            border: 1px solid white; 
+            padding: 6px 14px; 
+            border-radius: 50px; 
+            text-decoration: none; 
+            font-weight: bold; 
+            font-size: 0.75rem;
+            transition: 0.3s;
+        }
+        
+        .btn-back:hover { background: white; color: #003366 !important; }
+
+        main { 
+            display: flex; 
+            padding: 20px; 
+            gap: 20px; 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            height: calc(100vh - 160px); /* Adatta l'altezza al viewport sottraendo l'header */
+        }
+
+        .sidebar-data { 
+            flex: 0 0 300px; 
+            background: white; 
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            height: fit-content; 
+        }
+
+        /* Sezione PDF senza barra di scorrimento esterna */
+        .pdf-section { 
+            flex: 1; 
+            background: white; 
+            border-radius: 12px; 
+            overflow: hidden; /* Nasconde le barre di scorrimento del contenitore */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            display: flex;
+        }
+
+        #pdf-viewer { width: 100%; height: 100%; }
+
+        /* Nasconde la scrollbar per browser basati su Webkit (Chrome, Safari) */
+        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
@@ -28,7 +98,9 @@
                 <div id="lista-correlati"></div>
             </div>
         </aside>
-        <section class="pdf-section" id="pdf-viewer"></section>
+        <section class="pdf-section">
+            <div id="pdf-viewer"></div>
+        </section>
     </main>
     <script>
         const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
@@ -39,15 +111,15 @@
             if (d) {
                 document.getElementById('info-testo').innerHTML = `
                     <p style="color: #28a745; font-weight: bold; font-size: 0.75rem; margin-bottom:5px;">${d.argomento}</p>
-                    <h2 style="color: #003366; margin:0 0 15px 0;">${d.titolo}</h2>
-                    <p style="margin:5px 0;"><strong>Autore:</strong> ${d.autore}</p>
-                    <p style="margin:5px 0;"><strong>Data:</strong> ${d.data}</p>
+                    <h2 style="color: #003366; margin:0 0 15px 0; font-size: 1.2rem;">${d.titolo}</h2>
+                    <p style="margin:5px 0; font-size: 0.9rem;"><strong>Autore:</strong> ${d.autore}</p>
+                    <p style="margin:5px 0; font-size: 0.9rem;"><strong>Data:</strong> ${d.data}</p>
                 `;
 
                 if (d.pdf_url) {
                     const { data: urlData } = _supabase.storage.from('pdf_riservati').getPublicUrl(d.pdf_url);
-                    // Zoom PDF abilitato
-                    document.getElementById('pdf-viewer').innerHTML = `<embed src="${urlData.publicUrl}" type="application/pdf" width="100%" height="100%" />`;
+                    // L'iframe/embed gestirà internamente lo zoom e lo scroll se necessario
+                    document.getElementById('pdf-viewer').innerHTML = `<embed src="${urlData.publicUrl}#toolbar=1&navpanes=0&scrollbar=0" type="application/pdf" width="100%" height="100%" />`;
                 }
 
                 if (d.correlati?.length > 0) {
@@ -55,8 +127,8 @@
                     if (correlati) {
                         document.getElementById('lista-correlati').innerHTML = correlati.map(c => `
                             <a href="documento.html?id=${c.id}" style="display:block; text-decoration:none; margin-bottom:15px;">
-                                <span style="display:block; color:#003366; font-weight:bold; font-size:0.9rem;">📄 ${c.titolo}</span>
-                                <span style="font-size:0.75rem; color:#888;">Data: ${c.data}</span>
+                                <span style="display:block; color:#003366; font-weight:bold; font-size:0.85rem;">📄 ${c.titolo}</span>
+                                <span style="font-size:0.7rem; color:#888;">Data: ${c.data}</span>
                             </a>`).join('');
                     }
                 }
