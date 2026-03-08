@@ -10,57 +10,50 @@
 <body>
     <header>
         <a href="index.html" class="btn-back">← Torna alla lista</a>
-        <h1>Movimento per la riqualificazione<br> dell'ospedale di Cremona</h1>
+        <h1>Dettaglio Documento</h1>
     </header>
 
     <main style="display: flex; padding: 20px; gap: 20px; max-width: 1400px; margin: 0 auto;">
-        <aside class="sidebar-data" style="flex: 0 0 300px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); height: fit-content;">
-            <div id="info-documento">
-                </div>
-            
+        <aside style="flex: 0 0 300px; background: white; padding: 25px; border-radius: 12px; height: fit-content; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            <div id="info-testo"></div>
             <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
-                <h4 style="color: #003366; font-size: 0.8rem; text-transform: uppercase;">Documenti Correlati</h4>
-                <div id="sidebar-correlati">
-                    </div>
+                <h4 style="color: #003366; font-size: 0.8rem; text-transform: uppercase; margin-bottom:15px;">Documenti Correlati</h4>
+                <div id="sidebar-correlati"></div>
             </div>
         </aside>
 
-        <section style="flex: 1; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); min-height: 80vh;">
-            <div id="pdf-viewer" style="width: 100%; height: 100%;">
-                </div>
+        <section style="flex: 1; background: white; border-radius: 12px; overflow: hidden; min-height: 85vh; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            <div id="pdf-viewer" style="width: 100%; height: 100%;"></div>
         </section>
     </main>
 
     <script>
         const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
-        const urlParams = new URLSearchParams(window.location.search);
-        const docId = urlParams.get('id');
+        const docId = new URLSearchParams(window.location.search).get('id');
 
         async function caricaDettaglio() {
             const { data: d } = await _supabase.from('documenti').select('*').eq('id', docId).single();
             if (d) {
-                document.getElementById('info-documento').innerHTML = `
-                    <p style="color: #28a745; font-weight: bold; text-transform: uppercase; font-size: 0.75rem; margin-bottom: 5px;">${d.argomento}</p>
-                    <h2 style="color: #003366; margin: 0 0 15px 0;">${d.titolo}</h2>
-                    <p style="margin: 5px 0;"><strong>Autore:</strong> ${d.autore}</p>
-                    <p style="margin: 5px 0;"><strong>Data:</strong> ${d.data}</p>
+                document.getElementById('info-testo').innerHTML = `
+                    <p style="color: #28a745; font-weight: bold; font-size: 0.75rem; margin-bottom:5px;">${d.argomento}</p>
+                    <h2 style="color: #003366; margin:0 0 15px 0;">${d.titolo}</h2>
+                    <p style="margin:5px 0;"><strong>Autore:</strong> ${d.autore}</p>
+                    <p style="margin:5px 0;"><strong>Data:</strong> ${d.data}</p>
                 `;
 
                 if (d.pdf_url) {
                     const { data: urlData } = _supabase.storage.from('pdf_riservati').getPublicUrl(d.pdf_url);
-                    document.getElementById('pdf-viewer').innerHTML = `<iframe src="${urlData.publicUrl}#toolbar=0" style="width:100%; height:100%; border:none;"></iframe>`;
+                    document.getElementById('pdf-viewer').innerHTML = `<embed src="${urlData.publicUrl}" type="application/pdf" width="100%" height="100%" />`;
                 }
 
-                // Caricamento correlati con data
-                if (d.correlati && d.correlati.length > 0) {
+                if (d.correlati?.length > 0) {
                     const { data: correlati } = await _supabase.from('documenti').select('id, titolo, data').in('id', d.correlati);
                     if (correlati) {
                         document.getElementById('sidebar-correlati').innerHTML = correlati.map(c => `
-                            <a href="documento.html?id=${c.id}" style="display: block; text-decoration: none; margin-bottom: 12px;">
-                                <span style="display: block; color: #003366; font-weight: bold; font-size: 0.9rem;">📄 ${c.titolo}</span>
-                                <span style="font-size: 0.75rem; color: #888;">Data: ${c.data}</span>
-                            </a>
-                        `).join('');
+                            <a href="documento.html?id=${c.id}" style="display:block; text-decoration:none; margin-bottom:15px;">
+                                <span style="display:block; color:#003366; font-weight:bold; font-size:0.9rem;">📄 ${c.titolo}</span>
+                                <span style="font-size:0.75rem; color:#888;">Data: ${c.data}</span>
+                            </a>`).join('');
                     }
                 }
             }
