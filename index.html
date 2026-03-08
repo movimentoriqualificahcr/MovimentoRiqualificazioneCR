@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="it">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,166 +7,53 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-
 <body class="home-page">
-<header>
-    <h1>Movimento per la riqualificazione<br> dell'ospedale di Cremona</h1>
-    
-    <div class="header-contacts-extreme">
-        <div style="display: flex; gap: 8px;">
-            <a href="#" class="contact-item">📩 Email</a>
-            <a href="#" class="contact-item">💰 Raccolta</a>
-            <a href="#" class="contact-item">✍️ Firma</a>
+    <header>
+        <h1>Movimento per la riqualificazione<br> dell'ospedale di Cremona</h1>
+        
+        <div class="header-contacts-extreme">
+            <div style="display: flex; gap: 8px;">
+                <a href="#" class="contact-item">📩 Email</a>
+                <a href="#" class="contact-item">💰 Raccolta</a>
+                <a href="#" class="contact-item">✍️ Firma</a>
+            </div>
+            <a href="login.html" class="login-sub-link">Area Manager Login</a>
         </div>
-        <a href="login.html" class="login-sub-link">Area Manager Login</a>
-    </div>
-</header>
+    </header>
 
     <main>
-        <div class="filter-container"
-            style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 20px 0; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-            <input type="text" id="cerca" placeholder="Cerca titolo..."
-                style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; min-width: 160px; font-size: 0.9rem;">
-            <select id="fArg" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 0.9rem;">
-                <option value="tutti">Tutti gli argomenti</option>
-            </select>
-            <select id="fAut" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 0.9rem;">
-                <option value="tutti">Tutti gli autori</option>
-            </select>
-            <select id="fMese" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 0.9rem;">
-                <option value="tutti">Tutti i mesi</option>
-                <option value="01">Gennaio</option>
-                <option value="02">Febbraio</option>
-                <option value="03">Marzo</option>
-                <option value="04">Aprile</option>
-                <option value="05">Maggio</option>
-                <option value="06">Giugno</option>
-                <option value="07">Luglio</option>
-                <option value="08">Agosto</option>
-                <option value="09">Settembre</option>
-                <option value="10">Ottobre</option>
-                <option value="11">Novembre</option>
-                <option value="12">Dicembre</option>
-            </select>
-            <select id="fData" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 0.9rem;">
-                <option value="tutti">Tutti gli anni</option>
-            </select>
-        </div>
-        <div class="grid-dashboard" id="main-grid"></div>
+        <section class="filter-section">
+            <div class="filter-container" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 20px 0; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <input type="text" id="cercaTitolo" placeholder="Cerca titolo..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                <select id="fArg" style="padding: 8px;"><option value="tutti">Tutti gli argomenti</option></select>
+                <select id="fAut" style="padding: 8px;"><option value="tutti">Tutti gli autori</option></select>
+                <select id="fMese" style="padding: 8px;"><option value="tutti">Tutti i mesi</option></select>
+                <select id="fData" style="padding: 8px;"><option value="tutti">Tutti gli anni</option></select>
+            </div>
+        </section>
+
+        <div class="grid-dashboard" id="grid-pubblica">
+            </div>
     </main>
 
     <script>
-        const SUPABASE_URL = 'https://ovfufqbpgxpmfxpbhjfn.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz';
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
 
-async function rendering() {
-    const { data, error } = await _supabase.from('documenti').select('*').order('timestamp', { ascending: false });
-    const grid = document.getElementById('main-grid');
-
-    if (data) {
-        grid.innerHTML = data.map(d => `
-            <div class="card" data-arg="${d.argomento}" data-aut="${d.autore}" data-data="${d.data}" style="padding: 15px; min-height: 200px; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                <div style="font-size: 2.2rem; margin-bottom: 10px;">📄</div>
-                <h3 style="margin: 5px 0; font-size: 1.1rem;">${d.titolo}</h3>
-                <p style="color: #666; font-size: 0.8rem; margin-bottom: 10px;"><strong>${d.argomento}</strong><br>${d.autore}<br><span style="color: #999;">Data: ${d.data}</span></p>
-                
-                <a href="documento.html?id=${d.id}" class="contact-item" 
-                   style="margin-top: auto; padding: 8px 15px; font-size: 0.85rem; width: 100%; justify-content: center; background: #003366; border: none; cursor: pointer; text-decoration: none; color: white; box-sizing: border-box;">
-                   Consulta documento →
-                </a>
-            </div>
-        `).join('');
-        popolaTendine(data);
-    }
-}
-async function caricaDocumentiPubblici() {
-    const { data, error } = await _supabase
-        .from('documenti')
-        .select('*')
-        .order('timestamp', { ascending: false });
-
-    if (data) {
-        const grid = document.getElementById('main-grid');
-        grid.innerHTML = data.map(d => `
-            <div class="card" style="padding: 20px; display: flex; flex-direction: column; align-items: center; text-align: center; transition: transform 0.2s;">
-                <div style="font-size: 2.5rem; margin-bottom: 10px;">📄</div>
-                <h3 style="margin: 10px 0; font-size: 1.2rem; color: #003366;">${d.titolo}</h3>
-                <p style="color: #666; font-size: 0.85rem; margin-bottom: 20px;">
-                    <strong>${d.argomento}</strong><br>
-                    ${d.autore}<br>
-                    <span style="color: #999;">Data: ${d.data}</span>
-                </p>
-                
-                <a href="documento.html?id=${d.id}" class="btn-consulta">
-                    Consulta documento <span>→</span>
-                </a>
-            </div>
-        `).join('');
-    }
-}
-        function popolaTendine(docs) {
-            const riempi = (id, chiave) => {
-                const s = document.getElementById(id);
-                if (id === 'fMese') return;
-                s.innerHTML = `<option value="tutti">Tutti ${id === 'fData' ? 'gli anni' : (id === 'fAut' ? 'gli autori' : 'gli argomenti')}</option>`;
-                let vals;
-                if (chiave === 'data') {
-                    vals = [...new Set(docs.map(d => d.data.split('/').pop()))].sort((a, b) => b - a);
-                } else {
-                    vals = [...new Set(docs.map(d => d[chiave]))].sort((a, b) => a.localeCompare(b));
-                }
-                vals.forEach(v => { if (v) s.innerHTML += `<option value="${v}">${v}</option>`; });
-            };
-            riempi('fArg', 'argomento'); riempi('fAut', 'autore'); riempi('fData', 'data');
+        async function caricaDocumenti() {
+            const { data, error } = await _supabase.from('documenti').select('*').order('timestamp', { ascending: false });
+            if (data) {
+                const grid = document.getElementById('grid-pubblica');
+                grid.innerHTML = data.map(d => `
+                    <div class="card" data-arg="${d.argomento}" data-aut="${d.autore}" data-data="${d.data}">
+                        <div style="font-size: 2.5rem; margin-bottom: 15px;">📄</div>
+                        <h3>${d.titolo}</h3>
+                        <p>${d.argomento}<br>${d.autore}<br><span style="color: #999; font-size: 0.8rem;">Data: ${d.data}</span></p>
+                        <a href="documento.html?id=${d.id}" class="btn-consulta">Consulta documento →</a>
+                    </div>
+                `).join('');
+            }
         }
-
-        function applicaFiltri() {
-            const t = document.getElementById('cerca').value.toLowerCase().trim();
-            const a = document.getElementById('fArg').value;
-            const u = document.getElementById('fAut').value;
-            const m = document.getElementById('fMese').value;
-            const d = document.getElementById('fData').value;
-            let trovati = 0;
-            document.querySelectorAll('.card').forEach(c => {
-                const dCard = c.getAttribute('data-data');
-                const matchT = t === "" || c.querySelector('h3').innerText.toLowerCase().includes(t);
-                const matchA = a === 'tutti' || c.getAttribute('data-arg') === a;
-                const matchU = u === 'tutti' || c.getAttribute('data-aut') === u;
-                const matchM = m === 'tutti' || (dCard.includes('/') && dCard.split('/')[1] === m);
-                const matchD = d === 'tutti' || dCard.endsWith(d);
-                if (matchT && matchA && matchU && matchM && matchD) {
-                    c.style.display = "flex"; trovati++;
-                } else { c.style.display = "none"; }
-            });
-            aggiornaMessaggioVuoto(trovati);
-        }
-
-        function aggiornaMessaggioVuoto(totale) {
-            let msg = document.getElementById('no-results-msg');
-            const grid = document.getElementById('main-grid');
-            if (totale === 0) {
-                if (!msg) {
-                    msg = document.createElement('div');
-                    msg.id = 'no-results-msg';
-                    msg.style.cssText = "grid-column: 1 / -1; text-align: center; padding: 30px;";
-                    msg.innerHTML = `<div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);"><h3 style="color: #003366; margin: 10px 0;">Nessun file trovato</h3></div>`;
-                    grid.appendChild(msg);
-                }
-            } else if (msg) msg.remove();
-        }
-
-        document.getElementById('cerca').addEventListener('input', applicaFiltri);
-        document.getElementById('fArg').addEventListener('change', applicaFiltri);
-        document.getElementById('fAut').addEventListener('change', applicaFiltri);
-        document.getElementById('fMese').addEventListener('change', applicaFiltri);
-        document.getElementById('fData').addEventListener('change', applicaFiltri);
-        window.onload = rendering;
+        window.onload = caricaDocumenti;
     </script>
 </body>
-
-
 </html>
-
-
-
