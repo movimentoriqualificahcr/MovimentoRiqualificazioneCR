@@ -1,208 +1,71 @@
 <!DOCTYPE html>
 <html lang="it">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dettaglio Documento</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        /* STILI BASE (PC) */
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            background-color: #f0f2f5;
-        }
-
-        header {
-            flex: 0 0 auto;
-            padding: 12px 20px;
-            background: #003366;
-            color: white;
-            text-align: center;
-            position: relative;
-        }
-
-        main {
-            flex: 1;
-            display: flex;
-            padding: 20px;
-            box-sizing: border-box;
-            overflow: hidden;
-            justify-content: center;
-        }
-
-        .doc-container {
-            display: flex;
-            width: 100%;
-            max-width: 1440px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-        }
-
-        .sidebar-data {
-            flex: 0 0 280px;
-            padding: 25px 20px;
-            border-right: 1px solid #f0f0f0;
-            overflow-y: auto;
-        }
-
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .pdf-mask {
-            flex: 1;
-            margin: 10px 25px 25px 25px;
-            overflow: hidden;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            position: relative;
-        }
-
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            position: absolute;
-            left: 0;
-            top: 0;
-        }
-
-        /* MEDIA QUERIES: REGOLE PER MOBILE E TABLET */
-        @media (max-width: 768px) {
-            main {
-                padding: 10px;
-                overflow-y: auto; /* Permette lo scorrimento della pagina intera su mobile */
-                display: block; 
-            }
-
-            .doc-container {
-                flex-direction: column; /* Sidebar sopra, contenuto sotto */
-                height: auto;
-                overflow: visible;
-            }
-
-            .sidebar-data {
-                flex: none;
-                width: 100%;
-                border-right: none;
-                border-bottom: 1px solid #f0f0f0;
-                box-sizing: border-box;
-            }
-
-            .main-content {
-                height: 600px; /* Altezza minima per l'iframe su schermi piccoli */
-            }
-
-            .pdf-mask {
-                margin: 10px;
-            }
-
-            header h1 {
-                font-size: 1.1rem;
-            }
-
-            .btn-back-header {
-                position: static;
-                transform: none;
-                display: inline-block;
-                margin-bottom: 10px;
-            }
-        }
-    </style>
 </head>
-<body class="home-page">
+<body>
     <header>
-        <a href="index.html" class="btn-back-header">← Torna alla lista</a>
-        <h1 style="margin: 0; text-align: center;">Movimento per la riqualificazione<br> dell'ospedale di Cremona</h1>
+        <a href="index.html" class="btn-back">← Torna alla lista</a>
+        <h1>Movimento per la riqualificazione<br> dell'ospedale di Cremona</h1>
     </header>
 
-    <main>
-        <div class="doc-container" id="documento-container">
-        </div>
+    <main style="display: flex; padding: 20px; gap: 20px; max-width: 1400px; margin: 0 auto;">
+        <aside class="sidebar-data" style="flex: 0 0 300px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); height: fit-content;">
+            <div id="info-documento">
+                </div>
+            
+            <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                <h4 style="color: #003366; font-size: 0.8rem; text-transform: uppercase;">Documenti Correlati</h4>
+                <div id="sidebar-correlati">
+                    </div>
+            </div>
+        </aside>
+
+        <section style="flex: 1; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); min-height: 80vh;">
+            <div id="pdf-viewer" style="width: 100%; height: 100%;">
+                </div>
+        </section>
     </main>
 
     <script>
-        const SUPABASE_URL = 'https://ovfufqbpgxpmfxpbhjfn.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz';
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
+        const urlParams = new URLSearchParams(window.location.search);
+        const docId = urlParams.get('id');
 
-        window.onload = async function () {
-            const id = new URLSearchParams(window.location.search).get('id');
-            const { data, error } = await _supabase.from('documenti').select('*').eq('id', id).single();
-            const container = document.getElementById('documento-container');
+        async function caricaDettaglio() {
+            const { data: d } = await _supabase.from('documenti').select('*').eq('id', docId).single();
+            if (d) {
+                document.getElementById('info-documento').innerHTML = `
+                    <p style="color: #28a745; font-weight: bold; text-transform: uppercase; font-size: 0.75rem; margin-bottom: 5px;">${d.argomento}</p>
+                    <h2 style="color: #003366; margin: 0 0 15px 0;">${d.titolo}</h2>
+                    <p style="margin: 5px 0;"><strong>Autore:</strong> ${d.autore}</p>
+                    <p style="margin: 5px 0;"><strong>Data:</strong> ${d.data}</p>
+                `;
 
-            if (data) {
-                // RECUPERO DOCUMENTI CORRELATI
-     // Recupero e visualizzazione documenti correlati con data
-let correlatiHtml = "";
-if (data.correlati && data.correlati.length > 0) {
-    const { data: docsCorrelati } = await _supabase
-        .from('documenti')
-        .select('id, titolo, data') // Assicurati di selezionare anche il campo 'data'
-        .in('id', data.correlati);
-
-    if (docsCorrelati && docsCorrelati.length > 0) {
-        correlatiHtml = `
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-                <h4 style="font-size: 0.8rem; color: #003366; text-transform: uppercase; margin-bottom: 12px;">Documenti Correlati</h4>
-                ${docsCorrelati.map(dc => `
-                    <a href="documento.html?id=${dc.id}" class="correlati-link" style="margin-bottom: 15px; display: block;">
-                        <span style="display: block;">📄 ${dc.titolo}</span>
-                        <span style="font-size: 0.75rem; color: #888; margin-left: 22px;">Data: ${dc.data || 'N/D'}</span>
-                    </a>
-                `).join('')}
-            </div>`;
-    }
-}
-
-                let pdfSection = "";
-                if (data.pdf_url) {
-                    const { data: publicUrlData } = _supabase.storage
-                        .from('pdf_riservati')
-                        .getPublicUrl(data.pdf_url);
-
-                    const cleanPdfUrl = publicUrlData.publicUrl + "#toolbar=0&navpanes=0&scrollbar=0&view=FitH";
-
-                    pdfSection = `
-                        <div class="pdf-mask">
-                            <iframe src="${cleanPdfUrl}" scrolling="no"></iframe>
-                        </div>`;
+                if (d.pdf_url) {
+                    const { data: urlData } = _supabase.storage.from('pdf_riservati').getPublicUrl(d.pdf_url);
+                    document.getElementById('pdf-viewer').innerHTML = `<iframe src="${urlData.publicUrl}#toolbar=0" style="width:100%; height:100%; border:none;"></iframe>`;
                 }
 
-                container.innerHTML = `
-                    <div class="sidebar-data">
-                        <span style="color: #28a745; font-weight: bold; font-size: 0.8rem; text-transform: uppercase;">${data.argomento}</span>
-                        <h2 style="color: #003366; margin: 10px 0; font-size: 1.3rem; line-height: 1.2;">${data.titolo}</h2>
-                        <div style="margin-top: 15px; font-size: 0.85rem; color: #555;">
-                            <p><strong>Autore:</strong><br>${data.autore}</p>
-                            <p><strong>Data:</strong><br>${data.data}</p>
-                        </div>
-                        
-                        ${correlatiHtml}
-                    </div>
-                    
-                    <div class="main-content">
-                        ${data.testo_completo ? `<div class="doc-content">${data.testo_completo}</div>` : ''}
-                        ${pdfSection}
-                    </div>`;
-            } else {
-                container.innerHTML = "<h3 style='padding: 20px;'>Documento non trovato</h3>";
+                // Caricamento correlati con data
+                if (d.correlati && d.correlati.length > 0) {
+                    const { data: correlati } = await _supabase.from('documenti').select('id, titolo, data').in('id', d.correlati);
+                    if (correlati) {
+                        document.getElementById('sidebar-correlati').innerHTML = correlati.map(c => `
+                            <a href="documento.html?id=${c.id}" style="display: block; text-decoration: none; margin-bottom: 12px;">
+                                <span style="display: block; color: #003366; font-weight: bold; font-size: 0.9rem;">📄 ${c.titolo}</span>
+                                <span style="font-size: 0.75rem; color: #888;">Data: ${c.data}</span>
+                            </a>
+                        `).join('');
+                    }
+                }
             }
         }
+        window.onload = caricaDettaglio;
     </script>
 </body>
-
 </html>
-
-
