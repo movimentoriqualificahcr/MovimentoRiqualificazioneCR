@@ -4,29 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dettaglio Documento</title>
-    <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding-top: 120px; background: #f0f2f5; }
+        header { background: #003366; color: white; padding: 20px 0; position: fixed; top: 0; width: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center; min-height: 100px; }
+        header h1 { margin: 0; font-size: 1.4rem; text-align: center; }
+        .btn-back { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.15); color: white !important; border: 1.5px solid white; padding: 10px 22px; border-radius: 50px; text-decoration: none; font-weight: bold; }
+        main { display: flex; padding: 20px; gap: 20px; max-width: 1400px; margin: 0 auto; }
+        .sidebar-data { flex: 0 0 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); height: fit-content; }
+        .pdf-section { flex: 1; background: white; border-radius: 12px; overflow: hidden; height: 85vh; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    </style>
 </head>
 <body>
     <header>
         <a href="index.html" class="btn-back">← Torna alla lista</a>
         <h1>Dettaglio Documento</h1>
     </header>
-
-    <main style="display: flex; padding: 20px; gap: 20px; max-width: 1400px; margin: 0 auto;">
-        <aside style="flex: 0 0 300px; background: white; padding: 25px; border-radius: 12px; height: fit-content; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+    <main>
+        <aside class="sidebar-data">
             <div id="info-testo"></div>
-            <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+            <div id="sidebar-correlati" style="margin-top:20px; border-top:1px solid #eee; padding-top:20px;">
                 <h4 style="color: #003366; font-size: 0.8rem; text-transform: uppercase; margin-bottom:15px;">Documenti Correlati</h4>
-                <div id="sidebar-correlati"></div>
+                <div id="lista-correlati"></div>
             </div>
         </aside>
-
-        <section style="flex: 1; background: white; border-radius: 12px; overflow: hidden; min-height: 85vh; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-            <div id="pdf-viewer" style="width: 100%; height: 100%;"></div>
-        </section>
+        <section class="pdf-section" id="pdf-viewer"></section>
     </main>
-
     <script>
         const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
         const docId = new URLSearchParams(window.location.search).get('id');
@@ -43,13 +46,14 @@
 
                 if (d.pdf_url) {
                     const { data: urlData } = _supabase.storage.from('pdf_riservati').getPublicUrl(d.pdf_url);
+                    // Zoom PDF abilitato
                     document.getElementById('pdf-viewer').innerHTML = `<embed src="${urlData.publicUrl}" type="application/pdf" width="100%" height="100%" />`;
                 }
 
                 if (d.correlati?.length > 0) {
                     const { data: correlati } = await _supabase.from('documenti').select('id, titolo, data').in('id', d.correlati);
                     if (correlati) {
-                        document.getElementById('sidebar-correlati').innerHTML = correlati.map(c => `
+                        document.getElementById('lista-correlati').innerHTML = correlati.map(c => `
                             <a href="documento.html?id=${c.id}" style="display:block; text-decoration:none; margin-bottom:15px;">
                                 <span style="display:block; color:#003366; font-weight:bold; font-size:0.9rem;">📄 ${c.titolo}</span>
                                 <span style="font-size:0.75rem; color:#888;">Data: ${c.data}</span>
