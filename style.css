@@ -30,13 +30,37 @@ header h1 {
     max-width: 40%;
 }
 
+/* FIX DEFINITIVO PULSANTE TORNA ALLA LISTA */
+.btn-back {
+    position: absolute !important;
+    left: 20px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+    text-decoration: none !important;
+    border: 1px solid white !important;
+    padding: 8px 18px !important;
+    border-radius: 50px !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    z-index: 2000 !important;
+    display: flex !important;
+    align-items: center;
+    transition: all 0.3s ease !important;
+}
+
+.btn-back:hover {
+    background-color: white !important;
+    color: #003366 !important;
+}
+
 .header-contacts-extreme {
     position: absolute;
     right: 25px;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 0;
 }
 
 .contact-item {
@@ -47,278 +71,12 @@ header h1 {
     background: #0056b3;
     padding: 8px 14px;
     border-radius: 6px;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 2px;
     display: inline-flex;
-    align-items: center;
     white-space: nowrap;
 }
 
-.contact-item:hover {
-    background: white !important;
-    color: #003366 !important;
-}
-
-.login-sub-link {
-    text-decoration: none;
-    font-size: 0.7rem;
-    font-weight: bold;
-    transition: 0.3s;
-    color: rgba(255, 255, 255, 0.7);
-}
-
-.login-sub-link:hover {
-    color: white;
-    text-decoration: underline;
-}
-
-.grid-dashboard {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 30px;
-    margin-top: 40px;
-    width: 100%;
-}
-
-.card {
-    background: white;
-    padding: 40px 30px;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    transition: transform 0.3s ease, border-color 0.3s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    border: 1px solid #eee;
-    text-decoration: none;
-    color: inherit;
-    min-width: 300px;
-    position: relative;
-}
-
-.layout-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 80vh;
-    width: 100%;
-}
-
-.volume-section {
-    background: white;
-    padding: 40px;
-    border-radius: 16px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-    width: 90%;
-    max-width: 800px;
-    text-align: center;
-}
-
-/* Fix pulsante tornare indietro nell'header */
-.btn-back {
-    position: absolute !important;
-    left: 20px !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    color: white !important;
-    text-decoration: none !important;
-    border: 1px solid rgba(255, 255, 255, 0.5) !important;
-    padding: 8px 18px !important;
-    border-radius: 50px !important; /* Forma a pillola */
-    font-size: 0.85rem !important;
-    font-weight: 600 !important;
-    z-index: 2000 !important;
-    transition: all 0.2s ease !important;
-}
-
-.btn-back:hover {
-    background-color: white !important;
-    color: #003366 !important;
-}
-
-/* Rimuovi le linee grigie dai contenitori dei documenti */
-.doc-content h3 {
-    color: #003366;
-    border-bottom: none;
-    padding-bottom: 0;
-    margin-top: 30px;
-}
-
-.doc-container {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-}
-
-.btn-consulta {
-    margin-top: auto;
-    width: 100%;
-    padding: 12px;
-    background-color: #003366;
-    color: white;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: bold;
-    font-size: 0.9rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0, 51, 102, 0.1);
-}
-
-.btn-consulta:hover {
-    background-color: #004a99;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 51, 102, 0.2);
-}
-
-.btn-consulta span {
-    transition: transform 0.3s ease;
-}
-
-.btn-consulta:hover span {
-    transform: translateX(4px);
-}
-
-.select-correlati {
-    width: 100%;
-    height: 100px;
-    margin: 8px 0;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    font-size: 0.9rem;
-}
-
-/* --- REGOLE PER IL SITO RESPONSIVE --- */
-
-.grid-dashboard {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    padding: 20px;
-}
-
-@media (max-width: 768px) {
-    
-    /* FIX PULSANTE BACK SU MOBILE */
-    .btn-back {
-        position: static; /* Si posiziona naturalmente nel flusso */
-        transform: none;
-        display: inline-block;
-        margin: 10px 0;
-        text-align: center;
-    }
-
-    header {
-        flex-direction: column;
-        padding: 15px 0;
-    }
-
-    header h1 {
-        font-size: 1.2rem;
-        padding: 0 10px;
-        max-width: 90%;
-    }
-
-    .header-contacts-extreme {
-        position: static;
-        text-align: center;
-        margin-top: 10px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .filter-container {
-        flex-direction: column;
-        width: 90%;
-        margin: 10px auto;
-        gap: 10px;
-    }
-
-    .filter-container input, 
-    .filter-container select {
-        width: 100% !important;
-        min-width: unset !important;
-    }
-
-    .volume-section {
-        width: 95% !important;
-        padding: 15px !important;
-        margin: 10px;
-    }
-
-    .wrapper-correlati {
-        flex-direction: column;
-        height: auto !important;
-    }
-
-    .container-tabella-correlati {
-        width: 100%;
-        max-height: 200px;
-    }
-
-    .anteprima-embed {
-        width: 100%;
-        height: 300px;
-        margin-top: 15px;
-    }
-
-    .volume-section input[type="text"], 
-    .volume-section textarea {
-        font-size: 16px;
-    }
-}
-
-/* --- FIX DEFINITIVO PULSANTE TORNA ALLA LISTA --- */
-.btn-back {
-    position: absolute !important; /* Forza la posizione assoluta */
-    left: 20px !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    background-color: transparent !important;
-    color: white !important; /* Colore bianco per risaltare sul blu */
-    text-decoration: none !important;
-    border: 1px solid white !important; /* Bordo bianco sottile */
-    padding: 8px 15px !important;
-    border-radius: 6px !important;
-    font-size: 0.85rem !important;
-    font-weight: bold !important;
-    z-index: 2000 !important; /* Lo porta sopra tutto nell'header */
-    display: flex !important;
-    align-items: center;
-    transition: all 0.3s ease;
-}
-
-.btn-back:hover {
-    background-color: white !important;
-    color: #003366 !important; /* Inverte i colori al passaggio del mouse */
-}
-
-/* --- ADATTAMENTO MOBILE PER IL PULSANTE --- */
-@media (max-width: 768px) {
-    .btn-back {
-        position: relative !important;
-        left: 0 !important;
-        top: 0 !important;
-        transform: none !important;
-        margin: 10px auto !important;
-        display: inline-flex !important;
-    }
-    
-    header {
-        flex-direction: column !important;
-        padding-top: 10px !important;
-    }
-}
-
-/* Stile moderno per le card dei documenti */
+/* Griglia e Card */
 .grid-dashboard {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -340,29 +98,18 @@ header h1 {
     text-align: center;
     transition: all 0.3s ease;
     position: relative;
+    text-decoration: none;
+    color: inherit;
 }
 
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+.card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+
+/* REGOLE RESPONSIVE */
+@media (max-width: 768px) {
+    .btn-back { position: relative !important; left: 0 !important; top: 0 !important; transform: none !important; margin: 10px auto !important; }
+    header { flex-direction: column; padding-top: 10px; height: auto; }
+    header h1 { max-width: 90%; font-size: 1.1rem; }
+    .header-contacts-extreme { position: static; align-items: center; margin-top: 10px; }
+    .wrapper-correlati { flex-direction: column; height: auto !important; }
+    .anteprima-embed { width: 100%; height: 300px; margin-top: 10px; }
 }
-
-.card h3 {
-    margin: 15px 0 5px 0;
-    color: #003366;
-    font-size: 1.1rem;
-}
-
-.card p {
-    font-size: 0.85rem;
-    color: #666;
-    line-height: 1.4;
-    margin-bottom: 15px;
-}
-
-.card .data-label {
-    color: #999;
-    font-size: 0.75rem;
-}
-
-
