@@ -181,17 +181,21 @@
             grid.innerHTML = html;
         }
 
-        async function caricaAnteprima(id) {
-            const area = document.getElementById('areaAnteprima');
-            area.innerHTML = `<div style="display:flex; height:100%; align-items:center; justify-content:center; color:#003366; font-size:0.8rem;">Caricamento documento...</div>`;
-            const { data: d } = await _supabase.from('documenti').select('pdf_url').eq('id', id).single();
-            if (d && d.pdf_url) {
-                const { data: publicUrlData } = _supabase.storage.from('pdf_riservati').getPublicUrl(d.pdf_url);
-                area.innerHTML = `<iframe src="${publicUrlData.publicUrl}#toolbar=0&navpanes=0"></iframe>`;
-            } else {
-                area.innerHTML = `<div style="display:flex; height:100%; align-items:center; justify-content:center; color:#d9534f; font-size:0.8rem; padding:20px;">Nessun PDF disponibile</div>`;
-            }
-        }
+    async function caricaAnteprima(id) {
+    const area = document.getElementById('areaAnteprima');
+    area.innerHTML = `<div style="display:flex; height:100%; align-items:center; justify-content:center; color:#003366; font-size:0.8rem;">Caricamento anteprima...</div>`;
+    
+    const { data: d } = await _supabase.from('documenti').select('pdf_url').eq('id', id).single();
+    
+    if (d && d.pdf_url) {
+        const { data: publicUrlData } = _supabase.storage.from('pdf_riservati').getPublicUrl(d.pdf_url);
+        
+        // Rimosso #toolbar=0 per permettere lo zoom e i controlli del browser
+        area.innerHTML = `<iframe src="${publicUrlData.publicUrl}" style="width:100%; height:100%; border:none;"></iframe>`;
+    } else {
+        area.innerHTML = `<div style="display:flex; height:100%; align-items:center; justify-content:center; color:#d9534f; font-size:0.8rem; padding:20px;">Nessun PDF disponibile</div>`;
+    }
+}
 
         function toggleSelezione(id) {
             const index = correlatiSelezionati.indexOf(id);
@@ -359,4 +363,5 @@ function apriModal() {
     </script>
 </body>
 </html>
+
 
