@@ -5,10 +5,10 @@ body {
     color: #333;
     background-color: #f0f2f5;
     margin: 0;
-    padding-top: 120px;
+    padding-top: 120px; /* Spazio per l'header fisso */
 }
 
-/* --- HEADER --- */
+/* --- HEADER FISSO --- */
 header {
     background: #003366;
     color: white;
@@ -27,23 +27,51 @@ header {
 header h1 {
     margin: 0;
     font-size: 1.4rem;
+    line-height: 1.4;
     text-align: center;
-    max-width: 45%; /* Leggermente ridotto per non toccare i bottoni */
+    max-width: 45%;
 }
 
-/* --- PULSANTI CONTATTI (Email, Raccolta, Firma) --- */
+/* --- FIX DEFINITIVO PULSANTI HEADER (Basta link blu/viola) --- */
+header a {
+    text-decoration: none !important;
+    transition: all 0.3s ease;
+}
+
+/* Pulsante Torna alla lista (Sinistra) */
+.btn-back {
+    position: absolute !important;
+    left: 20px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    color: white !important;
+    border: 1.5px solid white !important;
+    padding: 10px 22px !important;
+    border-radius: 50px !important;
+    font-size: 0.85rem !important;
+    font-weight: bold !important;
+    z-index: 2000 !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.btn-back:hover {
+    background-color: white !important;
+    color: #003366 !important;
+}
+
+/* Contenitore Bottoni Contatti e Login (Destra) */
 .header-contacts-extreme {
     position: absolute !important;
-    right: 25px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px; /* Spazio tra i bottoni e il link login */
+    right: 25px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
 }
 
-/* Trasformazione link in Bottoni a Pillola */
 .contact-item {
     background-color: #0056b3 !important; 
     color: white !important;
@@ -52,10 +80,9 @@ header h1 {
     font-size: 0.75rem !important;
     font-weight: bold !important;
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    text-decoration: none !important;
+    margin-bottom: 2px;
     display: inline-flex;
     align-items: center;
-    transition: all 0.3s ease;
 }
 
 .contact-item:hover {
@@ -64,12 +91,10 @@ header h1 {
     transform: scale(1.05);
 }
 
-/* --- AREA MANAGER LOGIN (Sistemazione colore e posizione) --- */
 .login-sub-link {
-    color: rgba(255, 255, 255, 0.7) !important; /* Grigio chiaro per non distrarre dai bottoni */
+    color: rgba(255, 255, 255, 0.7) !important;
     font-size: 0.7rem !important;
     font-weight: bold !important;
-    text-decoration: none !important;
     margin-top: 4px;
     display: block;
 }
@@ -79,32 +104,7 @@ header h1 {
     text-decoration: underline !important;
 }
 
-/* --- PULSANTE RITORNO (Nelle pagine interne) --- */
-header a.btn-back {
-    position: absolute !important;
-    left: 20px !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    background-color: rgba(255, 255, 255, 0.15) !important;
-    color: white !important;
-    text-decoration: none !important;
-    border: 1.5px solid white !important;
-    padding: 10px 22px !important;
-    border-radius: 50px !important;
-    font-size: 0.85rem !important;
-    font-weight: bold !important;
-    z-index: 2000 !important;
-    display: flex !important;
-    align-items: center !important;
-    transition: all 0.3s ease;
-}
-
-header a.btn-back:hover {
-    background-color: white !important;
-    color: #003366 !important;
-}
-
-/* --- CARD DOCUMENTI --- */
+/* --- GRID DASHBOARD E CARD --- */
 .grid-dashboard {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -127,6 +127,7 @@ header a.btn-back:hover {
     transition: 0.3s ease;
     text-decoration: none;
     color: inherit;
+    position: relative;
 }
 
 .card:hover { 
@@ -134,17 +135,13 @@ header a.btn-back:hover {
     box-shadow: 0 12px 30px rgba(0,0,0,0.12); 
 }
 
-/* --- RESPONSIVE --- */
+/* --- REGOLE RESPONSIVE --- */
 @media (max-width: 768px) {
     header { flex-direction: column; padding: 15px 0; height: auto; }
     
-    header h1 { 
-        max-width: 90%; 
-        font-size: 1.2rem; 
-        margin: 10px 0; 
-    }
+    header h1 { max-width: 90%; font-size: 1.2rem; margin: 10px 0; }
 
-    header a.btn-back { 
+    .btn-back { 
         position: relative !important; 
         left: 0 !important; 
         top: 0 !important; 
@@ -153,9 +150,9 @@ header a.btn-back:hover {
     }
 
     .header-contacts-extreme { 
-        position: static; 
-        align-items: center; 
-        margin-top: 10px; 
-        transform: none;
+        position: static !important; 
+        align-items: center !important; 
+        margin-top: 10px !important; 
+        transform: none !important;
     }
 }
