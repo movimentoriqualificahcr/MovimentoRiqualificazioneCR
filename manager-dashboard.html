@@ -134,6 +134,17 @@
             renderizzaGrid(docsGlobali);
         }
 
+        function popolaFiltriMenu() {
+            const arg = document.getElementById('fArg'), aut = document.getElementById('fAut'), dat = document.getElementById('fData');
+            arg.innerHTML = '<option value="tutti">Tutti gli argomenti</option>';
+            aut.innerHTML = '<option value="tutti">Tutti gli autori</option>';
+            dat.innerHTML = '<option value="tutti">Tutti gli anni</option>';
+            
+            [...new Set(docsGlobali.map(d => d.argomento))].sort().forEach(a => { if(a) arg.innerHTML += `<option value="${a}">${a}</option>`; });
+            [...new Set(docsGlobali.map(d => d.autore))].sort().forEach(a => { if(a) aut.innerHTML += `<option value="${a}">${a}</option>`; });
+            [...new Set(docsGlobali.map(d => d.data?.split('/').pop()))].filter(Boolean).sort((a,b)=>b-a).forEach(a => { dat.innerHTML += `<option value="${a}">${a}</option>`; });
+        }
+
         function renderizzaGrid(docs) {
             const grid = document.getElementById('main-grid');
             grid.innerHTML = `<div class="card" onclick="apriM()" style="border:2px dashed #28a745; cursor:pointer; justify-content:center;"><span style="font-size:3rem; color:#28a745;">+</span><h3 style="color:#28a745;">Aggiungi Nuovo</h3></div>` +
@@ -145,6 +156,22 @@
                     <p style="font-size:0.8rem; color:#666;">${d.autore}<br>${d.data}</p>
                     <button onclick="modificaD('${d.id}')" style="margin-top:15px; padding:8px 20px; background:#003366; color:white; border:none; border-radius:50px; cursor:pointer;">Gestione →</button>
                 </div>`).join('');
+        }
+
+        function applicaFiltri() {
+            const t = document.getElementById('cercaTitolo').value.toLowerCase();
+            const arg = document.getElementById('fArg').value;
+            const aut = document.getElementById('fAut').value;
+            const anno = document.getElementById('fData').value;
+
+            const filtrati = docsGlobali.filter(d => {
+                const matchT = d.titolo.toLowerCase().includes(t);
+                const matchArg = arg === 'tutti' || d.argomento === arg;
+                const matchAut = aut === 'tutti' || d.autore === aut;
+                const matchAnno = anno === 'tutti' || (d.data && d.data.endsWith(anno));
+                return matchT && matchArg && matchAut && matchAnno;
+            });
+            renderizzaGrid(filtrati);
         }
 
         async function anteprima(path) {
@@ -194,17 +221,43 @@
             else { chiudiM(); caricaDocs(); }
         }
 
-        async function esciOra() { 
-            await _supabase.auth.signOut(); 
-            window.location.href = 'index.html'; 
+        async function salvaHeader() {
+            const updates = [
+                { key: 'site_title', valore: document.getElementById('siteTitleInput').value },
+                { key: 'link_email', valore: document.getElementById('linkEmail').value },
+                { key: 'link_money', valore: document.getElementById('linkMoney').value },
+                { key: 'link_sign', valore: document.getElementById('linkSign').value }
+            ];
+            const { error } = await _supabase.from('settings').upsert(updates, { onConflict: 'key' });
+            if (error) alert(error.message);
+            else {
+                document.getElementById('header-title').innerText = document.getElementById('siteTitleInput').value;
+                alert("Header salvato!");
+            }
         }
 
         function apriM() {
             document.getElementById('editId').value = "";
             document.getElementById('newTitolo').value = "";
+            document.getElementById('newAutore').value = "";
+            document.getElementById('newArg').value = "";
+            document.getElementById('newData').value = "";
             document.getElementById('pdfFile').value = "";
             popolaListaCorrelati([]);
             document.getElementById('modalDocumento').style.display = 'flex';
+        }
+
+        async function modificaD(id) {
+            const d = docsGlobali.find(doc => doc.id === id);
+            if (d) {
+                document.getElementById('editId').value = d.id;
+                document.getElementById('newTitolo').value = d.titolo;
+                document.getElementById('newAutore').value = d.autore;
+                document.getElementById('newArg').value = d.argomento;
+                document.getElementById('newData').value = d.data;
+                popolaListaCorrelati(d.correlati || []);
+                document.getElementById('modalDocumento').style.display = 'flex';
+            }
         }
 
         function popolaListaCorrelati(selezionati = []) {
@@ -217,10 +270,21 @@
                 </div>`).join('');
         }
 
+        async function eliminaD(id) {
+            if(confirm("Sei sicuro di voler eliminare questo documento?")) {
+                const { error } = await _supabase.from('documenti').delete().eq('id', id);
+                if (error) alert(error.message);
+                else caricaDocs();
+            }
+        }
+
+        async function esciOra() { 
+            await _supabase.auth.signOut(); 
+            window.location.href = 'index.html'; 
+        }
+
         function chiudiM() { document.getElementById('modalDocumento').style.display = 'none'; }
         window.onload = init;
-        
-        // Altre funzioni di filtri e gestione header...
     </script>
 </body>
 </html>
