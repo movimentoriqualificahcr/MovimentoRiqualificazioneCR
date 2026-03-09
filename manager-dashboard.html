@@ -21,16 +21,21 @@
         .filter-container { display: flex; gap: 8px; flex-wrap: wrap; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 
         .grid-dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; padding: 20px 30px; max-width: 1200px; margin: 0 auto; }
-        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eef0f2; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; transition: 0.3s; cursor: default; }
-        .card:hover { transform: translateY(-5px); }
-
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eef0f2; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; transition: 0.3s; }
+        
         #modalDocumento { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; justify-content:center; align-items:center; }
         .modal-content { background: white; padding: 30px; border-radius: 20px; width: 95%; max-width: 900px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         .col-input { flex: 1; display: flex; flex-direction: column; gap: 10px; }
         .col-preview { flex: 1.2; border: 1px solid #eee; border-radius: 12px; background: #f9f9f9; min-height: 400px; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center; padding: 10px; }
+        
         .correlati-list { max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 8px; background: #fff; text-align: left; }
         .correlato-item { display: flex; align-items: center; gap: 8px; padding: 4px; border-radius: 4px; transition: 0.2s; cursor: pointer; }
         .correlato-item:hover { background: #e3f2fd; }
+
+        /* Stile Barra di Caricamento */
+        #progress-container { width: 100%; background-color: #eee; border-radius: 10px; margin: 15px 0; display: none; overflow: hidden; }
+        #progress-bar { width: 0%; height: 12px; background-color: #007bff; transition: width 0.2s; }
+        #progress-text { font-size: 0.7rem; color: #666; text-align: center; margin-top: 4px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -81,6 +86,11 @@
                         <input type="file" id="pdfFile" accept="application/pdf">
                         <label style="font-weight:bold; font-size:0.75rem; color:#003366; margin-top:5px;">Correla Documenti:</label>
                         <div id="lista-checkbox-correlati" class="correlati-list"></div>
+                        
+                        <div id="progress-container">
+                            <div id="progress-bar"></div>
+                            <div id="progress-text">Caricamento: 0%</div>
+                        </div>
                     </div>
                     <div class="col-preview" id="area-anteprima">
                         <p id="placeholder-text" style="color:#999; font-size:0.8rem;">Passa sopra un correlato per l'anteprima</p>
@@ -126,7 +136,7 @@
                         </div>`;
             html += docs.map(d => `
                 <div class="card">
-                    <button onclick="eliminaD('${d.id}')" style="position:absolute; top:10px; right:10px; border:none; background:none; color:#d9534f; cursor:pointer; font-size:1.2rem;">✕</button>
+                    <button onclick="eliminaD('${d.id}')" style="position:absolute; top:10px; right:10px; border:none; background:none; color:#d9534f; cursor:pointer;">✕</button>
                     <div style="font-size: 2.5rem; margin-bottom: 10px; color:#ccc;">📄</div>
                     <h3 style="font-size:1rem; color:#003366; margin:0 0 10px 0;">${d.titolo}</h3>
                     <p style="font-size:0.8rem; color:#666; margin:0;">${d.autore}<br>${d.data}</p>
@@ -146,49 +156,61 @@
             if (error) alert("Errore: " + error.message);
             else {
                 document.getElementById('header-title').innerText = document.getElementById('siteTitleInput').value;
-                alert("Header aggiornato correttamente!");
+                alert("Header aggiornato!");
             }
         }
 
-        async function esciOra() { 
-            await _supabase.auth.signOut(); 
-            window.location.href = 'index.html'; 
-        }
+        async function salvaDocumentoManager() {
+            const file = document.getElementById('pdfFile').files[0];
+            const progContainer = document.getElementById('progress-container');
+            const progBar = document.getElementById('progress-bar');
+            const progText = document.getElementById('progress-text');
+            let pdfPath = null;
 
-        function apriM() {
-            document.getElementById('editId').value = "";
-            document.getElementById('modalTitle').innerText = "Nuovo Documento";
-            document.getElementById('newTitolo').value = "";
-            document.getElementById('newAutore').value = "";
-            document.getElementById('newArg').value = "";
-            document.getElementById('newData').value = "";
-            document.getElementById('pdfFile').value = "";
-            popolaListaCorrelati([]);
-            document.getElementById('modalDocumento').style.display = 'flex';
-        }
+            if (file) {
+                progContainer.style.display = 'block';
+                const name = `${Date.now()}_${file.name}`;
 
-        async function modificaD(id) {
-            const d = docsGlobali.find(doc => doc.id === id);
-            if (d) {
-                document.getElementById('editId').value = d.id;
-                document.getElementById('modalTitle').innerText = "Modifica Documento";
-                document.getElementById('newTitolo').value = d.titolo;
-                document.getElementById('newAutore').value = d.autore;
-                document.getElementById('newArg').value = d.argomento;
-                document.getElementById('newData').value = d.data;
-                popolaListaCorrelati(d.correlati || []);
-                document.getElementById('modalDocumento').style.display = 'flex';
+                const { data, error: uploadError } = await _supabase.storage
+                    .from('pdf_riservati')
+                    .upload(name, file, {
+                        onUploadProgress: (evt) => {
+                            const percent = Math.round((evt.loaded / evt.total) * 100);
+                            progBar.style.width = percent + '%';
+                            progText.innerText = `Caricamento: ${percent}%`;
+                        },
+                    });
+
+                if (uploadError) {
+                    alert("Errore PDF: " + uploadError.message + "\n\nSe il file è grande, alza il limite su Supabase.");
+                    progContainer.style.display = 'none';
+                    return;
+                }
+                pdfPath = data.path;
             }
-        }
 
-        function popolaListaCorrelati(selezionati = []) {
-            const container = document.getElementById('lista-checkbox-correlati');
-            const attualeId = document.getElementById('editId').value;
-            container.innerHTML = docsGlobali.filter(d => d.id !== attualeId).map(d => `
-                <div class="correlato-item" onmouseover="anteprima('${d.pdf_url}')">
-                    <input type="checkbox" class="check-cor" value="${d.id}" ${selezionati.includes(d.id) ? 'checked' : ''}>
-                    <span style="font-size:0.75rem;">${d.titolo}</span>
-                </div>`).join('');
+            const idCorrelati = Array.from(document.querySelectorAll('.check-cor:checked')).map(c => c.value);
+            const payload = {
+                titolo: document.getElementById('newTitolo').value,
+                autore: document.getElementById('newAutore').value,
+                argomento: document.getElementById('newArg').value,
+                data: document.getElementById('newData').value,
+                correlati: idCorrelati,
+                timestamp: Date.now()
+            };
+
+            if (pdfPath) payload.pdf_url = pdfPath;
+            const id = document.getElementById('editId').value;
+            const { error: dbError } = id 
+                ? await _supabase.from('documenti').update(payload).eq('id', id) 
+                : await _supabase.from('documenti').insert([payload]);
+
+            if (dbError) alert("Errore database: " + dbError.message);
+            else {
+                alert("Salvato con successo!");
+                progContainer.style.display = 'none';
+                chiudiM(); caricaDocs();
+            }
         }
 
         async function anteprima(path) {
@@ -207,47 +229,39 @@
             viewer.innerHTML = `<embed src="${data.publicUrl}#toolbar=0" type="application/pdf" width="100%" height="100%" />`;
         }
 
-        async function salvaDocumentoManager() {
-            const file = document.getElementById('pdfFile').files[0];
-            let pdfPath = null;
-            
-            // 1. Prova a caricare il PDF
-            if (file) {
-                const name = `${Date.now()}_${file.name}`;
-                const { data, error: uploadError } = await _supabase.storage.from('pdf_riservati').upload(name, file);
-                
-                if (uploadError) {
-                    alert("Errore caricamento PDF: " + uploadError.message + "\n\nIl documento verrà salvato senza file. Assicurati di alzare il limite nel pannello Storage.");
-                } else {
-                    pdfPath = data.path;
-                }
-            }
+        function apriM() {
+            document.getElementById('editId').value = "";
+            document.getElementById('newTitolo').value = "";
+            document.getElementById('newAutore').value = "";
+            document.getElementById('newArg').value = "";
+            document.getElementById('newData').value = "";
+            document.getElementById('pdfFile').value = "";
+            document.getElementById('progress-container').style.display = 'none';
+            popolaListaCorrelati([]);
+            document.getElementById('modalDocumento').style.display = 'flex';
+        }
 
-            // 2. Salva i dati nel Database
-            const idCorrelati = Array.from(document.querySelectorAll('.check-cor:checked')).map(c => c.value);
-            const payload = {
-                titolo: document.getElementById('newTitolo').value,
-                autore: document.getElementById('newAutore').value,
-                argomento: document.getElementById('newArg').value,
-                data: document.getElementById('newData').value,
-                correlati: idCorrelati,
-                timestamp: Date.now()
-            };
-            
-            if (pdfPath) payload.pdf_url = pdfPath;
-            
-            const id = document.getElementById('editId').value;
-            const { error: dbError } = id 
-                ? await _supabase.from('documenti').update(payload).eq('id', id) 
-                : await _supabase.from('documenti').insert([payload]);
-
-            if (dbError) {
-                alert("Errore salvataggio database: " + dbError.message);
-            } else {
-                alert("Salvataggio completato!");
-                chiudiM(); 
-                caricaDocs(); 
+        async function modificaD(id) {
+            const d = docsGlobali.find(doc => doc.id === id);
+            if (d) {
+                document.getElementById('editId').value = d.id;
+                document.getElementById('newTitolo').value = d.titolo;
+                document.getElementById('newAutore').value = d.autore;
+                document.getElementById('newArg').value = d.argomento;
+                document.getElementById('newData').value = d.data;
+                popolaListaCorrelati(d.correlati || []);
+                document.getElementById('modalDocumento').style.display = 'flex';
             }
+        }
+
+        function popolaListaCorrelati(selezionati = []) {
+            const container = document.getElementById('lista-checkbox-correlati');
+            const attualeId = document.getElementById('editId').value;
+            container.innerHTML = docsGlobali.filter(d => d.id !== attualeId).map(d => `
+                <div class="correlato-item" onmouseover="anteprima('${d.pdf_url}')">
+                    <input type="checkbox" class="check-cor" value="${d.id}" ${selezionati.includes(d.id) ? 'checked' : ''}>
+                    <span style="font-size:0.75rem;">${d.titolo}</span>
+                </div>`).join('');
         }
 
         function popolaFiltriMenu() {
@@ -276,13 +290,13 @@
         }
 
         async function eliminaD(id) {
-            if(confirm("Eliminare definitivamente questo documento?")) {
-                const { error } = await _supabase.from('documenti').delete().eq('id', id);
-                if (error) alert(error.message);
-                else caricaDocs();
+            if(confirm("Eliminare?")) {
+                await _supabase.from('documenti').delete().eq('id', id);
+                caricaDocs();
             }
         }
 
+        async function esciOra() { await _supabase.auth.signOut(); window.location.href = 'index.html'; }
         function chiudiM() { document.getElementById('modalDocumento').style.display = 'none'; }
         window.onload = init;
     </script>
