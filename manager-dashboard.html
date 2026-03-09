@@ -6,49 +6,61 @@
     <title>Area Manager - Ospedale Cremona</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding-top: 120px; overflow-x: hidden; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding-top: 100px; overflow-x: hidden; }
         
-        header { background: #003366; color: white; padding: 20px 0; position: fixed; top: 0; width: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center; min-height: 100px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
-        header h1 { margin: 0; font-size: 1.3rem; text-align: center; max-width: 45%; }
-        
-        .header-contacts-extreme { position: absolute; right: 25px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
-        .contact-item { background-color: #0056b3; color: white !important; padding: 6px 14px; border-radius: 50px; font-size: 0.75rem; font-weight: bold; border: 1px solid rgba(255,255,255,0.2); text-decoration: none; }
-        .btn-logout { background: none; border: none; color: rgba(255,255,255,0.7); font-size: 0.65rem; font-weight: bold; cursor: pointer; }
+        /* Header compatto con Hamburger */
+        header { 
+            background: #003366; color: white; padding: 15px 20px; position: fixed; top: 0; width: 100%; 
+            z-index: 2000; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); min-height: 70px;
+        }
+        header h1 { margin: 0; font-size: 1.1rem; max-width: 70%; line-height: 1.2; }
 
-        /* Ottimizzazione Mobile Barra Impostazioni */
-        .settings-bar { background: #e3f2fd; border: 1.5px solid #003366; border-radius: 12px; padding: 15px; max-width: 1200px; margin: 20px auto; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; }
-        .settings-group { display: flex; align-items: center; gap: 5px; background: white; padding: 5px 10px; border-radius: 8px; border: 1px solid #ccc; flex: 1; min-width: 200px; }
+        /* Menu Hamburger */
+        .hamburger { cursor: pointer; display: flex; flex-direction: column; gap: 5px; z-index: 3000; padding: 10px; }
+        .hamburger span { width: 25px; height: 3px; background: white; border-radius: 2px; transition: 0.3s; }
+        
+        .nav-menu { 
+            position: fixed; top: 0; right: -100%; width: 250px; height: 100vh; background: #002244; 
+            display: flex; flex-direction: column; padding: 80px 20px; gap: 15px; transition: 0.4s; z-index: 2500;
+        }
+        .nav-menu.active { right: 0; box-shadow: -5px 0 15px rgba(0,0,0,0.5); }
+        
+        .contact-item { 
+            background-color: #0056b3; color: white !important; padding: 12px; border-radius: 8px; 
+            font-size: 0.9rem; font-weight: bold; text-decoration: none; text-align: center;
+        }
+        .btn-logout { background: #d9534f; border: none; color: white; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+
+        /* Barra Impostazioni Mobile-Friendly */
+        .settings-bar { 
+            background: #e3f2fd; border: 1.5px solid #003366; border-radius: 12px; padding: 15px; 
+            max-width: 1200px; margin: 20px auto; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+        }
+        .settings-group { display: flex; align-items: center; gap: 5px; background: white; padding: 5px 10px; border-radius: 8px; border: 1px solid #ccc; flex: 1; min-width: 250px; }
         .settings-group input { border: none; font-size: 0.8rem; outline: none; width: 100%; }
 
-        .filter-section { margin: 10px auto; max-width: 1200px; display: flex; justify-content: center; }
-        .filter-container { display: flex; gap: 8px; flex-wrap: wrap; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        /* Correzione Filtri Sovrapposti */
+        .filter-section { margin: 20px auto; max-width: 1200px; display: flex; justify-content: center; padding: 0 15px; }
+        .filter-container { 
+            display: flex; gap: 10px; flex-wrap: wrap; background: white; padding: 15px; 
+            border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); width: 100%; justify-content: center;
+        }
+        .filter-container input, .filter-container select { padding: 10px; border-radius: 8px; border: 1px solid #ddd; min-width: 180px; }
 
-        .grid-dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; padding: 20px 30px; max-width: 1200px; margin: 0 auto; }
-        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eef0f2; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; transition: 0.3s; }
-        
-        #modalDocumento { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; justify-content:center; align-items:center; }
-        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 95%; max-width: 900px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); overflow-y: auto; max-height: 90vh; }
-        
-        .col-input { flex: 1; display: flex; flex-direction: column; gap: 10px; }
-        .col-preview { flex: 1.2; border: 1px solid #eee; border-radius: 12px; background: #f9f9f9; min-height: 400px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 10px; }
+        /* Griglia e Card */
+        .grid-dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; position: relative; }
 
-        #info-file { font-size: 0.75rem; color: #666; margin-top: 2px; font-weight: bold; }
-
-        /* Contenitore Notifiche Overlay */
-        #notification-container { position: fixed; top: 20px; right: 20px; z-index: 4000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .notification-toast { background: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); border-left: 5px solid #28a745; min-width: 300px; opacity: 0; transform: translateX(50px); transition: 0.4s; pointer-events: auto; display: flex; align-items: start; gap: 12px; }
-        .notification-toast.error { border-left-color: #d9534f; }
+        /* Notifiche Toast Overlay */
+        #notification-container { position: fixed; top: 80px; right: 20px; z-index: 4000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .notification-toast { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); border-left: 5px solid #28a745; min-width: 280px; opacity: 0; transform: translateX(50px); transition: 0.4s; pointer-events: auto; }
         .notification-toast.show { opacity: 1; transform: translateX(0); }
-        .notification-toast.hide { opacity: 0; transform: translateX(50px); }
-        .toast-icon { font-size: 1.4rem; }
-        .toast-title { font-weight: bold; color: #003366; font-size: 0.95rem; }
-        .toast-message { font-size: 0.85rem; color: #666; }
+        .notification-toast.error { border-left-color: #d9534f; }
 
-        @media (max-width: 768px) {
-            header h1 { font-size: 1rem; max-width: 70%; }
-            .header-contacts-extreme { position: relative; right: auto; top: auto; transform: none; align-items: center; padding: 10px; background: #002244; width: 100%; }
-            body { padding-top: 180px; }
-            .settings-bar { margin: 10px; }
+        @media (max-width: 600px) {
+            body { padding-top: 90px; }
+            .settings-group { min-width: 100%; }
         }
     </style>
 </head>
@@ -56,15 +68,17 @@
 
     <header>
         <h1 id="header-title">Caricamento...</h1>
-        <div class="header-contacts-extreme">
-            <div style="display: flex; gap: 6px;">
-                <a href="#" class="contact-item">📩 Email</a>
-                <a href="#" class="contact-item">💰 Raccolta</a>
-                <a href="#" class="contact-item">✍️ Firma</a>
-            </div>
-            <button onclick="esciOra()" class="btn-logout">Esci (Manager)</button>
+        <div class="hamburger" onclick="toggleMenu()">
+            <span></span><span></span><span></span>
         </div>
     </header>
+
+    <nav class="nav-menu" id="navMenu">
+        <a href="#" id="outEmail" class="contact-item">📩 Email</a>
+        <a href="#" id="outMoney" class="contact-item">💰 Raccolta</a>
+        <a href="#" id="outSign" class="contact-item">✍️ Firma</a>
+        <button onclick="esciOra()" class="btn-logout">Esci (Manager)</button>
+    </nav>
 
     <div id="notification-container"></div>
 
@@ -74,12 +88,12 @@
             <div class="settings-group"><label>Email:</label><input type="text" id="linkEmail"></div>
             <div class="settings-group"><label>Raccolta:</label><input type="text" id="linkMoney"></div>
             <div class="settings-group"><label>Firma:</label><input type="text" id="linkSign"></div>
-            <button onclick="salvaHeader()" style="background:#003366; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold; width: 100%;">Salva Header</button>
+            <button onclick="salvaHeader()" style="background:#003366; color:white; border:none; padding:12px; border-radius:8px; cursor:pointer; font-weight:bold; width: 100%;">Salva Header</button>
         </div>
 
         <section class="filter-section">
             <div class="filter-container">
-                <input type="text" id="cercaTitolo" placeholder="Cerca titolo..." oninput="applicaFiltri()">
+                <input type="text" id="cercaTitolo" placeholder="🔍 Cerca titolo..." oninput="applicaFiltri()">
                 <select id="fArg" onchange="applicaFiltri()"><option value="tutti">Tutti gli argomenti</option></select>
                 <select id="fAut" onchange="applicaFiltri()"><option value="tutti">Tutti gli autori</option></select>
                 <select id="fData" onchange="applicaFiltri()"><option value="tutti">Tutti gli anni</option></select>
@@ -87,53 +101,30 @@
         </section>
 
         <div class="grid-dashboard" id="main-grid"></div>
-
-        <div id="modalDocumento">
-            <div class="modal-content">
-                <h3 id="modalTitle" style="color:#003366; margin-top:0;">Gestione Documento</h3>
-                <input type="hidden" id="editId">
-                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                    <div class="col-input" style="min-width: 300px;">
-                        <input type="text" id="newTitolo" placeholder="Titolo" style="padding:10px; border-radius:8px; border:1px solid #ddd;">
-                        <input type="text" id="newAutore" placeholder="Autore" style="padding:10px; border-radius:8px; border:1px solid #ddd;">
-                        <input type="text" id="newArg" placeholder="Argomento" style="padding:10px; border-radius:8px; border:1px solid #ddd;">
-                        <input type="text" id="newData" placeholder="Data" style="padding:10px; border-radius:8px; border:1px solid #ddd;">
-                        <label style="font-weight:bold; font-size:0.75rem;">File PDF:</label>
-                        <input type="file" id="pdfFile" accept="application/pdf">
-                        <div id="info-file"></div>
-                        <div id="lista-checkbox-correlati" style="max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 8px;"></div>
-                    </div>
-                    <div class="col-preview" id="area-anteprima">
-                        <p id="placeholder-text">Passa sopra un correlato per l'anteprima</p>
-                        <div id="viewer-correlato" style="width:100%; height:100%; display:none;"></div>
-                    </div>
-                </div>
-                <div style="display:flex; gap:10px; margin-top:20px;">
-                    <button id="btnSalva" onclick="salvaDocumentoManager()" style="flex:1; padding:12px; background:#28a745; color:white; border:none; border-radius:8px; font-weight:bold;">Salva Online</button>
-                    <button onclick="chiudiM()" style="flex:1; padding:12px; background:#6c757d; color:white; border:none; border-radius:8px;">Annulla</button>
-                </div>
-            </div>
-        </div>
     </main>
 
     <script>
         const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
         let docsGlobali = [];
 
+        function toggleMenu() {
+            document.getElementById('navMenu').classList.toggle('active');
+        }
+
         function showNotification(title, message, isError = false) {
             const container = document.getElementById('notification-container');
             const toast = document.createElement('div');
             toast.className = `notification-toast ${isError ? 'error' : ''}`;
-            toast.innerHTML = `<span class="toast-icon">${isError ? '⚠️' : '✅'}</span><div class="toast-content"><div class="toast-title">${title}</div><div class="toast-message">${message}</div></div>`;
+            toast.innerHTML = `<strong>${title}</strong><br><small>${message}</small>`;
             container.appendChild(toast);
             setTimeout(() => toast.classList.add('show'), 10);
-            setTimeout(() => { toast.classList.add('hide'); setTimeout(() => toast.remove(), 400); }, 4000);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 4000);
         }
 
         async function init() {
             const { data: settings } = await _supabase.from('settings').select('*');
             if (settings) {
-                const title = settings.find(s => s.key === 'site_title')?.valore || "Ospedale Cremona";
+                const title = settings.find(s => s.key === 'site_title')?.valore || "Manager Dashboard";
                 document.getElementById('header-title').innerText = title;
                 document.getElementById('siteTitleInput').value = title;
                 document.getElementById('linkEmail').value = settings.find(s => s.key === 'link_email')?.valore || "";
@@ -146,14 +137,13 @@
         async function caricaDocs() {
             const { data: docs } = await _supabase.from('documenti').select('*').order('timestamp', { ascending: false });
             docsGlobali = docs || [];
-            popolaFiltriMenu();
             renderizzaGrid(docsGlobali);
         }
 
         function renderizzaGrid(docs) {
             const grid = document.getElementById('main-grid');
-            grid.innerHTML = `<div class="card" onclick="apriM()" style="border:2px dashed #28a745; cursor:pointer;"><span style="font-size:3rem; color:#28a745;">+</span><h3 style="color:#28a745;">Aggiungi Nuovo</h3></div>` +
-                docs.map(d => `<div class="card"><button onclick="eliminaD('${d.id}')" style="position:absolute; top:10px; right:10px; border:none; background:none; color:#d9534f; cursor:pointer;">✕</button>📄<h3 style="font-size:1rem; color:#003366;">${d.titolo}</h3><p style="font-size:0.8rem;">${d.autore}<br>${d.data}</p><button onclick="modificaD('${d.id}')" style="padding:8px 20px; background:#003366; color:white; border:none; border-radius:50px;">Gestione →</button></div>`).join('');
+            grid.innerHTML = `<div class="card" onclick="apriM()" style="border:2px dashed #28a745; cursor:pointer;"><h3>+ Aggiungi</h3></div>` +
+                docs.map(d => `<div class="card"><h3>${d.titolo}</h3><p>${d.autore}</p><button onclick="modificaD('${d.id}')">Gestione →</button></div>`).join('');
         }
 
         async function salvaHeader() {
@@ -167,95 +157,12 @@
             if (error) showNotification("Errore", error.message, true);
             else {
                 document.getElementById('header-title').innerText = document.getElementById('siteTitleInput').value;
-                showNotification("Successo", "Header aggiornato correttamente!");
+                showNotification("Successo", "Header salvato correttamente!");
+                toggleMenu(); // Chiude il menu se aperto
             }
         }
 
-        async function salvaDocumentoManager() {
-            const file = document.getElementById('pdfFile').files[0];
-            const btn = document.getElementById('btnSalva');
-            let pdfPath = null;
-
-            if (file) {
-                if (file.size / (1024 * 1024) > 50) return showNotification("Errore", "File troppo grande (max 50MB)", true);
-                btn.disabled = true; btn.innerText = "Salvataggio...";
-                const { data, error } = await _supabase.storage.from('pdf_riservati').upload(`${Date.now()}_${file.name}`, file);
-                if (error) { btn.disabled = false; btn.innerText = "Salva Online"; return showNotification("Errore PDF", error.message, true); }
-                pdfPath = data.path;
-            }
-
-            const payload = {
-                titolo: document.getElementById('newTitolo').value,
-                autore: document.getElementById('newAutore').value,
-                argomento: document.getElementById('newArg').value,
-                data: document.getElementById('newData').value,
-                correlati: Array.from(document.querySelectorAll('.check-cor:checked')).map(c => c.value),
-                timestamp: Date.now()
-            };
-            if (pdfPath) payload.pdf_url = pdfPath;
-            const id = document.getElementById('editId').value;
-            const { error: dbErr } = id ? await _supabase.from('documenti').update(payload).eq('id', id) : await _supabase.from('documenti').insert([payload]);
-
-            if (dbErr) showNotification("Errore DB", dbErr.message, true);
-            else { showNotification("Completato", "Documento salvato con successo!"); chiudiM(); caricaDocs(); }
-            btn.disabled = false; btn.innerText = "Salva Online";
-        }
-
-        function popolaFiltriMenu() {
-            const arg = document.getElementById('fArg'), aut = document.getElementById('fAut'), dat = document.getElementById('fData');
-            arg.innerHTML = '<option value="tutti">Tutti gli argomenti</option>';
-            aut.innerHTML = '<option value="tutti">Tutti gli autori</option>';
-            dat.innerHTML = '<option value="tutti">Tutti gli anni</option>';
-            [...new Set(docsGlobali.map(d => d.argomento))].sort().forEach(a => { if(a) arg.innerHTML += `<option value="${a}">${a}</option>`; });
-            [...new Set(docsGlobali.map(d => d.autore))].sort().forEach(a => { if(a) aut.innerHTML += `<option value="${a}">${a}</option>`; });
-            [...new Set(docsGlobali.map(d => d.data?.split('/').pop()))].filter(Boolean).sort((a,b)=>b-a).forEach(a => { dat.innerHTML += `<option value="${a}">${a}</option>`; });
-        }
-
-        function applicaFiltri() {
-            const t = document.getElementById('cercaTitolo').value.toLowerCase();
-            const arg = document.getElementById('fArg').value, aut = document.getElementById('fAut').value, anno = document.getElementById('fData').value;
-            renderizzaGrid(docsGlobali.filter(d => 
-                d.titolo.toLowerCase().includes(t) && 
-                (arg === 'tutti' || d.argomento === arg) && 
-                (aut === 'tutti' || d.autore === aut) && 
-                (anno === 'tutti' || (d.data && d.data.endsWith(anno)))
-            ));
-        }
-
-        async function eliminaD(id) { if(confirm("Eliminare?")) { await _supabase.from('documenti').delete().eq('id', id); caricaDocs(); showNotification("Eliminato", "File rimosso."); } }
         async function esciOra() { await _supabase.auth.signOut(); window.location.href = 'index.html'; }
-        function chiudiM() { document.getElementById('modalDocumento').style.display = 'none'; }
-        function apriM() { 
-            document.getElementById('editId').value = ""; 
-            document.getElementById('newTitolo').value = ""; 
-            document.getElementById('pdfFile').value = ""; 
-            document.getElementById('info-file').innerText = ""; 
-            popolaListaCorrelati([]); 
-            document.getElementById('modalDocumento').style.display = 'flex'; 
-        }
-        async function modificaD(id) {
-            const d = docsGlobali.find(doc => doc.id === id);
-            if (d) {
-                document.getElementById('editId').value = d.id;
-                document.getElementById('newTitolo').value = d.titolo;
-                document.getElementById('newAutore').value = d.autore;
-                document.getElementById('newArg').value = d.argomento;
-                document.getElementById('newData').value = d.data;
-                popolaListaCorrelati(d.correlati || []);
-                document.getElementById('modalDocumento').style.display = 'flex';
-            }
-        }
-        function popolaListaCorrelati(selezionati = []) {
-            const container = document.getElementById('lista-checkbox-correlati');
-            container.innerHTML = docsGlobali.filter(d => d.id !== document.getElementById('editId').value).map(d => `<div class="correlato-item" onmouseover="anteprima('${d.pdf_url}')"><input type="checkbox" class="check-cor" value="${d.id}" ${selezionati.includes(d.id) ? 'checked' : ''}><span style="font-size:0.75rem;">${d.titolo}</span></div>`).join('');
-        }
-        async function anteprima(path) {
-            const viewer = document.getElementById('viewer-correlato'), placeholder = document.getElementById('placeholder-text');
-            if (!path || path === "null") { viewer.style.display = 'none'; placeholder.style.display = 'block'; placeholder.innerText = "Nessun file associato"; return; }
-            const { data } = _supabase.storage.from('pdf_riservati').getPublicUrl(path);
-            placeholder.style.display = 'none'; viewer.style.display = 'block';
-            viewer.innerHTML = `<embed src="${data.publicUrl}#toolbar=0" type="application/pdf" width="100%" height="100%" />`;
-        }
         window.onload = init;
     </script>
 </body>
