@@ -68,7 +68,7 @@
                 <a href="#" class="contact-item">💰 Raccolta</a>
                 <a href="#" class="contact-item">✍️ Firma</a>
             </div>
-            <button onclick="logoutManager()" class="btn-logout">Esci (Manager)</button>
+            <button onclick="esciOra()" class="btn-logout">Esci (Manager)</button>
         </div>
     </header>
 
@@ -78,7 +78,7 @@
             <div class="settings-group"><label>Email:</label><input type="text" id="linkEmail"></div>
             <div class="settings-group"><label>Raccolta:</label><input type="text" id="linkMoney"></div>
             <div class="settings-group"><label>Firma:</label><input type="text" id="linkSign"></div>
-            <button onclick="saveHeader()" class="btn-save-header">Salva Header</button>
+            <button onclick="salvaHeaderNuovo()" class="btn-save-header">Salva Header</button>
         </div>
 
         <div class="grid-dashboard" id="main-grid"></div>
@@ -93,18 +93,19 @@
                 <input type="text" id="newData" placeholder="Data (es. 09/03/2026)" style="width:100%; margin-bottom:20px; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
                 
                 <div style="display:flex; gap:10px;">
-                    <button onclick="saveDoc()" style="flex:1; padding:12px; background:#28a745; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Salva</button>
-                    <button onclick="closeModal()" style="flex:1; padding:12px; background:#6c757d; color:white; border:none; border-radius:8px; cursor:pointer;">Annulla</button>
+                    <button onclick="salvaDocumento()" style="flex:1; padding:12px; background:#28a745; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Salva</button>
+                    <button onclick="chiudiModal()" style="flex:1; padding:12px; background:#6c757d; color:white; border:none; border-radius:8px; cursor:pointer;">Annulla</button>
                 </div>
             </div>
         </div>
     </main>
 
     <script>
-        const _supabase = supabase.createClient('IL_TUO_URL', 'LA_TUA_KEY');
+        // CONFIGURAZIONE
+        const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
 
-        // 1. INIZIALIZZAZIONE
-        async function init() {
+        // INIZIALIZZAZIONE
+        async function caricaPagina() {
             const { data: settings } = await _supabase.from('settings').select('*');
             if (settings) {
                 const title = settings.find(s => s.key === 'site_title')?.valore || "Movimento Ospedale";
@@ -114,89 +115,70 @@
                 document.getElementById('linkMoney').value = settings.find(s => s.key === 'link_money')?.valore || "";
                 document.getElementById('linkSign').value = settings.find(s => s.key === 'link_sign')?.valore || "";
             }
-            renderDocs();
+            mostraDocumenti();
         }
 
-        // 2. LOGOUT CORRETTO
-        async function logoutManager() {
-            const { error } = await _supabase.auth.signOut();
-            if (error) {
-                alert("Errore logout: " + error.message);
-            } else {
-                window.location.replace('index.html');
+        // LOGOUT FUNZIONANTE
+        async function esciOra() {
+            console.log("Eseguo logout...");
+            try {
+                await _supabase.auth.signOut();
+                window.location.href = 'index.html';
+            } catch (e) {
+                console.error(e);
+                window.location.assign('index.html');
             }
         }
 
-        // 3. SALVATAGGIO HEADER
-        async function saveHeader() {
+        // SALVATAGGIO HEADER
+        async function salvaHeaderNuovo() {
             const updates = [
                 { key: 'site_title', valore: document.getElementById('siteTitleInput').value },
                 { key: 'link_email', valore: document.getElementById('linkEmail').value },
                 { key: 'link_money', valore: document.getElementById('linkMoney').value },
                 { key: 'link_sign', valore: document.getElementById('linkSign').value }
             ];
-
             const { error } = await _supabase.from('settings').upsert(updates, { onConflict: 'key' });
-            
-            if (error) {
-                alert("Errore salvataggio: " + error.message);
-            } else {
+            if (error) alert("Errore: " + error.message);
+            else {
                 document.getElementById('header-title').innerText = document.getElementById('siteTitleInput').value;
-                alert("Header aggiornato correttamente!");
+                alert("Salvataggio completato!");
             }
         }
 
-        // 4. RENDERING DOCUMENTI
-        async function renderDocs() {
+        // GESTIONE DOCUMENTI
+        async function mostraDocumenti() {
             const { data: docs } = await _supabase.from('documenti').select('*').order('timestamp', { ascending: false });
             const grid = document.getElementById('main-grid');
-            
-            let html = `
-                <div class="card" onclick="openModal()" style="border:2px dashed #28a745; cursor:pointer; min-height:200px; justify-content:center;">
-                    <span style="font-size:3rem; color:#28a745;">+</span>
-                    <h3 style="color:#28a745; font-size:1rem;">Aggiungi Nuovo</h3>
-                </div>`;
-
+            let html = `<div class="card" onclick="apriNuovo()" style="border:2px dashed #28a745; cursor:pointer; min-height:200px; justify-content:center;">
+                            <span style="font-size:3rem; color:#28a745;">+</span>
+                            <h3 style="color:#28a745; font-size:1rem;">Aggiungi Nuovo</h3>
+                        </div>`;
             if (docs) {
                 html += docs.map(d => `
                     <div class="card">
-                        <button onclick="deleteDoc('${d.id}')" class="btn-elimina">✕</button>
+                        <button onclick="eliminaD('${d.id}')" class="btn-elimina">✕</button>
                         <div style="font-size: 2.5rem; margin-bottom: 10px; color:#ccc;">📄</div>
                         <h3 style="font-size:1rem; color:#003366; margin:0 0 10px 0;">${d.titolo}</h3>
                         <p style="font-size:0.8rem; color:#666; margin:0;">${d.autore}<br>${d.data}</p>
-                        <button onclick="editDoc('${d.id}')" class="btn-gestione">Gestione →</button>
+                        <button onclick="modificaD('${d.id}')" class="btn-gestione">Gestione →</button>
                     </div>`).join('');
             }
             grid.innerHTML = html;
         }
 
-        // 5. GESTIONE MODAL E DOCUMENTI
-        function openModal() { 
+        // FUNZIONI MODAL
+        function apriNuovo() { 
             document.getElementById('editId').value = "";
             document.getElementById('newTitolo').value = "";
             document.getElementById('newAutore').value = "";
             document.getElementById('newArg').value = "";
             document.getElementById('newData').value = "";
-            document.getElementById('modalTitle').innerText = "Nuovo Documento";
             document.getElementById('modalDocumento').style.display = 'flex'; 
         }
-        
-        function closeModal() { document.getElementById('modalDocumento').style.display = 'none'; }
+        function chiudiModal() { document.getElementById('modalDocumento').style.display = 'none'; }
 
-        async function editDoc(id) {
-            const { data } = await _supabase.from('documenti').select('*').eq('id', id).single();
-            if (data) {
-                document.getElementById('editId').value = data.id;
-                document.getElementById('newTitolo').value = data.titolo;
-                document.getElementById('newAutore').value = data.autore;
-                document.getElementById('newArg').value = data.argomento;
-                document.getElementById('newData').value = data.data;
-                document.getElementById('modalTitle').innerText = "Modifica Documento";
-                document.getElementById('modalDocumento').style.display = 'flex';
-            }
-        }
-
-        async function saveDoc() {
+        async function salvaDocumento() {
             const id = document.getElementById('editId').value;
             const payload = {
                 titolo: document.getElementById('newTitolo').value,
@@ -205,24 +187,31 @@
                 data: document.getElementById('newData').value,
                 timestamp: Date.now()
             };
-            
-            let res;
-            if (id) res = await _supabase.from('documenti').update(payload).eq('id', id);
-            else res = await _supabase.from('documenti').insert([payload]);
-            
-            if (res.error) alert("Errore: " + res.error.message);
-            else { closeModal(); renderDocs(); }
+            if (id) await _supabase.from('documenti').update(payload).eq('id', id);
+            else await _supabase.from('documenti').insert([payload]);
+            chiudiModal(); mostraDocumenti();
         }
 
-        async function deleteDoc(id) {
-            if(confirm("Sei sicuro di voler eliminare questo documento?")) {
-                const { error } = await _supabase.from('documenti').delete().eq('id', id);
-                if (error) alert(error.message);
-                else renderDocs();
+        async function modificaD(id) {
+            const { data } = await _supabase.from('documenti').select('*').eq('id', id).single();
+            if (data) {
+                document.getElementById('editId').value = data.id;
+                document.getElementById('newTitolo').value = data.titolo;
+                document.getElementById('newAutore').value = data.autore;
+                document.getElementById('newArg').value = data.argomento;
+                document.getElementById('newData').value = data.data;
+                document.getElementById('modalDocumento').style.display = 'flex';
             }
         }
 
-        window.onload = init;
+        async function eliminaD(id) {
+            if(confirm("Eliminare?")) {
+                await _supabase.from('documenti').delete().eq('id', id);
+                mostraDocumenti();
+            }
+        }
+
+        window.onload = caricaPagina;
     </script>
 </body>
 </html>
