@@ -6,7 +6,6 @@
     <title>Visualizza Documento - Ospedale Cremona</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* BASE E HEADER */
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding-top: 80px; overflow-x: hidden; }
         
         header { 
@@ -17,36 +16,38 @@
         header h1 { margin: 0; font-size: 0.9rem; text-align: center; grid-column: 2; line-height: 1.2; }
         .btn-back-link { grid-column: 1; color: white; text-decoration: none; font-weight: bold; font-size: 0.75rem; border: 1px solid rgba(255,255,255,0.4); padding: 6px 10px; border-radius: 50px; text-align: center; }
 
-        /* LAYOUT ADATTIVO  */
-        main { 
-            display: flex; flex-direction: row; flex-wrap: wrap; /* Permette il salto riga su mobile */
-            max-width: 1400px; margin: 20px auto; gap: 20px; padding: 0 15px; 
-            min-height: calc(100vh - 120px);
-        }
+        main { display: flex; flex-direction: row; flex-wrap: wrap; max-width: 1400px; margin: 20px auto; gap: 20px; padding: 0 15px; min-height: calc(100vh - 120px); }
         
-        .sidebar-left { 
-            flex: 1 1 300px; /* Base 300px, può crescere e restringersi */
-            max-width: 320px; display: flex; flex-direction: column; gap: 15px; 
-        }
-        
+        .sidebar-left { flex: 1 1 300px; max-width: 320px; display: flex; flex-direction: column; gap: 15px; }
         .info-box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; }
         .info-box h2 { color: #003366; font-size: 1.1rem; margin: 0 0 10px 0; border-bottom: 2px solid #f0f2f5; padding-bottom: 5px; }
 
-        /* AREA PDF */
+        /* FIX PER SCROLL PDF SU MOBILE */
         .pdf-display-area { 
-            flex: 999 1 400px; /* Forza il PDF a prendersi tutto lo spazio rimanente */
-            background: #525659; border-radius: 15px; overflow: hidden; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2); min-height: 600px; 
+            flex: 999 1 400px; 
+            background: #525659; border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+            min-height: 600px;
+            position: relative;
+            -webkit-overflow-scrolling: touch; /* Forza lo scroll fluido su iOS */
+            overflow-y: auto;
         }
-        iframe { width: 100%; height: 100%; border: none; }
+
+        /* Utilizziamo EMBED invece di IFRAME per migliore compatibilità mobile */
+        embed, object { 
+            width: 100%; 
+            height: 100%; 
+            min-height: 80vh; 
+            border: none; 
+            display: block;
+        }
 
         .corr-link { display: block; padding: 10px; background: #f8f9fa; border-radius: 8px; text-decoration: none; color: #003366; font-weight: bold; font-size: 0.8rem; margin-top: 8px; border: 1px solid #eee; }
 
-        /* FIX PER DISPOSITIVI STRETTI  */
         @media (max-width: 800px) {
             main { flex-direction: column; }
             .sidebar-left { max-width: 100%; width: 100%; flex: none; }
-            .pdf-display-area { min-height: 500px; height: 75vh; }
+            .pdf-display-area { height: 80vh; min-height: 500px; }
         }
     </style>
 </head>
@@ -65,17 +66,14 @@
                 <p><b>Autore:</b> <span id="doc-autore">...</span></p>
                 <p><b>Data:</b> <span id="doc-data">...</span></p>
             </div>
-
             <div class="info-box">
                 <h2 style="font-size: 0.9rem;">Documenti Correlati</h2>
-                <div id="correlati-lista">
-                    <p style="font-size: 0.75rem; color: #999;">Nessun correlato.</p>
-                </div>
+                <div id="correlati-lista"></div>
             </div>
         </div>
 
         <div class="pdf-display-area" id="pdf-view">
-            <p style="color: white; text-align: center; padding-top: 100px;">Recupero del file...</p>
+            <p style="color: white; text-align: center; padding-top: 100px;">Caricamento file...</p>
         </div>
     </main>
 
@@ -88,10 +86,7 @@
             if (!id) return;
 
             const { data: d, error } = await _supabase.from('documenti').select('*').eq('id', id).single();
-            if (error || !d) {
-                document.getElementById('doc-titolo').innerText = "Documento non trovato";
-                return;
-            }
+            if (error || !d) return;
 
             document.getElementById('header-title').innerText = d.titolo;
             document.getElementById('doc-titolo').innerText = d.titolo;
@@ -100,7 +95,10 @@
 
             if (d.pdf_url) {
                 const { data: urlData } = _supabase.storage.from('pdf_riservati').getPublicUrl(d.pdf_url);
-                document.getElementById('pdf-view').innerHTML = `<iframe src="${urlData.publicUrl}"></iframe>`;
+                // Usiamo il tag <embed> che è più "malleabile" per lo scorrimento mobile
+                document.getElementById('pdf-view').innerHTML = `
+                    <embed src="${urlData.publicUrl}#toolbar=1&navpanes=0&scrollbar=1" type="application/pdf" />
+                `;
             }
 
             if (d.correlati && d.correlati.length > 0) {
