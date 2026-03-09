@@ -6,43 +6,47 @@
     <title>Visualizza Documento - Ospedale Cremona</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* BASE E HEADER */
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding-top: 80px; overflow-x: hidden; }
         
         header { 
             background: #003366; color: white; padding: 10px 20px; position: fixed; top: 0; width: 100%; 
-            z-index: 2000; display: grid; grid-template-columns: 120px 1fr 120px; align-items: center; 
+            z-index: 2000; display: grid; grid-template-columns: 100px 1fr 100px; align-items: center; 
             box-sizing: border-box; box-shadow: 0 2px 10px rgba(0,0,0,0.3); min-height: 60px;
         }
-        header h1 { margin: 0; font-size: 1rem; text-align: center; grid-column: 2; line-height: 1.2; }
+        header h1 { margin: 0; font-size: 0.9rem; text-align: center; grid-column: 2; line-height: 1.2; }
+        .btn-back-link { grid-column: 1; color: white; text-decoration: none; font-weight: bold; font-size: 0.75rem; border: 1px solid rgba(255,255,255,0.4); padding: 6px 10px; border-radius: 50px; text-align: center; }
 
-        .btn-back-link { 
-            grid-column: 1; color: white; text-decoration: none; font-weight: bold; 
-            font-size: 0.75rem; border: 1px solid rgba(255,255,255,0.4); 
-            padding: 6px 10px; border-radius: 50px; text-align: center; width: fit-content;
-        }
-
+        /* LAYOUT ADATTIVO  */
         main { 
-            display: flex; max-width: 1400px; margin: 20px auto; gap: 20px; padding: 0 15px; 
-            min-height: calc(100vh - 120px); flex-wrap: wrap; 
+            display: flex; flex-direction: row; flex-wrap: wrap; /* Permette il salto riga su mobile */
+            max-width: 1400px; margin: 20px auto; gap: 20px; padding: 0 15px; 
+            min-height: calc(100vh - 120px);
         }
         
-        /* Sidebar sinistra adattiva */
-        .sidebar-left { flex: 1; min-width: 280px; max-width: 320px; display: flex; flex-direction: column; gap: 15px; }
+        .sidebar-left { 
+            flex: 1 1 300px; /* Base 300px, può crescere e restringersi */
+            max-width: 320px; display: flex; flex-direction: column; gap: 15px; 
+        }
+        
         .info-box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; }
         .info-box h2 { color: #003366; font-size: 1.1rem; margin: 0 0 10px 0; border-bottom: 2px solid #f0f2f5; padding-bottom: 5px; }
 
-        /* Area PDF che occupa lo spazio rimanente */
-        .pdf-display-area { flex: 3; min-width: 320px; background: #525659; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); min-height: 600px; }
+        /* AREA PDF */
+        .pdf-display-area { 
+            flex: 999 1 400px; /* Forza il PDF a prendersi tutto lo spazio rimanente */
+            background: #525659; border-radius: 15px; overflow: hidden; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); min-height: 600px; 
+        }
         iframe { width: 100%; height: 100%; border: none; }
 
         .corr-link { display: block; padding: 10px; background: #f8f9fa; border-radius: 8px; text-decoration: none; color: #003366; font-weight: bold; font-size: 0.8rem; margin-top: 8px; border: 1px solid #eee; }
 
-        /* Correzione per Mobile  */
-        @media (max-width: 768px) {
+        /* FIX PER DISPOSITIVI STRETTI  */
+        @media (max-width: 800px) {
             main { flex-direction: column; }
-            .sidebar-left { max-width: 100%; width: 100%; }
-            .pdf-display-area { height: 500px; min-height: 500px; }
-            header h1 { font-size: 0.85rem; }
+            .sidebar-left { max-width: 100%; width: 100%; flex: none; }
+            .pdf-display-area { min-height: 500px; height: 75vh; }
         }
     </style>
 </head>
@@ -84,7 +88,10 @@
             if (!id) return;
 
             const { data: d, error } = await _supabase.from('documenti').select('*').eq('id', id).single();
-            if (error || !d) return;
+            if (error || !d) {
+                document.getElementById('doc-titolo').innerText = "Documento non trovato";
+                return;
+            }
 
             document.getElementById('header-title').innerText = d.titolo;
             document.getElementById('doc-titolo').innerText = d.titolo;
