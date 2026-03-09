@@ -6,56 +6,33 @@
     <title>Area Manager - Ospedale Cremona</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* --- STILE INTERNO MANAGER --- */
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding-top: 120px; overflow-x: hidden; }
-        
-        header { 
-            background: #003366; color: white; padding: 20px 0; position: fixed; top: 0; width: 100%; 
-            z-index: 1000; display: flex; justify-content: center; align-items: center; min-height: 100px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); 
-        }
-        
+        /* --- STILE MANAGER --- */
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding-top: 120px; }
+        header { background: #003366; color: white; padding: 20px 0; position: fixed; top: 0; width: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center; min-height: 100px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
         header h1 { margin: 0; font-size: 1.3rem; text-align: center; max-width: 45%; }
-
-        /* Bottoni Header e Logout */
-        .header-contacts-extreme { position: absolute; right: 25px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
-        .contact-item { background-color: #0056b3; color: white !important; padding: 6px 14px; border-radius: 50px; font-size: 0.75rem; font-weight: bold; border: 1px solid rgba(255,255,255,0.2); text-decoration: none; display: flex; align-items: center; gap: 5px; }
         
-        .btn-logout { 
-            color: rgba(255,255,255,0.7) !important; font-size: 0.65rem; font-weight: bold; 
-            text-decoration: none; margin-top: 2px; background: none; border: none; cursor: pointer; 
-        }
-        .btn-logout:hover { color: white !important; text-decoration: underline; }
+        .header-contacts-extreme { position: absolute; right: 25px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+        .contact-item { background-color: #0056b3; color: white !important; padding: 6px 14px; border-radius: 50px; font-size: 0.75rem; font-weight: bold; border: 1px solid rgba(255,255,255,0.2); text-decoration: none; }
+        .btn-logout { color: rgba(255,255,255,0.7) !important; font-size: 0.65rem; font-weight: bold; text-decoration: none; margin-top: 2px; background: none; border: none; cursor: pointer; }
 
         /* Barra Gestione Header */
-        .settings-bar { 
-            background: #e3f2fd; border: 1.5px solid #003366; border-radius: 12px; padding: 15px; 
-            max-width: 1200px; margin: 20px auto; display: flex; flex-wrap: wrap; gap: 10px; 
-            align-items: center; justify-content: center; 
-        }
+        .settings-bar { background: #e3f2fd; border: 1.5px solid #003366; border-radius: 12px; padding: 15px; max-width: 1200px; margin: 20px auto; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; }
         .settings-group { display: flex; align-items: center; gap: 5px; background: white; padding: 5px 10px; border-radius: 8px; border: 1px solid #ccc; }
-        .settings-group label { font-size: 0.7rem; font-weight: bold; color: #003366; }
         .settings-group input { border: none; font-size: 0.8rem; outline: none; width: 150px; }
         
-        .btn-save-header { background: #003366; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-save-header:hover { background: #0056b3; }
+        /* FILTRI */
+        .filter-section { margin: 10px auto; max-width: 1200px; display: flex; justify-content: center; }
+        .filter-container { display: flex; gap: 8px; flex-wrap: wrap; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .filter-container input, .filter-container select { padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 0.85rem; }
 
-        /* Griglia e Card */
         .grid-dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; padding: 20px 30px; max-width: 1200px; margin: 0 auto; }
-        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eef0f2; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; transition: 0.3s; }
-        .card:hover { transform: translateY(-5px); }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eef0f2; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; }
         
         .btn-gestione { margin-top: 15px; padding: 8px 20px; background: #003366; color: white; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; font-size: 0.8rem; }
-        .btn-elimina { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #d9534f; cursor: pointer; font-weight: bold; font-size: 1.1rem; }
+        .btn-elimina { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #d9534f; cursor: pointer; font-weight: bold; }
 
-        /* Modal */
         #modalDocumento { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; justify-content:center; align-items:center; }
-        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-
-        @media (max-width: 768px) {
-            header { flex-direction: column; padding: 15px 0; height: auto; }
-            .header-contacts-extreme { position: static; align-items: center; margin-top: 10px; transform: none; }
-        }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 500px; }
     </style>
 </head>
 <body>
@@ -78,20 +55,28 @@
             <div class="settings-group"><label>Email:</label><input type="text" id="linkEmail"></div>
             <div class="settings-group"><label>Raccolta:</label><input type="text" id="linkMoney"></div>
             <div class="settings-group"><label>Firma:</label><input type="text" id="linkSign"></div>
-            <button onclick="salvaHeaderNuovo()" class="btn-save-header">Salva Header</button>
+            <button onclick="salvaHeaderNuovo()" style="background:#003366; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">Salva Header</button>
         </div>
+
+        <section class="filter-section">
+            <div class="filter-container">
+                <input type="text" id="cercaTitolo" placeholder="Cerca titolo...">
+                <select id="fArg"><option value="tutti">Tutti gli argomenti</option></select>
+                <select id="fAut"><option value="tutti">Tutti gli autori</option></select>
+                <select id="fData"><option value="tutti">Tutti gli anni</option></select>
+            </div>
+        </section>
 
         <div class="grid-dashboard" id="main-grid"></div>
 
         <div id="modalDocumento">
             <div class="modal-content">
-                <h3 id="modalTitle" style="color:#003366; margin-top:0;">Gestione Documento</h3>
+                <h3 id="modalTitle">Gestione Documento</h3>
                 <input type="hidden" id="editId">
-                <input type="text" id="newTitolo" placeholder="Titolo" style="width:100%; margin-bottom:10px; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
-                <input type="text" id="newAutore" placeholder="Autore" style="width:100%; margin-bottom:10px; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
-                <input type="text" id="newArg" placeholder="Argomento" style="width:100%; margin-bottom:10px; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
-                <input type="text" id="newData" placeholder="Data (es. 09/03/2026)" style="width:100%; margin-bottom:20px; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
-                
+                <input type="text" id="newTitolo" placeholder="Titolo" style="width:100%; margin-bottom:10px; padding:10px; box-sizing:border-box;">
+                <input type="text" id="newAutore" placeholder="Autore" style="width:100%; margin-bottom:10px; padding:10px; box-sizing:border-box;">
+                <input type="text" id="newArg" placeholder="Argomento" style="width:100%; margin-bottom:10px; padding:10px; box-sizing:border-box;">
+                <input type="text" id="newData" placeholder="Data (es. 09/03/2026)" style="width:100%; margin-bottom:20px; padding:10px; box-sizing:border-box;">
                 <div style="display:flex; gap:10px;">
                     <button onclick="salvaDocumento()" style="flex:1; padding:12px; background:#28a745; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Salva</button>
                     <button onclick="chiudiModal()" style="flex:1; padding:12px; background:#6c757d; color:white; border:none; border-radius:8px; cursor:pointer;">Annulla</button>
@@ -101,11 +86,11 @@
     </main>
 
     <script>
-        // CONFIGURAZIONE
         const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
+        let docsGlobali = [];
 
-        // INIZIALIZZAZIONE
-        async function caricaPagina() {
+        async function init() {
+            // Carica Settings
             const { data: settings } = await _supabase.from('settings').select('*');
             if (settings) {
                 const title = settings.find(s => s.key === 'site_title')?.valore || "Movimento Ospedale";
@@ -115,22 +100,71 @@
                 document.getElementById('linkMoney').value = settings.find(s => s.key === 'link_money')?.valore || "";
                 document.getElementById('linkSign').value = settings.find(s => s.key === 'link_sign')?.valore || "";
             }
-            mostraDocumenti();
+            caricaDocs();
         }
 
-        // LOGOUT FUNZIONANTE
-        async function esciOra() {
-            console.log("Eseguo logout...");
-            try {
-                await _supabase.auth.signOut();
-                window.location.href = 'index.html';
-            } catch (e) {
-                console.error(e);
-                window.location.assign('index.html');
+        async function caricaDocs() {
+            const { data: docs } = await _supabase.from('documenti').select('*').order('timestamp', { ascending: false });
+            if (docs) {
+                docsGlobali = docs;
+                popolaFiltri(docs);
+                renderizza(docs);
             }
         }
 
-        // SALVATAGGIO HEADER
+        function popolaFiltri(docs) {
+            const fArg = document.getElementById('fArg');
+            const fAut = document.getElementById('fAut');
+            const fData = document.getElementById('fData');
+            
+            // Svuota e aggiungi opzione "tutti"
+            fArg.innerHTML = '<option value="tutti">Tutti gli argomenti</option>';
+            fAut.innerHTML = '<option value="tutti">Tutti gli autori</option>';
+            fData.innerHTML = '<option value="tutti">Tutti gli anni</option>';
+
+            const argomenti = [...new Set(docs.map(d => d.argomento))].sort();
+            const autori = [...new Set(docs.map(d => d.autore))].sort();
+            const anni = [...new Set(docs.map(d => d.data ? d.data.split('/').pop() : ""))].filter(Boolean).sort((a,b) => b-a);
+
+            argomenti.forEach(a => { if(a) fArg.innerHTML += `<option value="${a}">${a}</option>`; });
+            autori.forEach(a => { if(a) fAut.innerHTML += `<option value="${a}">${a}</option>`; });
+            anni.forEach(a => { if(a) fData.innerHTML += `<option value="${a}">${a}</option>`; });
+        }
+
+        function renderizza(docs) {
+            const grid = document.getElementById('main-grid');
+            let html = `<div class="card" onclick="apriNuovo()" style="border:2px dashed #28a745; cursor:pointer; min-height:200px; justify-content:center;">
+                            <span style="font-size:3rem; color:#28a745;">+</span>
+                            <h3 style="color:#28a745; font-size:1rem;">Aggiungi Nuovo</h3>
+                        </div>`;
+            html += docs.map(d => `
+                <div class="card">
+                    <button onclick="eliminaD('${d.id}')" class="btn-elimina">✕</button>
+                    <div style="font-size: 2.5rem; margin-bottom: 10px; color:#ccc;">📄</div>
+                    <h3 style="font-size:1rem; color:#003366; margin:0 0 10px 0;">${d.titolo}</h3>
+                    <p style="font-size:0.8rem; color:#666; margin:0;">${d.autore}<br>${d.data}</p>
+                    <button onclick="modificaD('${d.id}')" class="btn-gestione">Gestione →</button>
+                </div>`).join('');
+            grid.innerHTML = html;
+        }
+
+        function applicaFiltri() {
+            const t = document.getElementById('cercaTitolo').value.toLowerCase();
+            const arg = document.getElementById('fArg').value;
+            const aut = document.getElementById('fAut').value;
+            const anno = document.getElementById('fData').value;
+
+            const filtrati = docsGlobali.filter(d => {
+                const matchT = d.titolo.toLowerCase().includes(t);
+                const matchArg = arg === 'tutti' || d.argomento === arg;
+                const matchAut = aut === 'tutti' || d.autore === aut;
+                const matchAnno = anno === 'tutti' || (d.data && d.data.endsWith(anno));
+                return matchT && matchArg && matchAut && matchAnno;
+            });
+            renderizza(filtrati);
+        }
+
+        // --- FUNZIONI GESTIONE ---
         async function salvaHeaderNuovo() {
             const updates = [
                 { key: 'site_title', valore: document.getElementById('siteTitleInput').value },
@@ -139,57 +173,17 @@
                 { key: 'link_sign', valore: document.getElementById('linkSign').value }
             ];
             const { error } = await _supabase.from('settings').upsert(updates, { onConflict: 'key' });
-            if (error) alert("Errore: " + error.message);
-            else {
+            if (error) alert(error.message); else {
                 document.getElementById('header-title').innerText = document.getElementById('siteTitleInput').value;
-                alert("Salvataggio completato!");
+                alert("Header aggiornato!");
             }
         }
 
-        // GESTIONE DOCUMENTI
-        async function mostraDocumenti() {
-            const { data: docs } = await _supabase.from('documenti').select('*').order('timestamp', { ascending: false });
-            const grid = document.getElementById('main-grid');
-            let html = `<div class="card" onclick="apriNuovo()" style="border:2px dashed #28a745; cursor:pointer; min-height:200px; justify-content:center;">
-                            <span style="font-size:3rem; color:#28a745;">+</span>
-                            <h3 style="color:#28a745; font-size:1rem;">Aggiungi Nuovo</h3>
-                        </div>`;
-            if (docs) {
-                html += docs.map(d => `
-                    <div class="card">
-                        <button onclick="eliminaD('${d.id}')" class="btn-elimina">✕</button>
-                        <div style="font-size: 2.5rem; margin-bottom: 10px; color:#ccc;">📄</div>
-                        <h3 style="font-size:1rem; color:#003366; margin:0 0 10px 0;">${d.titolo}</h3>
-                        <p style="font-size:0.8rem; color:#666; margin:0;">${d.autore}<br>${d.data}</p>
-                        <button onclick="modificaD('${d.id}')" class="btn-gestione">Gestione →</button>
-                    </div>`).join('');
-            }
-            grid.innerHTML = html;
-        }
-
-        // FUNZIONI MODAL
         function apriNuovo() { 
             document.getElementById('editId').value = "";
-            document.getElementById('newTitolo').value = "";
-            document.getElementById('newAutore').value = "";
-            document.getElementById('newArg').value = "";
-            document.getElementById('newData').value = "";
+            document.getElementById('newTitolo').value = ""; document.getElementById('newAutore').value = "";
+            document.getElementById('newArg').value = ""; document.getElementById('newData').value = "";
             document.getElementById('modalDocumento').style.display = 'flex'; 
-        }
-        function chiudiModal() { document.getElementById('modalDocumento').style.display = 'none'; }
-
-        async function salvaDocumento() {
-            const id = document.getElementById('editId').value;
-            const payload = {
-                titolo: document.getElementById('newTitolo').value,
-                autore: document.getElementById('newAutore').value,
-                argomento: document.getElementById('newArg').value,
-                data: document.getElementById('newData').value,
-                timestamp: Date.now()
-            };
-            if (id) await _supabase.from('documenti').update(payload).eq('id', id);
-            else await _supabase.from('documenti').insert([payload]);
-            chiudiModal(); mostraDocumenti();
         }
 
         async function modificaD(id) {
@@ -204,14 +198,29 @@
             }
         }
 
-        async function eliminaD(id) {
-            if(confirm("Eliminare?")) {
-                await _supabase.from('documenti').delete().eq('id', id);
-                mostraDocumenti();
-            }
+        async function salvaDocumento() {
+            const id = document.getElementById('editId').value;
+            const payload = { titolo: document.getElementById('newTitolo').value, autore: document.getElementById('newAutore').value, argomento: document.getElementById('newArg').value, data: document.getElementById('newData').value, timestamp: Date.now() };
+            if (id) await _supabase.from('documenti').update(payload).eq('id', id);
+            else await _supabase.from('documenti').insert([payload]);
+            chiudiModal(); caricaDocs();
         }
 
-        window.onload = caricaPagina;
+        function chiudiModal() { document.getElementById('modalDocumento').style.display = 'none'; }
+
+        async function eliminaD(id) {
+            if(confirm("Eliminare?")) { await _supabase.from('documenti').delete().eq('id', id); caricaDocs(); }
+        }
+
+        async function esciOra() { await _supabase.auth.signOut(); window.location.href = 'index.html'; }
+
+        // Listener Filtri
+        document.getElementById('cercaTitolo').addEventListener('input', applicaFiltri);
+        document.getElementById('fArg').addEventListener('change', applicaFiltri);
+        document.getElementById('fAut').addEventListener('change', applicaFiltri);
+        document.getElementById('fData').addEventListener('change', applicaFiltri);
+
+        window.onload = init;
     </script>
 </body>
 </html>
