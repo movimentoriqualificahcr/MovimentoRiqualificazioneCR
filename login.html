@@ -6,18 +6,23 @@
     <title>Login - Ospedale Cremona</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* --- STILE INTERNO SPECIFICO LOGIN --- */
+        /* --- STILE PER CENTRATURA BOX --- */
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f2f5;
-            margin: 0;
-            padding-top: 120px;
             display: flex;
             flex-direction: column;
+            /* Centra il contenuto verticalmente e orizzontalmente */
+            justify-content: center;
             align-items: center;
         }
 
-        /* Header coerente con il resto del sito */
+        /* Header coerente */
         header {
             background: #003366;
             color: white;
@@ -37,10 +42,8 @@
             margin: 0;
             font-size: 1.4rem;
             text-align: center;
-            max-width: 60%;
         }
 
-        /* Pulsante Torna al sito professionale */
         .btn-back {
             position: absolute !important;
             left: 20px !important;
@@ -49,33 +52,36 @@
             background-color: rgba(255, 255, 255, 0.15) !important;
             color: white !important;
             text-decoration: none !important;
-            border: 1.5px solid white !important;
-            padding: 10px 22px !important;
+            border: 1px solid white !important;
+            padding: 6px 14px !important;
             border-radius: 50px !important;
-            font-size: 0.85rem !important;
+            font-size: 0.75rem !important;
             font-weight: bold !important;
             transition: 0.3s;
         }
 
-        .btn-back:hover {
-            background-color: white !important;
-            color: #003366 !important;
-        }
-
-        /* Contenitore Login */
+        /* Box di Login centrato */
         .login-container {
             background: white;
             padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             width: 90%;
             max-width: 400px;
             text-align: center;
-            margin-top: 40px;
+            /* Rimuove margini eccessivi per la centratura Flexbox */
+            margin-top: 60px; 
         }
 
         .login-container h2 {
             color: #003366;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .login-container p {
+            font-size: 0.85rem;
+            color: #666;
             margin-bottom: 25px;
         }
 
@@ -91,7 +97,7 @@
 
         .btn-login {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background-color: #003366;
             color: white;
             border: none;
@@ -103,19 +109,12 @@
         }
 
         .btn-login:hover {
-            background-color: #004a99;
-        }
-
-        .error-msg {
-            color: #d9534f;
-            font-size: 0.85rem;
-            margin-top: 10px;
-            display: none;
+            background-color: #0056b3;
         }
 
         @media (max-width: 768px) {
             header h1 { font-size: 1.1rem; }
-            .btn-back { padding: 8px 15px; font-size: 0.75rem; }
+            .login-container { padding: 30px 20px; }
         }
     </style>
 </head>
@@ -128,13 +127,12 @@
 
     <div class="login-container">
         <h2>Login</h2>
-        <p style="font-size: 0.85rem; color: #666; margin-bottom: 20px;">Inserisci le tue credenziali per gestire i documenti</p>
+        <p>Inserisci le tue credenziali per gestire i documenti</p>
         
         <input type="email" id="email" placeholder="Email">
         <input type="password" id="password" placeholder="Password">
         
         <button class="btn-login" onclick="login()">Accedi</button>
-        <p id="error-msg" class="error-msg">Credenziali non valide. Riprova.</p>
     </div>
 
     <script>
@@ -143,7 +141,6 @@
         async function login() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const errorElement = document.getElementById('error-msg');
 
             const { data, error } = await _supabase.auth.signInWithPassword({
                 email: email,
@@ -151,7 +148,7 @@
             });
 
             if (error) {
-                errorElement.style.display = 'block';
+                alert("Errore: " + error.message);
             } else {
                 window.location.href = 'manager-dashboard.html';
             }
