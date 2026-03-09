@@ -204,28 +204,76 @@
                 </div>`).join('');
         }
 
-        async function salvaDoc() {
-            const f = document.getElementById('nFile').files[0], btn = document.getElementById('btnSalvaDoc');
-            let p = null;
-            btn.disabled = true; btn.innerText = "Invio...";
-            if (f) {
-                if (f.size / (1024 * 1024) > 50) { showNotification("Errore", "Max 50MB", true); btn.disabled = false; btn.innerText="Salva Online"; return; }
-                const { data, error } = await _supabase.storage.from('pdf_riservati').upload(`${Date.now()}_${f.name}`, f);
-                if (error) { showNotification("Errore PDF", error.message, true); btn.disabled = false; btn.innerText="Salva Online"; return; }
-                p = data.path;
-            }
-            const payload = {
-                titolo: document.getElementById('nTitolo').value, autore: document.getElementById('nAutore').value,
-                argomento: document.getElementById('nArg').value, data: document.getElementById('nData').value,
-                correlati: Array.from(document.querySelectorAll('.check-cor:checked')).map(c => c.value), timestamp: Date.now()
-            };
-            if (p) payload.pdf_url = p;
-            const id = document.getElementById('editId').value;
-            const { error: dbE } = id ? await _supabase.from('documenti').update(payload).eq('id', id) : await _supabase.from('documenti').insert([payload]);
-            if (dbE) showNotification("Errore DB", dbE.message, true);
-            else { showNotification("Successo", "Documento salvato!"); chiudiM(); caricaDocs(); }
-            btn.disabled = false; btn.innerText = "Salva Online";
+ async function salvaDoc() {
+    const f = document.getElementById('nFile').files[0];
+    const btn = document.getElementById('btnSalvaDoc');
+    const idCorrelatiSelezionati = Array.from(document.querySelectorAll('.check-cor:checked')).map(c => c.value);
+    let p = null;
+
+    btn.disabled = true; 
+    btn.innerText = "Sincronizzazione...";
+
+    // 1. Caricamento eventuale del nuovo PDF
+    if (f) {
+        if (f.size / (1024 * 1024) > 50) { 
+            showNotification("Errore", "Max 50MB", true); 
+            btn.disabled = false; btn.innerText="Salva Online"; 
+            return; 
         }
+        const { data, error } = await _supabase.storage.from('pdf_riservati').upload(`${Date.now()}_${f.name}`, f);
+        if (error) { 
+            showNotification("Errore PDF", error.message, true); 
+            btn.disabled = false; btn.innerText="Salva Online"; 
+            return; 
+        }
+        p = data.path;
+    }
+
+    const payload = {
+        titolo: document.getElementById('nTitolo').value,
+        autore: document.getElementById('nAutore').value,
+        argomento: document.getElementById('nArg').value,
+        data: document.getElementById('nData').value,
+        correlati: idCorrelatiSelezionati,
+        timestamp: Date.now()
+    };
+    if (p) payload.pdf_url = p;
+
+    const idCorrente = document.getElementById('editId').value;
+    
+    // 2. Salva o Aggiorna il documento principale (A)
+    let idFinale;
+    if (idCorrente) {
+        const { error: dbE } = await _supabase.from('documenti').update(payload).eq('id', idCorrente);
+        if (dbE) { showNotification("Errore DB", dbE.message, true); btn.disabled = false; return; }
+        idFinale = idCorrente;
+    } else {
+        const { data: newDoc, error: dbE } = await _supabase.from('documenti').insert([payload]).select();
+        if (dbE) { showNotification("Errore DB", dbE.message, true); btn.disabled = false; return; }
+        idFinale = newDoc[0].id;
+    }
+
+    // 3. SINCRONIZZAZIONE BIDIREZIONALE 
+    // Per ogni documento correlato (B), aggiungiamo l'ID del documento corrente (A)
+    for (const idTarget of idCorrelatiSelezionati) {
+        // Recuperiamo i correlati attuali del documento B
+        const { data: targetDoc } = await _supabase.from('documenti').select('correlati').eq('id', idTarget).single();
+        
+        let listaCorrelatiTarget = targetDoc.correlati || [];
+        
+        // Se l'ID del documento A non è già presente, lo aggiungiamo
+        if (!listaCorrelatiTarget.includes(idFinale)) {
+            listaCorrelatiTarget.push(idFinale);
+            await _supabase.from('documenti').update({ correlati: listaCorrelatiTarget }).eq('id', idTarget);
+        }
+    }
+
+    showNotification("Successo", "Documenti sincronizzati correttamente!");
+    chiudiM(); 
+    caricaDocs();
+    btn.disabled = false; 
+    btn.innerText = "Salva Online";
+}
 
         function apriM() { 
             document.getElementById('editId').value = ""; document.getElementById('nTitolo').value = ""; 
@@ -273,3 +321,4 @@
     </script>
 </body>
 </html>
+
