@@ -32,7 +32,6 @@
         .correlato-item { display: flex; align-items: center; gap: 8px; padding: 4px; border-radius: 4px; transition: 0.2s; cursor: pointer; }
         .correlato-item:hover { background: #e3f2fd; }
 
-        /* Stile Barra di Caricamento */
         #progress-container { width: 100%; background-color: #eee; border-radius: 10px; margin: 15px 0; display: none; overflow: hidden; }
         #progress-bar { width: 0%; height: 16px; background-color: #28a745; transition: width 0.3s ease; }
         #progress-text { font-size: 0.75rem; color: #333; text-align: center; margin-top: 5px; font-weight: bold; }
@@ -89,7 +88,7 @@
                         
                         <div id="progress-container">
                             <div id="progress-bar"></div>
-                            <div id="progress-text">Inizializzazione caricamento...</div>
+                            <div id="progress-text">Caricamento: 0%</div>
                         </div>
                     </div>
                     <div class="col-preview" id="area-anteprima">
@@ -169,7 +168,6 @@
             let pdfPath = null;
 
             if (file) {
-                // Feedback immediato
                 progContainer.style.display = 'block';
                 btnSalva.disabled = true;
                 btnSalva.innerText = "Caricamento...";
@@ -187,7 +185,7 @@
                     });
 
                 if (uploadError) {
-                    alert("Errore PDF: " + uploadError.message + "\n\nSe il caricamento non è partito, il file è troppo pesante per Supabase.");
+                    alert("Errore PDF: " + uploadError.message);
                     progContainer.style.display = 'none';
                     btnSalva.disabled = false;
                     btnSalva.innerText = "Salva Online";
