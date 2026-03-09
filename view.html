@@ -3,104 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizza Documento - Ospedale Cremona</title>
+    <title>Area Manager - Ospedale Cremona</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding-top: 100px; overflow-x: hidden; }
         header { 
             background: #003366; color: white; padding: 10px 20px; position: fixed; top: 0; width: 100%; 
-            z-index: 2000; display: grid; grid-template-columns: 150px 1fr 150px; align-items: center; 
+            z-index: 2000; display: grid; grid-template-columns: 50px 1fr 50px; align-items: center; 
             box-sizing: border-box; box-shadow: 0 2px 10px rgba(0,0,0,0.3); min-height: 70px;
         }
         header h1 { margin: 0; font-size: 1.1rem; text-align: center; grid-column: 2; line-height: 1.2; }
-        .btn-back-link { grid-column: 1; color: white; text-decoration: none; font-weight: bold; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.4); padding: 8px 12px; border-radius: 50px; text-align: center; width: fit-content; }
-        main { display: flex; max-width: 1400px; margin: 20px auto; gap: 20px; padding: 0 20px; height: calc(100vh - 140px); }
-        .sidebar-left { width: 300px; display: flex; flex-direction: column; gap: 15px; }
-        .info-box { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; }
-        .pdf-display-area { flex: 1; background: #525659; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .hamburger { cursor: pointer; display: flex; flex-direction: column; gap: 5px; grid-column: 3; justify-self: end; padding: 10px; }
+        .hamburger span { width: 25px; height: 3px; background: white; border-radius: 2px; }
+        .nav-menu { position: fixed; top: 80px; right: -100%; width: 280px; background: #002244; border-radius: 15px 0 0 15px; display: flex; flex-direction: column; padding: 20px; gap: 12px; transition: 0.4s; z-index: 2500; }
+        .nav-menu.active { right: 0; }
+        .btn-close-menu { align-self: flex-end; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        .settings-bar, .filter-section { background: white; border: 1px solid #ddd; border-radius: 12px; padding: 20px; max-width: 1100px; margin: 20px auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .grid-dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .card { background: white; padding: 25px; border-radius: 15px; border: 1px solid #eee; text-align: center; position: relative; display: flex; flex-direction: column; align-items: center; }
+        
+        /* MODALE STILE VIEW */
+        #modalDoc { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:3000; justify-content:center; align-items:center; }
+        .modal-content { background:#f0f2f5; border-radius:20px; width:98%; max-width:1400px; height: 95vh; overflow: hidden; display: flex; flex-direction: column; }
+        .modal-header { background: #003366; color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-body-view { display: flex; flex: 1; overflow: hidden; padding: 20px; gap: 20px; }
+        
+        .view-sidebar { width: 320px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
+        .view-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .view-card h3 { margin: 0 0 15px 0; font-size: 0.8rem; color: #003366; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        
+        .view-pdf-area { flex: 1; background: #525659; border-radius: 12px; overflow: hidden; position: relative; }
+        /* Iframe per garantire barra strumenti browser */
         iframe { width: 100%; height: 100%; border: none; }
-        .corr-link { display: block; padding: 10px; background: #f8f9fa; border-radius: 8px; text-decoration: none; color: #003366; font-weight: bold; font-size: 0.85rem; margin-top: 8px; border: 1px solid #eee; }
-        @media (max-width: 850px) { main { flex-direction: column; height: auto; } .sidebar-left { width: 100%; } .pdf-display-area { height: 600px; } }
+
+        .modal-input { width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; }
+        .correlati-list { max-height: 200px; overflow-y: auto; }
+        .corr-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; padding: 8px; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        .corr-item:hover { background: #e3f2fd; }
+
+        #notification-container { position: fixed; top: 90px; right: 20px; z-index: 4000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .notification-toast { background: white; padding: 15px 25px; border-radius: 10px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); border-left: 5px solid #28a745; min-width: 250px; opacity: 0; transform: translateX(50px); transition: 0.4s; pointer-events: auto; }
+        .notification-toast.show { opacity: 1; transform: translateX(0); }
     </style>
 </head>
 <body>
 
     <header>
-        <a href="index.html" class="btn-back-link">← Torna alla lista</a>
-        <h1 id="header-title">Dettaglio Documento</h1>
-        <div></div>
+        <h1 id="header-title">Area Manager</h1>
+        <div class="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
     </header>
 
+    <nav class="nav-menu" id="navMenu">
+        <button class="btn-close-menu" onclick="toggleMenu()">✕</button>
+        <a href="#" id="outEmail" class="contact-item" style="background:#0056b3; color:white; padding:12px; text-decoration:none; text-align:center; border-radius:8px;">📩 Email</a>
+        <a href="#" id="outMoney" class="contact-item" style="background:#0056b3; color:white; padding:12px; text-decoration:none; text-align:center; border-radius:8px;">💰 Raccolta</a>
+        <a href="#" id="outSign" class="contact-item" style="background:#0056b3; color:white; padding:12px; text-decoration:none; text-align:center; border-radius:8px;">✍️ Firma</a>
+        <button onclick="esciOra()" style="background:#d9534f; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:10px;">Esci</button>
+    </nav>
+
+    <div id="notification-container"></div>
+
     <main>
-        <div class="sidebar-left">
-            <div class="info-box">
-                <h2 id="doc-titolo" style="color: #003366; font-size: 1.2rem; margin-bottom: 10px;">Caricamento...</h2>
-                <p><b>Autore:</b> <span id="doc-autore">-</span></p>
-                <p><b>Data:</b> <span id="doc-data">-</span></p>
+        <div class="settings-bar">
+            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+                <div style="flex:1;"><label style="font-size:0.75rem; font-weight:bold;">Titolo Sito:</label><input type="text" id="siteTitleInput" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;"></div>
             </div>
-            <div class="info-box">
-                <h2 style="font-size: 1rem; color: #003366;">Documenti Correlati</h2>
-                <div id="correlati-lista"></div>
+            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
+                <div style="flex:1;"><label style="font-size:0.75rem; font-weight:bold;">Email:</label><input type="text" id="linkEmail" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;"></div>
+                <div style="flex:1;"><label style="font-size:0.75rem; font-weight:bold;">Raccolta:</label><input type="text" id="linkMoney" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;"></div>
+                <div style="flex:1;"><label style="font-size:0.75rem; font-weight:bold;">Firma:</label><input type="text" id="linkSign" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;"></div>
             </div>
+            <button onclick="salvaHeader()" style="background:#003366; color:white; border:none; padding:12px; border-radius:8px; cursor:pointer; width:100%; font-weight:bold;">Salva Header</button>
         </div>
-        <div class="pdf-display-area" id="pdf-view">
-            <p style="color: white; text-align: center; padding-top: 100px;">In attesa del file...</p>
+
+        <div class="filter-section">
+            <input type="text" id="cercaTitolo" placeholder="🔍 Cerca per titolo..." oninput="applicaFiltri()" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
         </div>
+
+        <div class="grid-dashboard" id="main-grid"></div>
     </main>
 
+    <div id="modalDoc">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="mTitle" style="margin:0; font-size:1.1rem;">Gestione Documento (Anteprima)</h2>
+                <div style="display:flex; gap:10px;">
+                    <button onclick="salvaDoc()" id="btnSalvaDoc" style="padding:10px 20px; background:#28a745; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Salva Online</button>
+                    <button onclick="chiudiM()" style="padding:10px 20px; background:#d9534f; color:white; border:none; border-radius:8px; cursor:pointer;">Chiudi</button>
+                </div>
+            </div>
+            
+            <div class="modal-body-view">
+                <div class="view-sidebar">
+                    <div class="view-card">
+                        <h3>Dati Documento</h3>
+                        <input type="hidden" id="editId">
+                        <label style="font-size:0.65rem; font-weight:bold; color:#003366;">TITOLO</label>
+                        <input type="text" id="nTitolo" class="modal-input">
+                        <label style="font-size:0.65rem; font-weight:bold; color:#003366;">AUTORE</label>
+                        <input type="text" id="nAutore" class="modal-input">
+                        <label style="font-size:0.65rem; font-weight:bold; color:#003366;">ARGOMENTO</label>
+                        <input type="text" id="nArg" class="modal-input">
+                        <label style="font-size:0.65rem; font-weight:bold; color:#003366;">DATA</label>
+                        <input type="text" id="nData" class="modal-input">
+                        <label style="font-size:0.65rem; font-weight:bold; color:#003366;">FILE PDF (Max 50MB):</label>
+                        <input type="file" id="nFile" accept="application/pdf" style="font-size:0.7rem; margin-top:5px;">
+                    </div>
+
+                    <div class="view-card">
+                        <h3>Documenti Correlati</h3>
+                        <div id="lista-correlati" class="correlati-list"></div>
+                    </div>
+                </div>
+
+                <div class="view-pdf-area" id="pdf-view-container">
+                    <p id="preview-placeholder" style="color:white; text-align:center; padding-top:200px;">Passa il mouse su un correlato per l'anteprima.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Inizializzazione Supabase garantita
         const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
+        let docsGlobali = [];
 
-        async function initView() {
-            try {
-                const urlParams = new URLSearchParams(window.location.search);
-                const id = urlParams.get('id');
-                if (!id) { window.location.href = 'index.html'; return; }
+        function toggleMenu() { document.getElementById('navMenu').classList.toggle('active'); }
+        function chiudiM() { document.getElementById('modalDoc').style.display = 'none'; }
 
-                // Recupero dati documento
-                const { data: d, error } = await _supabase.from('documenti').select('*').eq('id', id).single();
-                
-                if (error || !d) {
-                    document.getElementById('doc-titolo').innerText = "Errore nel caricamento";
-                    console.error("Errore Supabase:", error);
-                    return;
-                }
+        function showNotification(t, m, e = false) {
+            const c = document.getElementById('notification-container');
+            const n = document.createElement('div');
+            n.className = `notification-toast show ${e ? 'error' : ''}`;
+            n.innerHTML = `<strong>${t}</strong><br><small>${m}</small>`;
+            c.appendChild(n);
+            setTimeout(() => { n.style.opacity = '0'; setTimeout(() => n.remove(), 400); }, 3000);
+        }
 
-                // Popolamento testi
-                document.getElementById('header-title').innerText = d.titolo;
-                document.getElementById('doc-titolo').innerText = d.titolo;
-                document.getElementById('doc-autore').innerText = d.autore || "Non specificato";
-                document.getElementById('doc-data').innerText = d.data || "N/D";
+        async function mostraAnteprima(path) {
+            const container = document.getElementById('pdf-view-container');
+            if (!path || path === 'null') return;
+            
+            const { data } = _supabase.storage.from('pdf_riservati').getPublicUrl(path);
+            // Uso iframe per mostrare la barra strumenti nativa
+            container.innerHTML = `<iframe src="${data.publicUrl}"></iframe>`;
+        }
 
-                // Caricamento PDF tramite iframe (più stabile per i browser)
-                if (d.pdf_url) {
-                    const { data: urlData } = _supabase.storage.from('pdf_riservati').getPublicUrl(d.pdf_url);
-                    // Usiamo iframe per assicurarci che la barra strumenti PDF sia visibile
-                    document.getElementById('pdf-view').innerHTML = `<iframe src="${urlData.publicUrl}"></iframe>`;
-                } else {
-                    document.getElementById('pdf-view').innerHTML = `<p style="color:white; text-align:center; padding-top:100px;">Nessun PDF disponibile.</p>`;
-                }
+        async function init() {
+            const { data: s } = await _supabase.from('settings').select('*');
+            if (s) {
+                const title = s.find(x => x.key === 'site_title')?.valore || "Manager";
+                document.getElementById('header-title').innerText = title;
+                document.getElementById('siteTitleInput').value = title;
+                document.getElementById('linkEmail').value = s.find(x => x.key === 'link_email')?.valore || "";
+                document.getElementById('linkMoney').value = s.find(x => x.key === 'link_money')?.valore || "";
+                document.getElementById('linkSign').value = s.find(x => x.key === 'link_sign')?.valore || "";
+            }
+            caricaDocs();
+        }
 
-                // Caricamento Correlati
-                if (d.correlati && d.correlati.length > 0) {
-                    const { data: corr } = await _supabase.from('documenti').select('id, titolo').in('id', d.correlati);
-                    if (corr) {
-                        document.getElementById('correlati-lista').innerHTML = corr.map(c => 
-                            `<a href="view.html?id=${c.id}" class="corr-link">📄 ${c.titolo}</a>`
-                        ).join('');
-                    }
-                } else {
-                    document.getElementById('correlati-lista').innerHTML = `<p style="font-size: 0.8rem; color: #999;">Nessun documento correlato.</p>`;
-                }
+        async function caricaDocs() {
+            const { data: d } = await _supabase.from('documenti').select('*').order('timestamp', { ascending: false });
+            docsGlobali = d || [];
+            renderizzaGrid(docsGlobali);
+        }
 
-            } catch (err) {
-                console.error("Errore critico:", err);
-                alert("Si è verificato un errore durante il caricamento dei dati.");
+        function renderizzaGrid(docs) {
+            const g = document.getElementById('main-grid');
+            g.innerHTML = `<div class="card" onclick="apriM()" style="border:2px dashed #28a745; cursor:pointer; justify-content:center; min-height: 180px;"><span style="font-size:2rem; color:#28a745;">+</span><h3 style="color:#28a745;">Aggiungi Nuovo</h3></div>` +
+                docs.map(d => `<div class="card" style="min-height: 180px;">
+                    <button onclick="eliminaD('${d.id}')" style="position:absolute; top:10px; right:10px; border:none; background:none; color:#d9534f; cursor:pointer;">✕</button>
+                    <div style="font-size:2rem; color:#ccc;">📄</div>
+                    <h3 style="font-size:0.9rem; margin:10px 0;">${d.titolo}</h3>
+                    <button onclick="modificaD('${d.id}')" style="margin-top:auto; background:#003366; color:white; border:none; padding:8px 15px; border-radius:50px; cursor:pointer; font-size: 0.75rem;">Gestione →</button>
+                </div>`).join('');
+        }
+
+        async function salvaDoc() {
+            const f = document.getElementById('nFile').files[0], btn = document.getElementById('btnSalvaDoc');
+            let p = null;
+            btn.disabled = true; btn.innerText = "Invio...";
+            if (f) {
+                if (f.size / (1024 * 1024) > 50) { showNotification("Errore", "Max 50MB", true); btn.disabled = false; btn.innerText="Salva Online"; return; }
+                const { data, error } = await _supabase.storage.from('pdf_riservati').upload(`${Date.now()}_${f.name}`, f);
+                if (error) { showNotification("Errore PDF", error.message, true); btn.disabled = false; btn.innerText="Salva Online"; return; }
+                p = data.path;
+            }
+            const payload = {
+                titolo: document.getElementById('nTitolo').value, autore: document.getElementById('nAutore').value,
+                argomento: document.getElementById('nArg').value, data: document.getElementById('nData').value,
+                correlati: Array.from(document.querySelectorAll('.check-cor:checked')).map(c => c.value), timestamp: Date.now()
+            };
+            if (p) payload.pdf_url = p;
+            const id = document.getElementById('editId').value;
+            const { error: dbE } = id ? await _supabase.from('documenti').update(payload).eq('id', id) : await _supabase.from('documenti').insert([payload]);
+            if (dbE) showNotification("Errore DB", dbE.message, true);
+            else { showNotification("Successo", "Documento salvato!"); chiudiM(); caricaDocs(); }
+            btn.disabled = false; btn.innerText = "Salva Online";
+        }
+
+        function apriM() { 
+            document.getElementById('editId').value = ""; document.getElementById('nTitolo').value = ""; 
+            document.getElementById('nAutore').value = ""; document.getElementById('nArg').value = ""; 
+            document.getElementById('nData').value = ""; document.getElementById('nFile').value = "";
+            document.getElementById('pdf-view-container').innerHTML = `<p style="color:white; text-align:center; padding-top:200px;">Passa il mouse su un correlato per l'anteprima.</p>`;
+            popolaCheckCorrelati([]); document.getElementById('modalDoc').style.display = 'flex'; 
+        }
+
+        async function modificaD(id) {
+            const d = docsGlobali.find(x => x.id === id);
+            if (d) {
+                document.getElementById('editId').value = d.id; document.getElementById('nTitolo').value = d.titolo;
+                document.getElementById('nAutore').value = d.autore; document.getElementById('nArg').value = d.argomento;
+                document.getElementById('nData').value = d.data; popolaCheckCorrelati(d.correlati || []);
+                document.getElementById('modalDoc').style.display = 'flex';
+                mostraAnteprima(d.pdf_url);
             }
         }
 
-        window.onload = initView;
+        function popolaCheckCorrelati(selezionati = []) {
+            const c = document.getElementById('lista-correlati'), id = document.getElementById('editId').value;
+            c.innerHTML = docsGlobali.filter(d => d.id !== id).map(d => `
+                <div class="corr-item" onmouseenter="mostraAnteprima('${d.pdf_url}')">
+                    <input type="checkbox" class="check-cor" value="${d.id}" ${selezionati.includes(d.id) ? 'checked' : ''}>
+                    <span>${d.titolo}</span>
+                </div>`).join('') || 'Nessun altro file.';
+        }
+
+        async function eliminaD(id) { if(confirm("Eliminare?")) { await _supabase.from('documenti').delete().eq('id', id); caricaDocs(); showNotification("Eliminato", "Rimosso."); } }
+        async function salvaHeader() {
+            const u = [{ key: 'site_title', valore: document.getElementById('siteTitleInput').value }, { key: 'link_email', valore: document.getElementById('linkEmail').value }, { key: 'link_money', valore: document.getElementById('linkMoney').value }, { key: 'link_sign', valore: document.getElementById('linkSign').value }];
+            await _supabase.from('settings').upsert(u, { onConflict: 'key' });
+            showNotification("Successo", "Header salvato!"); document.getElementById('header-title').innerText = document.getElementById('siteTitleInput').value;
+        }
+
+        async function esciOra() { await _supabase.auth.signOut(); window.location.href = 'index.html'; }
+        window.onload = init;
     </script>
 </body>
 </html>
