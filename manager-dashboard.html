@@ -5,40 +5,42 @@
     <title>Area Manager - Ospedale Cremona</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* --- STILE INTERNO MANAGER --- */
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding-top: 120px; }
         header { background: #003366; color: white; padding: 20px 0; position: fixed; top: 0; width: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center; min-height: 100px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
-        header h1 { margin: 0; font-size: 1.4rem; text-align: center; max-width: 45%; }
+        header h1 { margin: 0; font-size: 1.3rem; text-align: center; max-width: 45%; }
         
+        /* Header Buttons */
         .header-contacts-extreme { position: absolute; right: 25px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
         .contact-item { background-color: #0056b3; color: white !important; padding: 6px 14px; border-radius: 50px; font-size: 0.75rem; font-weight: bold; border: 1px solid rgba(255,255,255,0.2); text-decoration: none; display: flex; align-items: center; gap: 5px; }
         .btn-logout { color: rgba(255,255,255,0.7) !important; font-size: 0.65rem; font-weight: bold; text-decoration: none; margin-top: 2px; background: none; border: none; cursor: pointer; }
 
-        /* BOX GESTIONE HEADER */
-        .settings-bar { background: #e3f2fd; border: 1.5px solid #003366; border-radius: 12px; padding: 15px; max-width: 1200px; margin: 20px auto; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: center; }
-        .settings-group { display: flex; align-items: center; gap: 8px; background: white; padding: 5px 12px; border-radius: 8px; border: 1px solid #ccc; }
-        .settings-group label { font-size: 0.75rem; font-weight: bold; color: #003366; }
-        .settings-group input { border: none; font-size: 0.85rem; outline: none; width: 140px; }
-        .btn-save-settings { background: #003366; color: white; border: none; padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; font-size: 0.8rem; }
+        /* Settings Bar */
+        .settings-bar { background: #e3f2fd; border: 1.5px solid #003366; border-radius: 12px; padding: 15px; max-width: 1200px; margin: 20px auto; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; }
+        .settings-group { display: flex; align-items: center; gap: 5px; background: white; padding: 5px 10px; border-radius: 8px; border: 1px solid #ccc; }
+        .settings-group label { font-size: 0.7rem; font-weight: bold; color: #003366; }
+        .settings-group input { border: none; font-size: 0.8rem; outline: none; width: 150px; }
+        .btn-save-header { background: #003366; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-        .filter-section { margin: 10px auto; max-width: 1200px; display: flex; justify-content: center; }
-        .filter-container { display: flex; gap: 8px; flex-wrap: wrap; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .filter-container input, .filter-container select { padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 0.85rem; }
-
+        /* Grid & Cards */
         .grid-dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; padding: 20px 30px; max-width: 1200px; margin: 0 auto; }
-        .card { background: white; padding: 25px 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eef0f2; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; }
-        .btn-gestione { margin-top: 15px; padding: 6px 18px; background-color: #003366; color: white !important; border-radius: 50px; font-weight: bold; font-size: 0.75rem; border: none; cursor: pointer; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eef0f2; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); }
+        .btn-gestione { margin-top: 15px; padding: 8px 20px; background: #003366; color: white; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; font-size: 0.8rem; }
+        .btn-elimina { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #d9534f; cursor: pointer; font-weight: bold; }
+
+        #modalDocumento { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; justify-content:center; align-items:center; }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 500px; }
     </style>
 </head>
 <body>
 
     <header>
-        <h1 id="header-title">Movimento per la riqualificazione<br> dell'ospedale di Cremona</h1>
+        <h1 id="header-title">Caricamento...</h1>
         <div class="header-contacts-extreme">
             <div style="display: flex; gap: 6px;">
-                <a href="#" id="btn-email-preview" class="contact-item">📩 Email</a>
-                <a href="#" id="btn-money-preview" class="contact-item">💰 Raccolta</a>
-                <a href="#" id="btn-sign-preview" class="contact-item">✍️ Firma</a>
+                <a href="#" class="contact-item">📩 Email</a>
+                <a href="#" class="contact-item">💰 Raccolta</a>
+                <a href="#" class="contact-item">✍️ Firma</a>
             </div>
             <button onclick="logout()" class="btn-logout">Esci (Manager)</button>
         </div>
@@ -46,74 +48,121 @@
 
     <main>
         <div class="settings-bar">
-            <div class="settings-group">
-                <label>Titolo:</label>
-                <input type="text" id="siteTitleInput" placeholder="Titolo sito">
-            </div>
-            <div class="settings-group">
-                <label>Email Link:</label>
-                <input type="text" id="linkEmail" placeholder="mailto:...">
-            </div>
-            <div class="settings-group">
-                <label>Raccolta Link:</label>
-                <input type="text" id="linkMoney" placeholder="https://...">
-            </div>
-            <div class="settings-group">
-                <label>Firma Link:</label>
-                <input type="text" id="linkSign" placeholder="https://...">
-            </div>
-            <button onclick="saveAllSettings()" class="btn-save-settings">Salva Header</button>
+            <div class="settings-group"><label>Titolo:</label><input type="text" id="siteTitleInput"></div>
+            <div class="settings-group"><label>Email:</label><input type="text" id="linkEmail"></div>
+            <div class="settings-group"><label>Raccolta:</label><input type="text" id="linkMoney"></div>
+            <div class="settings-group"><label>Firma:</label><input type="text" id="linkSign"></div>
+            <button onclick="saveHeader()" class="btn-save-header">Salva Header</button>
         </div>
 
-        <section class="filter-section">
-            <div class="filter-container">
-                <input type="text" id="cercaManager" placeholder="Cerca titolo...">
-                <select id="fArg"><option value="tutti">Tutti gli argomenti</option></select>
-                <select id="fAut"><option value="tutti">Tutti gli autori</option></select>
-                <select id="fData"><option value="tutti">Tutti gli anni</option></select>
-            </div>
-        </section>
-
         <div class="grid-dashboard" id="main-grid"></div>
+
+        <div id="modalDocumento">
+            <div class="modal-content">
+                <h3 id="modalTitle">Nuovo Documento</h3>
+                <input type="hidden" id="editId">
+                <input type="text" id="newTitolo" placeholder="Titolo" style="width:100%; margin-bottom:10px; padding:8px;">
+                <input type="text" id="newAutore" placeholder="Autore" style="width:100%; margin-bottom:10px; padding:8px;">
+                <input type="text" id="newArg" placeholder="Argomento" style="width:100%; margin-bottom:10px; padding:8px;">
+                <input type="text" id="newData" placeholder="Data (GG/MM/AAAA)" style="width:100%; margin-bottom:20px; padding:8px;">
+                <div style="display:flex; gap:10px;">
+                    <button onclick="saveDoc()" style="flex:1; padding:10px; background:#28a745; color:white; border:none; border-radius:8px;">Salva</button>
+                    <button onclick="closeModal()" style="flex:1; padding:10px; background:#6c757d; color:white; border:none; border-radius:8px;">Annulla</button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script>
-        const _supabase = supabase.createClient('TUO_URL', 'TUA_KEY');
+        // INSERISCI QUI I TUOI DATI SUPABASE
+        const _supabase = supabase.createClient('IL_TUO_URL', 'LA_TUA_KEY');
 
         async function init() {
-            // Carica configurazione Header
+            // 1. Carica Impostazioni Header
             const { data: settings } = await _supabase.from('settings').select('*');
             if (settings) {
-                settings.forEach(s => {
-                    const input = document.getElementById(s.id_elemento);
-                    if (input) input.value = s.valore;
-                    if (s.key === 'site_title') document.getElementById('header-title').innerText = s.valore;
-                });
+                const title = settings.find(s => s.key === 'site_title')?.valore || "Movimento Ospedale";
+                document.getElementById('header-title').innerText = title;
+                document.getElementById('siteTitleInput').value = title;
+                document.getElementById('linkEmail').value = settings.find(s => s.key === 'link_email')?.valore || "";
+                document.getElementById('linkMoney').value = settings.find(s => s.key === 'link_money')?.valore || "";
+                document.getElementById('linkSign').value = settings.find(s => s.key === 'link_sign')?.valore || "";
             }
             renderDocs();
         }
 
-        async function saveAllSettings() {
+        async function saveHeader() {
             const updates = [
-                { key: 'site_title', valore: document.getElementById('siteTitleInput').value, id_elemento: 'siteTitleInput' },
-                { key: 'link_email', valore: document.getElementById('linkEmail').value, id_elemento: 'linkEmail' },
-                { key: 'link_money', valore: document.getElementById('linkMoney').value, id_elemento: 'linkMoney' },
-                { key: 'link_sign', valore: document.getElementById('linkSign').value, id_elemento: 'linkSign' }
+                { key: 'site_title', valore: document.getElementById('siteTitleInput').value },
+                { key: 'link_email', valore: document.getElementById('linkEmail').value },
+                { key: 'link_money', valore: document.getElementById('linkMoney').value },
+                { key: 'link_sign', valore: document.getElementById('linkSign').value }
             ];
-
             const { error } = await _supabase.from('settings').upsert(updates, { onConflict: 'key' });
             if (!error) {
                 document.getElementById('header-title').innerText = document.getElementById('siteTitleInput').value;
-                alert("Header aggiornato con successo!");
+                alert("Header salvato!");
             }
         }
 
-        async function logout() { 
-            await _supabase.auth.signOut(); 
-            window.location.href = 'index.html'; 
+        async function renderDocs() {
+            const { data: docs } = await _supabase.from('documenti').select('*').order('timestamp', { ascending: false });
+            const grid = document.getElementById('main-grid');
+            
+            // Card Aggiungi Nuovo sempre presente
+            let html = `
+                <div class="card" onclick="openModal()" style="border:2px dashed #28a745; cursor:pointer;">
+                    <span style="font-size:3rem; color:#28a745;">+</span>
+                    <h3 style="color:#28a745;">Aggiungi Nuovo</h3>
+                </div>`;
+
+            if (docs) {
+                html += docs.map(d => `
+                    <div class="card">
+                        <button onclick="deleteDoc('${d.id}')" class="btn-elimina">✕</button>
+                        <div style="font-size: 2.5rem; margin-bottom: 10px; color:#ccc;">📄</div>
+                        <h3 style="font-size:1rem; color:#003366;">${d.titolo}</h3>
+                        <p style="font-size:0.8rem; color:#666;">${d.autore}<br>${d.data}</p>
+                        <button onclick="editDoc('${d.id}')" class="btn-gestione">Gestione →</button>
+                    </div>`).join('');
+            }
+            grid.innerHTML = html;
         }
 
-        // ... Resto delle funzioni rendering() e gestione documenti ...
+        async function logout() {
+            await _supabase.auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        // Funzioni Modal
+        function openModal() { 
+            document.getElementById('editId').value = "";
+            document.getElementById('modalTitle').innerText = "Nuovo Documento";
+            document.getElementById('modalDocumento').style.display = 'flex'; 
+        }
+        function closeModal() { document.getElementById('modalDocumento').style.display = 'none'; }
+
+        async function saveDoc() {
+            const id = document.getElementById('editId').value;
+            const payload = {
+                titolo: document.getElementById('newTitolo').value,
+                autore: document.getElementById('newAutore').value,
+                argomento: document.getElementById('newArg').value,
+                data: document.getElementById('newData').value,
+                timestamp: Date.now()
+            };
+            if (id) await _supabase.from('documenti').update(payload).eq('id', id);
+            else await _supabase.from('documenti').insert([payload]);
+            closeModal(); renderDocs();
+        }
+
+        async function deleteDoc(id) {
+            if(confirm("Eliminare?")) {
+                await _supabase.from('documenti').delete().eq('id', id);
+                renderDocs();
+            }
+        }
+
         window.onload = init;
     </script>
 </body>
