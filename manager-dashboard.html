@@ -7,66 +7,92 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding-top: 100px; overflow-x: hidden; }
-        header { background: #003366; color: white; padding: 10px 20px; position: fixed; top: 0; width: 100%; z-index: 2000; display: grid; grid-template-columns: 50px 1fr 50px; align-items: center; box-sizing: border-box; box-shadow: 0 2px 10px rgba(0,0,0,0.3); min-height: 70px; }
+        
+        header { 
+            background: #003366; color: white; padding: 10px 20px; position: fixed; top: 0; width: 100%; 
+            z-index: 2000; display: grid; grid-template-columns: 50px 1fr 50px; align-items: center; 
+            box-sizing: border-box; box-shadow: 0 2px 10px rgba(0,0,0,0.3); min-height: 70px;
+        }
         header h1 { margin: 0; font-size: 1.1rem; text-align: center; grid-column: 2; line-height: 1.2; }
+
         .hamburger { cursor: pointer; display: flex; flex-direction: column; gap: 5px; grid-column: 3; justify-self: end; padding: 10px; }
         .hamburger span { width: 25px; height: 3px; background: white; border-radius: 2px; }
-        .nav-menu { position: fixed; top: 80px; right: -100%; width: 280px; background: #002244; border-radius: 15px 0 0 15px; display: flex; flex-direction: column; padding: 20px; gap: 12px; transition: 0.4s; z-index: 2500; }
+        
+        .nav-menu { 
+            position: fixed; top: 80px; right: -100%; width: 280px; 
+            background: #002244; border-radius: 15px 0 0 15px;
+            display: flex; flex-direction: column; padding: 20px; gap: 12px; 
+            transition: 0.4s ease-in-out; z-index: 2500; box-shadow: -5px 5px 15px rgba(0,0,0,0.3);
+        }
         .nav-menu.active { right: 0; }
         .btn-close-menu { align-self: flex-end; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
-        .settings-bar, .filter-section { background: white; border: 1px solid #ddd; border-radius: 12px; padding: 20px; max-width: 1100px; margin: 20px auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .grid-dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; padding: 20px; max-width: 1200px; margin: 0 auto; }
-        .card { background: white; padding: 25px; border-radius: 15px; border: 1px solid #eee; text-align: center; position: relative; display: flex; flex-direction: column; align-items: center; }
         
-        /* MODALE A DUE COLONNE */
+        .contact-item { background-color: #0056b3; color: white !important; padding: 12px; border-radius: 8px; font-size: 0.9rem; font-weight: bold; text-decoration: none; text-align: center; }
+        .btn-logout { background: #d9534f; border: none; color: white; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+        .settings-bar, .filter-section { background: white; border: 1px solid #ddd; border-radius: 12px; padding: 20px; max-width: 1100px; margin: 20px auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .settings-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+        .settings-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 200px; }
+        .settings-group label { font-size: 0.75rem; font-weight: bold; color: #003366; }
+        .settings-group input { padding: 10px; border-radius: 6px; border: 1px solid #ccc; outline: none; }
+
+        .grid-dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .card { background: white; padding: 25px; border-radius: 15px; border: 1px solid #eee; text-align: center; position: relative; display: flex; flex-direction: column; align-items: center; transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        
+        /* MODALE A DUE COLONNE CON ZOOM */
         #modalDoc { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:3000; justify-content:center; align-items:center; }
-        .modal-content { background:white; padding:30px; border-radius:20px; width:95%; max-width:900px; max-height: 90vh; overflow-y: auto; box-shadow:0 10px 30px rgba(0,0,0,0.3); }
+        .modal-content { background:white; padding:30px; border-radius:20px; width:95%; max-width:1000px; max-height: 90vh; overflow-y: auto; box-shadow:0 10px 30px rgba(0,0,0,0.3); }
         .modal-body { display: flex; gap: 25px; flex-wrap: wrap; }
         .col-fields { flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 10px; }
-        .col-preview { flex: 1.2; min-width: 350px; background: #f9f9f9; border: 1px solid #eee; border-radius: 12px; min-height: 450px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+        .col-preview { flex: 1.5; min-width: 400px; background: #f9f9f9; border: 1px solid #eee; border-radius: 12px; min-height: 500px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         
-        .modal-input { width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing: border-box; }
+        .frame-wrapper { flex: 1; overflow: auto; width: 100%; height: 100%; position: relative; background: #525659; }
+        #preview-frame { width: 100%; height: 100%; transform-origin: top left; transition: transform 0.2s; }
+
+        .zoom-controls { position: absolute; top: 10px; right: 10px; z-index: 10; display: flex; gap: 5px; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 8px; }
+        .zoom-btn { background: white; border: none; border-radius: 4px; width: 30px; height: 30px; font-weight: bold; cursor: pointer; }
+
         .correlati-area { border: 1px solid #eee; border-radius: 8px; padding: 10px; max-height: 150px; overflow-y: auto; background: #fff; }
-        .corr-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; padding: 6px; border-radius: 6px; transition: 0.2s; cursor: pointer; }
+        .corr-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; padding: 6px; border-radius: 6px; cursor: pointer; }
         .corr-item:hover { background: #e3f2fd; }
-        
+
         #notification-container { position: fixed; top: 90px; right: 20px; z-index: 4000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
         .notification-toast { background: white; padding: 15px 25px; border-radius: 10px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); border-left: 5px solid #28a745; min-width: 250px; opacity: 0; transform: translateX(50px); transition: 0.4s; pointer-events: auto; }
         .notification-toast.show { opacity: 1; transform: translateX(0); }
+        .notification-toast.error { border-left-color: #d9534f; }
     </style>
 </head>
 <body>
 
     <header>
-        <h1 id="header-title">Area Manager</h1>
+        <h1 id="header-title">Caricamento...</h1>
         <div class="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
     </header>
 
     <nav class="nav-menu" id="navMenu">
         <button class="btn-close-menu" onclick="toggleMenu()">✕</button>
-        <a href="#" id="outEmail" class="contact-item" style="background:#0056b3; color:white; padding:12px; text-decoration:none; text-align:center; border-radius:8px;">📩 Email</a>
-        <a href="#" id="outMoney" class="contact-item" style="background:#0056b3; color:white; padding:12px; text-decoration:none; text-align:center; border-radius:8px;">💰 Raccolta</a>
-        <a href="#" id="outSign" class="contact-item" style="background:#0056b3; color:white; padding:12px; text-decoration:none; text-align:center; border-radius:8px;">✍️ Firma</a>
-        <button onclick="esciOra()" style="background:#d9534f; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:10px;">Esci</button>
+        <a href="#" id="outEmail" class="contact-item">📩 Email</a>
+        <a href="#" id="outMoney" class="contact-item">💰 Raccolta</a>
+        <a href="#" id="outSign" class="contact-item">✍️ Firma</a>
+        <button onclick="esciOra()" class="btn-logout">Esci</button>
     </nav>
 
     <div id="notification-container"></div>
 
     <main>
         <div class="settings-bar">
-            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
-                <div style="flex:1;"><label style="font-size:0.75rem; font-weight:bold;">Titolo Sito:</label><input type="text" id="siteTitleInput" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;"></div>
+            <div class="settings-row"><div class="settings-group"><label>Titolo Sito:</label><input type="text" id="siteTitleInput"></div></div>
+            <div class="settings-row">
+                <div class="settings-group"><label>Email:</label><input type="text" id="linkEmail"></div>
+                <div class="settings-group"><label>Raccolta:</label><input type="text" id="linkMoney"></div>
+                <div class="settings-group"><label>Firma:</label><input type="text" id="linkSign"></div>
             </div>
-            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
-                <div style="flex:1;"><label style="font-size:0.75rem; font-weight:bold;">Email:</label><input type="text" id="linkEmail" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;"></div>
-                <div style="flex:1;"><label style="font-size:0.75rem; font-weight:bold;">Raccolta:</label><input type="text" id="linkMoney" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;"></div>
-                <div style="flex:1;"><label style="font-size:0.75rem; font-weight:bold;">Firma:</label><input type="text" id="linkSign" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;"></div>
-            </div>
-            <button onclick="salvaHeader()" style="background:#003366; color:white; border:none; padding:12px; border-radius:8px; cursor:pointer; width:100%; font-weight:bold;">Salva Header</button>
+            <button onclick="salvaHeader()" style="background:#003366; color:white; border:none; padding:15px; border-radius:8px; cursor:pointer; width:100%; font-weight:bold;">Salva Header</button>
         </div>
 
         <div class="filter-section">
-            <input type="text" id="cercaTitolo" placeholder="🔍 Cerca per titolo..." oninput="applicaFiltri()" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
+            <input type="text" id="cercaTitolo" placeholder="🔍 Cerca per titolo..." oninput="applicaFiltri()" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; box-sizing: border-box;">
         </div>
 
         <div class="grid-dashboard" id="main-grid"></div>
@@ -78,26 +104,32 @@
                 <div class="col-fields">
                     <h2 id="mTitle" style="color:#003366; margin:0 0 15px 0;">Gestione Documento</h2>
                     <input type="hidden" id="editId">
-                    <input type="text" id="nTitolo" class="modal-input" placeholder="Titolo">
-                    <input type="text" id="nAutore" class="modal-input" placeholder="Autore">
-                    <input type="text" id="nArg" class="modal-input" placeholder="Argomento">
-                    <input type="text" id="nData" class="modal-input" placeholder="Data (es: 09/03/2026)">
+                    <input type="text" id="nTitolo" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;" placeholder="Titolo">
+                    <input type="text" id="nAutore" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;" placeholder="Autore">
+                    <input type="text" id="nArg" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;" placeholder="Argomento">
+                    <input type="text" id="nData" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;" placeholder="Data (es: 09/03/2026)">
                     
-                    <label style="font-size:0.75rem; font-weight:bold; color:#003366;">Carica nuovo PDF:</label>
-                    <input type="file" id="nFile" accept="application/pdf" style="font-size: 0.8rem; margin-bottom:10px;">
+                    <label style="font-size:0.75rem; font-weight:bold;">File PDF (Max 50MB):</label>
+                    <input type="file" id="nFile" accept="application/pdf" style="margin-bottom:10px; font-size:0.8rem;">
                     
-                    <label style="font-size:0.75rem; font-weight:bold; color:#003366;">Correla Documenti (Passa il mouse per anteprima):</label>
+                    <label style="font-size:0.75rem; font-weight:bold;">Correla Documenti:</label>
                     <div id="lista-correlati" class="correlati-area"></div>
                     
                     <div style="display:flex; gap:10px; margin-top:auto;">
                         <button onclick="salvaDoc()" id="btnSalvaDoc" style="flex:1; padding:12px; background:#28a745; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Salva Online</button>
-                        <button onclick="chiudiM()" style="flex:1; padding:12px; background:#6c757d; color:white; border:none; border-radius:8px; cursor:pointer;">Chiudi</button>
+                        <button onclick="chiudiM()" style="flex:1; padding:12px; background:#6c757d; color:white; border:none; border-radius:8px;">Annulla</button>
                     </div>
                 </div>
 
-                <div class="col-preview" id="preview-container">
-                    <p id="preview-placeholder" style="color:#999; font-size:0.8rem; text-align:center; padding:20px;">Passa sopra un documento correlato<br>per visualizzarne l'anteprima qui.</p>
-                    <div id="preview-frame" style="width:100%; height:100%; display:none;"></div>
+                <div class="col-preview">
+                    <div class="zoom-controls">
+                        <button class="zoom-btn" onclick="cambiaZoom(0.2)">+</button>
+                        <button class="zoom-btn" onclick="cambiaZoom(-0.2)">-</button>
+                    </div>
+                    <div class="frame-wrapper">
+                        <p id="preview-placeholder" style="color:#999; font-size:0.8rem; text-align:center; padding-top:200px;">Passa il mouse su un correlato<br>per l'anteprima zoomabile.</p>
+                        <div id="preview-frame" style="display:none;"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -105,45 +137,12 @@
 
     <script>
         const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
-        let docsGlobali = [];
+        let docsGlobali = [], livelloZoom = 1;
 
         function toggleMenu() { document.getElementById('navMenu').classList.toggle('active'); }
         function chiudiM() { document.getElementById('modalDoc').style.display = 'none'; }
-        
-        function apriM() { 
-            document.getElementById('editId').value = "";
-            document.getElementById('nTitolo').value = "";
-            document.getElementById('nAutore').value = "";
-            document.getElementById('nArg').value = "";
-            document.getElementById('nData').value = "";
-            document.getElementById('nFile').value = "";
-            resetPreview();
-            popolaCheckCorrelati([]);
-            document.getElementById('modalDoc').style.display = 'flex'; 
-        }
-
-        function resetPreview() {
-            document.getElementById('preview-frame').style.display = 'none';
-            document.getElementById('preview-frame').innerHTML = '';
-            document.getElementById('preview-placeholder').style.display = 'block';
-        }
-
-        // Funzione Anteprima al passaggio del mouse
-        async function mostraAnteprima(path) {
-            const frame = document.getElementById('preview-frame');
-            const placeholder = document.getElementById('preview-placeholder');
-            
-            if (!path || path === 'null') {
-                resetPreview();
-                placeholder.innerText = "Questo documento non ha un PDF associato.";
-                return;
-            }
-
-            const { data } = _supabase.storage.from('pdf_riservati').getPublicUrl(path);
-            placeholder.style.display = 'none';
-            frame.style.display = 'block';
-            frame.innerHTML = `<embed src="${data.publicUrl}#toolbar=0&navpanes=0" type="application/pdf" width="100%" height="100%" />`;
-        }
+        function cambiaZoom(v) { livelloZoom = Math.max(0.5, Math.min(3, livelloZoom + v)); applicaZoom(); }
+        function applicaZoom() { const f = document.getElementById('preview-frame'); f.style.transform = `scale(${livelloZoom})`; f.style.width = (100/livelloZoom)+'%'; f.style.height = (100/livelloZoom)+'%'; }
 
         function showNotification(t, m, e = false) {
             const c = document.getElementById('notification-container');
@@ -154,11 +153,21 @@
             setTimeout(() => { n.style.opacity = '0'; setTimeout(() => n.remove(), 400); }, 3000);
         }
 
+        async function mostraAnteprima(path) {
+            const frame = document.getElementById('preview-frame'), placeholder = document.getElementById('preview-placeholder');
+            if (!path || path === 'null') { frame.style.display = 'none'; placeholder.style.display = 'block'; return; }
+            const { data } = _supabase.storage.from('pdf_riservati').getPublicUrl(path);
+            placeholder.style.display = 'none'; frame.style.display = 'block';
+            frame.innerHTML = `<embed src="${data.publicUrl}#toolbar=0&navpanes=0" type="application/pdf" width="100%" height="100%" />`;
+            livelloZoom = 1; applicaZoom();
+        }
+
         async function init() {
             const { data: s } = await _supabase.from('settings').select('*');
             if (s) {
-                document.getElementById('header-title').innerText = s.find(x => x.key === 'site_title')?.valore || "Manager";
-                document.getElementById('siteTitleInput').value = s.find(x => x.key === 'site_title')?.valore || "";
+                const title = s.find(x => x.key === 'site_title')?.valore || "Manager";
+                document.getElementById('header-title').innerText = title;
+                document.getElementById('siteTitleInput').value = title;
                 document.getElementById('linkEmail').value = s.find(x => x.key === 'link_email')?.valore || "";
                 document.getElementById('linkMoney').value = s.find(x => x.key === 'link_money')?.valore || "";
                 document.getElementById('linkSign').value = s.find(x => x.key === 'link_sign')?.valore || "";
@@ -174,7 +183,7 @@
 
         function renderizzaGrid(docs) {
             const g = document.getElementById('main-grid');
-            g.innerHTML = `<div class="card" onclick="apriM()" style="border:2px dashed #28a745; cursor:pointer; justify-content:center; min-height: 180px;"><span style="font-size:2rem; color:#28a745;">+</span><h3 style="color:#28a745;">Aggiungi Nuovo</h3></div>` +
+            g.innerHTML = `<div class="card" onclick="apriM()" style="border:2px dashed #28a745; cursor:pointer; justify-content:center; min-height: 180px;"><span style="font-size:2rem; color:#28a745;">+</span><h3 style="color:#28a745;">Nuovo</h3></div>` +
                 docs.map(d => `<div class="card" style="min-height: 180px;">
                     <button onclick="eliminaD('${d.id}')" style="position:absolute; top:10px; right:10px; border:none; background:none; color:#d9534f; cursor:pointer;">✕</button>
                     <div style="font-size:2rem; color:#ccc;">📄</div>
@@ -183,90 +192,62 @@
                 </div>`).join('');
         }
 
-        function popolaCheckCorrelati(selezionati = []) {
-            const container = document.getElementById('lista-correlati');
-            const attualeId = document.getElementById('editId').value;
-            
-            container.innerHTML = docsGlobali
-                .filter(d => d.id !== attualeId)
-                .map(d => `
-                    <div class="corr-item" onmouseenter="mostraAnteprima('${d.pdf_url}')">
-                        <input type="checkbox" class="check-cor" value="${d.id}" ${selezionati.includes(d.id) ? 'checked' : ''}>
-                        <span>${d.titolo}</span>
-                    </div>
-                `).join('') || '<p style="font-size:0.7rem; color:#999;">Nessun altro documento disponibile.</p>';
-        }
-
         async function salvaDoc() {
-            const f = document.getElementById('nFile').files[0];
-            const btn = document.getElementById('btnSalvaDoc');
-            const idCorrelati = Array.from(document.querySelectorAll('.check-cor:checked')).map(c => c.value);
+            const f = document.getElementById('nFile').files[0], btn = document.getElementById('btnSalvaDoc');
             let p = null;
-
-            btn.disabled = true; btn.innerText = "Salvataggio...";
-
+            btn.disabled = true; btn.innerText = "Invio...";
             if (f) {
-                if (f.size / (1024 * 1024) > 50) { showNotification("Errore", "Max 50MB", true); btn.disabled = false; return; }
+                if (f.size / (1024 * 1024) > 50) { showNotification("Errore", "Max 50MB", true); btn.disabled = false; btn.innerText="Salva Online"; return; }
                 const { data, error } = await _supabase.storage.from('pdf_riservati').upload(`${Date.now()}_${f.name}`, f);
-                if (error) { showNotification("Errore PDF", error.message, true); btn.disabled = false; return; }
+                if (error) { showNotification("Errore PDF", error.message, true); btn.disabled = false; btn.innerText="Salva Online"; return; }
                 p = data.path;
             }
-
             const payload = {
-                titolo: document.getElementById('nTitolo').value,
-                autore: document.getElementById('nAutore').value,
-                argomento: document.getElementById('nArg').value,
-                data: document.getElementById('nData').value,
-                correlati: idCorrelati,
-                timestamp: Date.now()
+                titolo: document.getElementById('nTitolo').value, autore: document.getElementById('nAutore').value,
+                argomento: document.getElementById('nArg').value, data: document.getElementById('nData').value,
+                correlati: Array.from(document.querySelectorAll('.check-cor:checked')).map(c => c.value), timestamp: Date.now()
             };
             if (p) payload.pdf_url = p;
-
             const id = document.getElementById('editId').value;
             const { error: dbE } = id ? await _supabase.from('documenti').update(payload).eq('id', id) : await _supabase.from('documenti').insert([payload]);
-
-            if (dbE) showNotification("Errore Database", dbE.message, true);
-            else { showNotification("Successo", "Salvato!"); chiudiM(); caricaDocs(); }
+            if (dbE) showNotification("Errore DB", dbE.message, true);
+            else { showNotification("Successo", "Documento salvato!"); chiudiM(); caricaDocs(); }
             btn.disabled = false; btn.innerText = "Salva Online";
+        }
+
+        function apriM() { 
+            document.getElementById('editId').value = ""; document.getElementById('nTitolo').value = ""; 
+            document.getElementById('nAutore').value = ""; document.getElementById('nArg').value = ""; 
+            document.getElementById('nData').value = ""; document.getElementById('nFile').value = "";
+            document.getElementById('preview-frame').style.display = 'none';
+            document.getElementById('preview-placeholder').style.display = 'block';
+            popolaCheckCorrelati([]); document.getElementById('modalDoc').style.display = 'flex'; 
         }
 
         async function modificaD(id) {
             const d = docsGlobali.find(x => x.id === id);
             if (d) {
-                document.getElementById('editId').value = d.id;
-                document.getElementById('nTitolo').value = d.titolo;
-                document.getElementById('nAutore').value = d.autore;
-                document.getElementById('nArg').value = d.argomento;
-                document.getElementById('nData').value = d.data;
-                resetPreview();
-                popolaCheckCorrelati(d.correlati || []);
+                document.getElementById('editId').value = d.id; document.getElementById('nTitolo').value = d.titolo;
+                document.getElementById('nAutore').value = d.autore; document.getElementById('nArg').value = d.argomento;
+                document.getElementById('nData').value = d.data; popolaCheckCorrelati(d.correlati || []);
                 document.getElementById('modalDoc').style.display = 'flex';
             }
         }
 
-        async function eliminaD(id) {
-            if(confirm("Eliminare definitivamente?")) {
-                await _supabase.from('documenti').delete().eq('id', id);
-                showNotification("Eliminato", "Documento rimosso.");
-                caricaDocs();
-            }
+        function popolaCheckCorrelati(selezionati = []) {
+            const c = document.getElementById('lista-correlati'), id = document.getElementById('editId').value;
+            c.innerHTML = docsGlobali.filter(d => d.id !== id).map(d => `
+                <div class="corr-item" onmouseenter="mostraAnteprima('${d.pdf_url}')">
+                    <input type="checkbox" class="check-cor" value="${d.id}" ${selezionati.includes(d.id) ? 'checked' : ''}>
+                    <span>${d.titolo}</span>
+                </div>`).join('') || 'Nessun altro file.';
         }
 
+        async function eliminaD(id) { if(confirm("Eliminare?")) { await _supabase.from('documenti').delete().eq('id', id); caricaDocs(); showNotification("Eliminato", "Rimosso."); } }
         async function salvaHeader() {
-            const u = [
-                { key: 'site_title', valore: document.getElementById('siteTitleInput').value },
-                { key: 'link_email', valore: document.getElementById('linkEmail').value },
-                { key: 'link_money', valore: document.getElementById('linkMoney').value },
-                { key: 'link_sign', valore: document.getElementById('linkSign').value }
-            ];
+            const u = [{ key: 'site_title', valore: document.getElementById('siteTitleInput').value }, { key: 'link_email', valore: document.getElementById('linkEmail').value }, { key: 'link_money', valore: document.getElementById('linkMoney').value }, { key: 'link_sign', valore: document.getElementById('linkSign').value }];
             await _supabase.from('settings').upsert(u, { onConflict: 'key' });
-            showNotification("Successo", "Header aggiornato!");
-            document.getElementById('header-title').innerText = document.getElementById('siteTitleInput').value;
-        }
-
-        function applicaFiltri() {
-            const t = document.getElementById('cercaTitolo').value.toLowerCase();
-            renderizzaGrid(docsGlobali.filter(x => x.titolo.toLowerCase().includes(t)));
+            showNotification("Successo", "Header salvato!"); document.getElementById('header-title').innerText = document.getElementById('siteTitleInput').value;
         }
 
         async function esciOra() { await _supabase.auth.signOut(); window.location.href = 'index.html'; }
