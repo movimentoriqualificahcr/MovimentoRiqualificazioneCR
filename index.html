@@ -6,15 +6,9 @@
     <title>Movimento Ospedale Cremona</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* --- STILE INTERNO INDEX --- */
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: #f0f2f5; 
-            margin: 0; 
-            padding-top: 120px; 
-        }
-
-        /* Header con bottoni a destra e sinistra */
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding-top: 120px; }
+        
+        /* Header senza il tasto di ritorno */
         header { 
             background: #003366; 
             color: white; 
@@ -29,34 +23,8 @@
             min-height: 100px; 
             box-shadow: 0 2px 10px rgba(0,0,0,0.3); 
         }
-
-        header h1 { 
-            margin: 0; 
-            font-size: 1.3rem; 
-            text-align: center; 
-            max-width: 45%; 
-            line-height: 1.3;
-        }
-
-        /* Pulsante "Torna al sito" ridimensionato */
-        .btn-back {
-            position: absolute !important;
-            left: 20px !important;
-            top: 50% !important;
-            transform: translateY(-50%) !important;
-            background-color: rgba(255, 255, 255, 0.15) !important;
-            color: white !important;
-            text-decoration: none !important;
-            border: 1px solid white !important;
-            padding: 6px 14px !important; 
-            font-size: 0.75rem !important; 
-            border-radius: 50px !important;
-            font-weight: bold !important;
-            transition: 0.3s ease;
-            white-space: nowrap;
-        }
-
-        .btn-back:hover { background-color: white !important; color: #003366 !important; }
+        
+        header h1 { margin: 0; font-size: 1.4rem; text-align: center; max-width: 60%; }
 
         /* Contatti e Login a destra */
         .header-contacts-extreme { 
@@ -69,7 +37,7 @@
             align-items: flex-end; 
             gap: 6px; 
         }
-
+        
         .contact-item { 
             background-color: #0056b3; 
             color: white !important; 
@@ -81,34 +49,20 @@
             text-decoration: none; 
             transition: 0.3s; 
         }
-
+        
         .contact-item:hover { background-color: white; color: #003366 !important; transform: scale(1.05); }
-
-        .login-sub-link { 
-            color: rgba(255,255,255,0.7) !important; 
-            font-size: 0.65rem; 
-            font-weight: bold; 
-            text-decoration: none; 
-            margin-top: 2px; 
-        }
-
+        
+        .login-sub-link { color: rgba(255,255,255,0.7) !important; font-size: 0.65rem; font-weight: bold; text-decoration: none; margin-top: 2px; }
         .login-sub-link:hover { color: white !important; text-decoration: underline; }
-
-        /* Filtri */
+        
+        /* Sezione Filtri */
         .filter-section { margin: 20px auto; max-width: 1200px; display: flex; justify-content: center; }
         .filter-container { display: flex; gap: 8px; flex-wrap: wrap; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .filter-container input, .filter-container select { padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 0.85rem; }
 
-        /* Griglia e Card */
-        .grid-dashboard { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
-            gap: 25px; 
-            padding: 20px 30px; 
-            max-width: 1200px; 
-            margin: 0 auto; 
-        }
-
+        /* Griglia Card */
+        .grid-dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; padding: 20px 30px; max-width: 1200px; margin: 0 auto; }
+        
         .card { 
             background: white; 
             padding: 25px 20px; 
@@ -120,16 +74,13 @@
             align-items: center; 
             text-align: center; 
             transition: 0.3s ease; 
-            text-decoration: none; 
-            color: inherit; 
         }
-
+        
         .card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
-
-        /* BOTTONE CONSULTA RIDOTTO */
+        
+        /* Bottone Consulta piccolo */
         .btn-consulta { 
             margin-top: 15px; 
-            display: inline-block;
             padding: 6px 18px; 
             background-color: #003366; 
             color: white !important; 
@@ -137,17 +88,11 @@
             border-radius: 50px; 
             font-weight: bold; 
             font-size: 0.75rem; 
-            transition: 0.3s ease;
-            text-align: center;
+            transition: 0.3s;
         }
 
-        .btn-consulta:hover { background-color: #0056b3; transform: scale(1.05); }
-
-        /* Mobile */
         @media (max-width: 768px) {
             header { flex-direction: column; padding: 15px 0; height: auto; }
-            header h1 { max-width: 90%; font-size: 1.1rem; margin: 10px 0; }
-            .btn-back { position: relative !important; left: 0 !important; top: 0 !important; transform: none !important; margin-bottom: 10px !important; }
             .header-contacts-extreme { position: static; align-items: center; margin-top: 10px; transform: none; }
         }
     </style>
@@ -155,7 +100,6 @@
 <body>
 
     <header>
-        <a href="index.html" class="btn-back">← Torna al sito</a>
         <h1>Movimento per la riqualificazione<br> dell'ospedale di Cremona</h1>
         <div class="header-contacts-extreme">
             <div style="display: flex; gap: 6px;">
@@ -178,8 +122,7 @@
             </div>
         </section>
 
-        <div class="grid-dashboard" id="grid-pubblica">
-            </div>
+        <div class="grid-dashboard" id="grid-pubblica"></div>
     </main>
 
     <script>
@@ -187,7 +130,7 @@
         let docsGlobali = [];
 
         async function caricaDocs() {
-            const { data, error } = await _supabase.from('documenti').select('*').order('timestamp', { ascending: false });
+            const { data } = await _supabase.from('documenti').select('*').order('timestamp', { ascending: false });
             if (data) {
                 docsGlobali = data;
                 popolaFiltri(data);
@@ -199,19 +142,13 @@
             const fArg = document.getElementById('fArg');
             const fAut = document.getElementById('fAut');
             const fData = document.getElementById('fData');
-            
-            const argomenti = [...new Set(docs.map(d => d.argomento))].sort();
-            const autori = [...new Set(docs.map(d => d.autore))].sort();
-            const anni = [...new Set(docs.map(d => d.data ? d.data.split('/').pop() : ""))].filter(Boolean).sort((a,b) => b-a);
-
-            argomenti.forEach(a => { if(a) fArg.innerHTML += `<option value="${a}">${a}</option>`; });
-            autori.forEach(a => { if(a) fAut.innerHTML += `<option value="${a}">${a}</option>`; });
-            anni.forEach(a => { if(a) fData.innerHTML += `<option value="${a}">${a}</option>`; });
+            [...new Set(docs.map(d => d.argomento))].sort().forEach(a => { if(a) fArg.innerHTML += `<option value="${a}">${a}</option>`; });
+            [...new Set(docs.map(d => d.autore))].sort().forEach(a => { if(a) fAut.innerHTML += `<option value="${a}">${a}</option>`; });
+            [...new Set(docs.map(d => d.data ? d.data.split('/').pop() : ""))].filter(Boolean).sort((a,b) => b-a).forEach(a => { if(a) fData.innerHTML += `<option value="${a}">${a}</option>`; });
         }
 
         function renderizza(docs) {
-            const grid = document.getElementById('grid-pubblica');
-            grid.innerHTML = docs.map(d => `
+            document.getElementById('grid-pubblica').innerHTML = docs.map(d => `
                 <div class="card">
                     <div style="font-size: 2rem; margin-bottom: 15px; color: #ccc;">📄</div>
                     <h3 style="font-size: 1rem; margin: 0 0 10px 0; color: #003366;">${d.titolo}</h3>
@@ -226,7 +163,6 @@
             const arg = document.getElementById('fArg').value;
             const aut = document.getElementById('fAut').value;
             const dataAnno = document.getElementById('fData').value;
-
             const filtrati = docsGlobali.filter(d => {
                 const matchT = d.titolo.toLowerCase().includes(t);
                 const matchA = arg === 'tutti' || d.argomento === arg;
@@ -237,7 +173,6 @@
             renderizza(filtrati);
         }
 
-        // Listener per i filtri
         document.getElementById('cercaTitolo').addEventListener('input', applicaFiltri);
         document.getElementById('fArg').addEventListener('change', applicaFiltri);
         document.getElementById('fAut').addEventListener('change', applicaFiltri);
