@@ -3,157 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dettaglio Documento</title>
+    <title>Visualizza Documento - Ospedale Cremona</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* --- STILE INTERNO DETTAGLIO --- */
-        html, body { 
-            font-family: 'Segoe UI', sans-serif; 
-            margin: 0; 
-            padding: 0;
-            background: #f0f2f5; 
-            /* BLOCCO TOTALE SCROLLBAR ESTERNA */
-            overflow: hidden !important; 
-            height: 100% !important;
-            width: 100% !important;
-        }
-
-        body { padding-top: 120px; box-sizing: border-box; }
-
-        header { 
-            background: #003366; 
-            color: white; 
-            padding: 20px 0; 
-            position: fixed; 
-            top: 0; 
-            width: 100%; 
-            z-index: 1000; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-
-        header h1 { margin: 0; font-size: 1.4rem; text-align: center; }
-
-        .btn-back { 
-            position: absolute; 
-            left: 20px; 
-            top: 50%; 
-            transform: translateY(-50%); 
-            background: rgba(255,255,255,0.15); 
-            color: white !important; 
-            border: 1px solid white; 
-            padding: 6px 14px; 
-            border-radius: 50px; 
-            text-decoration: none; 
-            font-weight: bold; 
-            font-size: 0.75rem;
-            transition: 0.3s;
-        }
+        /* HEADER IDENTICO A INDEX E DASHBOARD */
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding-top: 100px; overflow-x: hidden; }
         
-        .btn-back:hover { background: white; color: #003366 !important; }
-
-        main { 
-            display: flex; 
-            padding: 20px; 
-            gap: 20px; 
-            max-width: 100%; 
-            margin: 0 auto; 
-            /* Altezza calcolata per stare nel monitor senza scorrere */
-            height: calc(100vh - 140px); 
-            box-sizing: border-box;
+        header { 
+            background: #003366; color: white; padding: 10px 20px; position: fixed; top: 0; width: 100%; 
+            z-index: 2000; display: grid; grid-template-columns: 150px 1fr 150px; align-items: center; 
+            box-sizing: border-box; box-shadow: 0 2px 10px rgba(0,0,0,0.3); min-height: 70px;
         }
+        header h1 { margin: 0; font-size: 1.1rem; text-align: center; grid-column: 2; line-height: 1.2; }
 
-        .sidebar-data { 
-            flex: 0 0 300px; 
-            background: white; 
-            padding: 25px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-            height: fit-content; 
+        .btn-back-link { 
+            grid-column: 1; color: white; text-decoration: none; font-weight: bold; 
+            font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.4); 
+            padding: 8px 12px; border-radius: 50px; text-align: center; width: fit-content;
         }
+        .btn-back-link:hover { background: rgba(255,255,255,0.1); }
 
-        /* CONTENITORE PDF SENZA SCROLLBAR */
-        .pdf-section { 
-            flex: 1; 
-            background: #333; /* Sfondo scuro per contrasto come nei browser */
-            border-radius: 12px; 
-            overflow: hidden !important; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            display: flex;
-            height: 100%;
+        /* LAYOUT CONTENUTO */
+        main { display: flex; max-width: 1400px; margin: 20px auto; gap: 20px; padding: 0 20px; height: calc(100vh - 140px); }
+        
+        .sidebar-left { width: 300px; display: flex; flex-direction: column; gap: 15px; }
+        .info-box { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .info-box h2 { color: #003366; font-size: 1.2rem; margin: 0 0 10px 0; border-bottom: 2px solid #f0f2f5; padding-bottom: 5px; }
+        .info-box p { font-size: 0.9rem; color: #555; margin: 8px 0; }
+        .info-box b { color: #333; }
+
+        .pdf-display-area { flex: 1; background: #525659; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        iframe { width: 100%; height: 100%; border: none; }
+
+        .corr-link { 
+            display: block; padding: 10px; background: #f8f9fa; border-radius: 8px; 
+            text-decoration: none; color: #003366; font-weight: bold; font-size: 0.85rem; 
+            margin-top: 8px; border: 1px solid #eee; transition: 0.2s;
         }
+        .corr-link:hover { background: #e3f2fd; transform: translateX(5px); }
 
-        #pdf-viewer { width: 100%; height: 100%; border: none; }
-
-        /* NASCONDE BARRA DI SCROLLBAR IN CHROME/SAFARI/EDGE */
-        ::-webkit-scrollbar {
-            width: 0px;
-            background: transparent;
-            display: none !important;
+        @media (max-width: 850px) {
+            main { flex-direction: column; height: auto; }
+            .sidebar-left { width: 100%; }
+            .pdf-display-area { height: 500px; }
+            header h1 { font-size: 0.9rem; }
         }
-
-        /* NASCONDE PER FIREFOX */
-        * { scrollbar-width: none !important; }
     </style>
 </head>
 <body>
+
     <header>
-        <a href="index.html" class="btn-back">← Torna alla lista</a>
-        <h1>Dettaglio Documento</h1>
-    </header>
+        <a href="index.html" class="btn-back-link">← Torna alla lista</a>
+        <h1 id="header-title">Dettaglio Documento</h1>
+        <div></div> </header>
+
     <main>
-        <aside class="sidebar-data">
-            <div id="info-testo"></div>
-            <div id="sidebar-correlati" style="margin-top:20px; border-top:1px solid #eee; padding-top:20px;">
-                <h4 style="color: #003366; font-size: 0.8rem; text-transform: uppercase; margin-bottom:15px;">Documenti Correlati</h4>
-                <div id="lista-correlati"></div>
+        <div class="sidebar-left">
+            <div class="info-box">
+                <p id="doc-arg" style="color: #28a745; font-weight: bold; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px;"></p>
+                <h2 id="doc-titolo">-</h2>
+                <p><b>Autore:</b> <span id="doc-autore">-</span></p>
+                <p><b>Data:</b> <span id="doc-data">-</span></p>
             </div>
-        </aside>
-        <section class="pdf-section">
-            <div id="pdf-viewer"></div>
-        </section>
+
+            <div class="info-box">
+                <h2 style="font-size: 1rem;">Documenti Correlati</h2>
+                <div id="correlati-lista">
+                    <p style="font-size: 0.8rem; color: #999;">Nessun documento correlato.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="pdf-display-area" id="pdf-view">
+            <p style="color: white; text-align: center; padding-top: 100px;">Caricamento file PDF...</p>
+        </div>
     </main>
+
     <script>
         const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
-        const urlParams = new URLSearchParams(window.location.search);
-        const docId = urlParams.get('id');
 
-        async function caricaDettaglio() {
-            const { data: d } = await _supabase.from('documenti').select('*').eq('id', docId).single();
-            if (d) {
-                document.getElementById('info-testo').innerHTML = `
-                    <p style="color: #28a745; font-weight: bold; font-size: 0.75rem; margin-bottom:5px;">${d.argomento}</p>
-                    <h2 style="color: #003366; margin:0 0 15px 0; font-size: 1.1rem;">${d.titolo}</h2>
-                    <p style="margin:5px 0; font-size: 0.85rem;"><strong>Autore:</strong> ${d.autore}</p>
-                    <p style="margin:5px 0; font-size: 0.85rem;"><strong>Data:</strong> ${d.data}</p>
-                `;
+        async function initView() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            if (!id) { window.location.href = 'index.html'; return; }
 
-                if (d.pdf_url) {
-                    const { data: urlData } = _supabase.storage.from('pdf_riservati').getPublicUrl(d.pdf_url);
-                    // Forza il viewer a non avere scrollbar tramite parametri e CSS
-                    document.getElementById('pdf-viewer').innerHTML = `
-                        <iframe src="${urlData.publicUrl}#toolbar=1&navpanes=0&scrollbar=0" 
-                                style="width:100%; height:100%; border:none;" 
-                                scrolling="no"></iframe>`;
-                }
+            const { data: d, error } = await _supabase.from('documenti').select('*').eq('id', id).single();
+            if (error || !d) { document.body.innerHTML = "Documento non trovato."; return; }
 
-                if (d.correlati && d.correlati.length > 0) {
-                    const { data: correlati } = await _supabase.from('documenti').select('id, titolo, data').in('id', d.correlati);
-                    if (correlati) {
-                        document.getElementById('lista-correlati').innerHTML = correlati.map(c => `
-                            <a href="documento.html?id=${c.id}" style="display:block; text-decoration:none; margin-bottom:12px;">
-                                <span style="display:block; color:#003366; font-weight:bold; font-size:0.8rem;">📄 ${c.titolo}</span>
-                                <span style="font-size:0.7rem; color:#888;">Data: ${c.data}</span>
-                            </a>`).join('');
-                    }
+            // Popola Header e Info
+            document.getElementById('header-title').innerText = d.titolo;
+            document.getElementById('doc-titolo').innerText = d.titolo;
+            document.getElementById('doc-autore').innerText = d.autore;
+            document.getElementById('doc-data').innerText = d.data;
+            document.getElementById('doc-arg').innerText = d.argomento;
+
+            // Carica PDF
+            if (d.pdf_url) {
+                const { data: urlData } = _supabase.storage.from('pdf_riservati').getPublicUrl(d.pdf_url);
+                document.getElementById('pdf-view').innerHTML = `<iframe src="${urlData.publicUrl}#toolbar=0"></iframe>`;
+            }
+
+            // Carica Correlati
+            if (d.correlati && d.correlati.length > 0) {
+                const { data: corr } = await _supabase.from('documenti').select('id, titolo').in('id', d.correlati);
+                if (corr) {
+                    const list = document.getElementById('correlati-lista');
+                    list.innerHTML = corr.map(c => `<a href="view.html?id=${c.id}" class="corr-link">📄 ${c.titolo}</a>`).join('');
                 }
             }
         }
-        window.onload = caricaDettaglio;
+
+        window.onload = initView;
     </script>
 </body>
 </html>
-
