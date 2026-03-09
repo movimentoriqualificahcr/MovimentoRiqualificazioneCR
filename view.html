@@ -7,37 +7,20 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding-top: 100px; overflow-x: hidden; }
-        
         header { 
             background: #003366; color: white; padding: 10px 20px; position: fixed; top: 0; width: 100%; 
             z-index: 2000; display: grid; grid-template-columns: 150px 1fr 150px; align-items: center; 
             box-sizing: border-box; box-shadow: 0 2px 10px rgba(0,0,0,0.3); min-height: 70px;
         }
         header h1 { margin: 0; font-size: 1.1rem; text-align: center; grid-column: 2; line-height: 1.2; }
-
-        .btn-back-link { 
-            grid-column: 1; color: white; text-decoration: none; font-weight: bold; 
-            font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.4); 
-            padding: 8px 12px; border-radius: 50px; text-align: center; width: fit-content;
-        }
-
+        .btn-back-link { grid-column: 1; color: white; text-decoration: none; font-weight: bold; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.4); padding: 8px 12px; border-radius: 50px; text-align: center; width: fit-content; }
         main { display: flex; max-width: 1400px; margin: 20px auto; gap: 20px; padding: 0 20px; height: calc(100vh - 140px); }
-        
         .sidebar-left { width: 300px; display: flex; flex-direction: column; gap: 15px; }
-        .info-box { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .info-box h2 { color: #003366; font-size: 1.2rem; margin: 0 0 10px 0; border-bottom: 2px solid #f0f2f5; padding-bottom: 5px; }
-
-        /* Area PDF corretta per mostrare la barra strumenti */
+        .info-box { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; }
         .pdf-display-area { flex: 1; background: #525659; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        object, embed { width: 100%; height: 100%; border: none; }
-
+        iframe { width: 100%; height: 100%; border: none; }
         .corr-link { display: block; padding: 10px; background: #f8f9fa; border-radius: 8px; text-decoration: none; color: #003366; font-weight: bold; font-size: 0.85rem; margin-top: 8px; border: 1px solid #eee; }
-
-        @media (max-width: 850px) {
-            main { flex-direction: column; height: auto; }
-            .sidebar-left { width: 100%; }
-            .pdf-display-area { height: 600px; }
-        }
+        @media (max-width: 850px) { main { flex-direction: column; height: auto; } .sidebar-left { width: 100%; } .pdf-display-area { height: 600px; } }
     </style>
 </head>
 <body>
@@ -51,56 +34,69 @@
     <main>
         <div class="sidebar-left">
             <div class="info-box">
-                <p id="doc-arg" style="color: #28a745; font-weight: bold; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px;"></p>
-                <h2 id="doc-titolo">-</h2>
+                <h2 id="doc-titolo" style="color: #003366; font-size: 1.2rem; margin-bottom: 10px;">Caricamento...</h2>
                 <p><b>Autore:</b> <span id="doc-autore">-</span></p>
                 <p><b>Data:</b> <span id="doc-data">-</span></p>
             </div>
-
             <div class="info-box">
-                <h2 style="font-size: 1rem;">Documenti Correlati</h2>
-                <div id="correlati-lista">
-                    <p style="font-size: 0.8rem; color: #999;">Nessun documento correlato.</p>
-                </div>
+                <h2 style="font-size: 1rem; color: #003366;">Documenti Correlati</h2>
+                <div id="correlati-lista"></div>
             </div>
         </div>
-
         <div class="pdf-display-area" id="pdf-view">
-            </div>
+            <p style="color: white; text-align: center; padding-top: 100px;">In attesa del file...</p>
+        </div>
     </main>
 
     <script>
+        // Inizializzazione Supabase garantita
         const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
 
         async function initView() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const id = urlParams.get('id');
-            if (!id) { window.location.href = 'index.html'; return; }
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const id = urlParams.get('id');
+                if (!id) { window.location.href = 'index.html'; return; }
 
-            const { data: d, error } = await _supabase.from('documenti').select('*').eq('id', id).single();
-            if (error || !d) return;
-
-            document.getElementById('header-title').innerText = d.titolo;
-            document.getElementById('doc-titolo').innerText = d.titolo;
-            document.getElementById('doc-autore').innerText = d.autore;
-            document.getElementById('doc-data').innerText = d.data;
-            document.getElementById('doc-arg').innerText = d.argomento;
-
-            if (d.pdf_url) {
-                const { data: urlData } = _supabase.storage.from('pdf_riservati').getPublicUrl(d.pdf_url);
-                // Utilizziamo un tag <object> che solitamente abilita la barra strumenti completa                 document.getElementById('pdf-view').innerHTML = `
-                    <object data="${urlData.publicUrl}" type="application/pdf">
-                        <embed src="${urlData.publicUrl}" type="application/pdf" />
-                        <p>Il tuo browser non supporta la visualizzazione dei PDF. <a href="${urlData.publicUrl}">Scarica il file qui.</a></p>
-                    </object>`;
-            }
-
-            if (d.correlati && d.correlati.length > 0) {
-                const { data: corr } = await _supabase.from('documenti').select('id, titolo').in('id', d.correlati);
-                if (corr) {
-                    const list = document.getElementById('correlati-lista');
-                    list.innerHTML = corr.map(c => `<a href="view.html?id=${c.id}" class="corr-link">📄 ${c.titolo}</a>`).join('');
+                // Recupero dati documento
+                const { data: d, error } = await _supabase.from('documenti').select('*').eq('id', id).single();
+                
+                if (error || !d) {
+                    document.getElementById('doc-titolo').innerText = "Errore nel caricamento";
+                    console.error("Errore Supabase:", error);
+                    return;
                 }
+
+                // Popolamento testi
+                document.getElementById('header-title').innerText = d.titolo;
+                document.getElementById('doc-titolo').innerText = d.titolo;
+                document.getElementById('doc-autore').innerText = d.autore || "Non specificato";
+                document.getElementById('doc-data').innerText = d.data || "N/D";
+
+                // Caricamento PDF tramite iframe (più stabile per i browser)
+                if (d.pdf_url) {
+                    const { data: urlData } = _supabase.storage.from('pdf_riservati').getPublicUrl(d.pdf_url);
+                    // Usiamo iframe per assicurarci che la barra strumenti PDF sia visibile
+                    document.getElementById('pdf-view').innerHTML = `<iframe src="${urlData.publicUrl}"></iframe>`;
+                } else {
+                    document.getElementById('pdf-view').innerHTML = `<p style="color:white; text-align:center; padding-top:100px;">Nessun PDF disponibile.</p>`;
+                }
+
+                // Caricamento Correlati
+                if (d.correlati && d.correlati.length > 0) {
+                    const { data: corr } = await _supabase.from('documenti').select('id, titolo').in('id', d.correlati);
+                    if (corr) {
+                        document.getElementById('correlati-lista').innerHTML = corr.map(c => 
+                            `<a href="view.html?id=${c.id}" class="corr-link">📄 ${c.titolo}</a>`
+                        ).join('');
+                    }
+                } else {
+                    document.getElementById('correlati-lista').innerHTML = `<p style="font-size: 0.8rem; color: #999;">Nessun documento correlato.</p>`;
+                }
+
+            } catch (err) {
+                console.error("Errore critico:", err);
+                alert("Si è verificato un errore durante il caricamento dei dati.");
             }
         }
 
