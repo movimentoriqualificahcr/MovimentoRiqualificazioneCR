@@ -207,7 +207,7 @@
             if (file) {
                 const name = `${Date.now()}_${file.name}`;
                 const { data, error } = await _supabase.storage.from('pdf_riservati').upload(name, file);
-                if (error) return alert("Errore PDF: " + error.message);
+                if (error) return alert("Errore caricamento PDF: " + error.message);
                 pdfPath = data.path;
             }
             const idCorrelati = Array.from(document.querySelectorAll('.check-cor:checked')).map(c => c.value);
@@ -221,9 +221,17 @@
             };
             if (pdfPath) payload.pdf_url = pdfPath;
             const id = document.getElementById('editId').value;
-            let res = id ? await _supabase.from('documenti').update(payload).eq('id', id) : await _supabase.from('documenti').insert([payload]);
-            if (res.error) alert(res.error.message);
-            else { chiudiM(); caricaDocs(); }
+            const { data: res, error: resError } = id 
+                ? await _supabase.from('documenti').update(payload).eq('id', id) 
+                : await _supabase.from('documenti').insert([payload]);
+
+            if (resError) {
+                alert("Errore salvataggio database: " + resError.message);
+            } else {
+                alert("Documento salvato con successo!");
+                chiudiM(); 
+                caricaDocs(); 
+            }
         }
 
         function popolaFiltriMenu() {
@@ -252,9 +260,10 @@
         }
 
         async function eliminaD(id) {
-            if(confirm("Eliminare?")) {
-                await _supabase.from('documenti').delete().eq('id', id);
-                caricaDocs();
+            if(confirm("Eliminare definitivamente questo documento?")) {
+                const { error } = await _supabase.from('documenti').delete().eq('id', id);
+                if (error) alert(error.message);
+                else caricaDocs();
             }
         }
 
