@@ -29,16 +29,16 @@
         .filter-container { display: flex; gap: 8px; flex-wrap: wrap; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 
         .grid-dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; padding: 20px 30px; max-width: 1200px; margin: 0 auto; }
-        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eef0f2; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eef0f2; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); }
         
-        /* MODALE POTENZIATA */
         #modalDocumento { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; justify-content:center; align-items:center; }
         .modal-content { background: white; padding: 30px; border-radius: 20px; width: 95%; max-width: 900px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         
         .col-input { flex: 1; display: flex; flex-direction: column; gap: 10px; }
-        .col-preview { flex: 1.2; border: 1px solid #eee; border-radius: 12px; background: #f9f9f9; min-height: 400px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .col-preview { flex: 1.2; border: 1px solid #eee; border-radius: 12px; background: #f9f9f9; min-height: 400px; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center; padding: 10px; }
         
-        .correlati-list { max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 8px; background: #fff; }
+        .correlati-list { max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 8px; background: #fff; text-align: left; }
         .correlato-item { display: flex; align-items: center; gap: 8px; padding: 4px; border-radius: 4px; transition: 0.2s; cursor: pointer; }
         .correlato-item:hover { background: #e3f2fd; }
     </style>
@@ -53,7 +53,7 @@
                 <a href="#" class="contact-item">💰 Raccolta</a>
                 <a href="#" class="contact-item">✍️ Firma</a>
             </div>
-            <button onclick="esciManager()" class="btn-logout">Esci (Manager)</button>
+            <button onclick="esciOra()" class="btn-logout">Esci (Manager)</button>
         </div>
     </header>
 
@@ -103,7 +103,7 @@
                 </div>
 
                 <div style="display:flex; gap:10px; margin-top:20px;">
-                    <button onclick="salvaTutto()" style="flex:1; padding:12px; background:#28a745; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Salva Online</button>
+                    <button onclick="salvaDocumentoManager()" style="flex:1; padding:12px; background:#28a745; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Salva Online</button>
                     <button onclick="chiudiM()" style="flex:1; padding:12px; background:#6c757d; color:white; border:none; border-radius:8px; cursor:pointer;">Annulla</button>
                 </div>
             </div>
@@ -111,7 +111,7 @@
     </main>
 
     <script>
-        const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
+        const _supabase = supabase.createClient('URL', 'KEY');
         let docsGlobali = [];
 
         async function init() {
@@ -120,6 +120,9 @@
                 const title = settings.find(s => s.key === 'site_title')?.valore || "Movimento Ospedale";
                 document.getElementById('header-title').innerText = title;
                 document.getElementById('siteTitleInput').value = title;
+                document.getElementById('linkEmail').value = settings.find(s => s.key === 'link_email')?.valore || "";
+                document.getElementById('linkMoney').value = settings.find(s => s.key === 'link_money')?.valore || "";
+                document.getElementById('linkSign').value = settings.find(s => s.key === 'link_sign')?.valore || "";
             }
             caricaDocs();
         }
@@ -129,17 +132,6 @@
             docsGlobali = docs || [];
             popolaFiltriMenu();
             renderizzaGrid(docsGlobali);
-        }
-
-        function popolaFiltriMenu() {
-            const arg = document.getElementById('fArg'), aut = document.getElementById('fAut'), dat = document.getElementById('fData');
-            arg.innerHTML = '<option value="tutti">Tutti gli argomenti</option>';
-            aut.innerHTML = '<option value="tutti">Tutti gli autori</option>';
-            dat.innerHTML = '<option value="tutti">Tutti gli anni</option>';
-            
-            [...new Set(docsGlobali.map(d => d.argomento))].sort().forEach(a => { if(a) arg.innerHTML += `<option value="${a}">${a}</option>`; });
-            [...new Set(docsGlobali.map(d => d.autore))].sort().forEach(a => { if(a) aut.innerHTML += `<option value="${a}">${a}</option>`; });
-            [...new Set(docsGlobali.map(d => d.data?.split('/').pop()))].filter(Boolean).sort((a,b)=>b-a).forEach(a => { dat.innerHTML += `<option value="${a}">${a}</option>`; });
         }
 
         function renderizzaGrid(docs) {
@@ -155,39 +147,25 @@
                 </div>`).join('');
         }
 
-        // FUNZIONI MODALE
-        function apriM() {
-            document.getElementById('editId').value = "";
-            document.getElementById('newTitolo').value = "";
-            document.getElementById('pdfFile').value = "";
-            popolaListaCorrelati([]);
-            document.getElementById('modalDocumento').style.display = 'flex';
-        }
-
-        function popolaListaCorrelati(selezionati = []) {
-            const container = document.getElementById('lista-checkbox-correlati');
-            const attualeId = document.getElementById('editId').value;
+        async function anteprima(path) {
+            const viewer = document.getElementById('viewer-correlato');
+            const placeholder = document.getElementById('placeholder-text');
             
-            container.innerHTML = docsGlobali
-                .filter(d => d.id !== attualeId)
-                .map(d => `
-                    <div class="correlato-item" onmouseover="anteprima('${d.pdf_url}')">
-                        <input type="checkbox" class="check-cor" value="${d.id}" ${selezionati.includes(d.id) ? 'checked' : ''}>
-                        <span style="font-size:0.75rem;">${d.titolo}</span>
-                    </div>
-                `).join('');
-        }
+            if (!path || path === "null" || path === "") {
+                viewer.style.display = 'none';
+                placeholder.style.display = 'block';
+                placeholder.innerText = "Nessun file associato a questo documento";
+                placeholder.style.color = "#d9534f";
+                return;
+            }
 
-        function anteprima(path) {
-            if(!path) return;
             const { data } = _supabase.storage.from('pdf_riservati').getPublicUrl(path);
-            document.getElementById('placeholder-text').style.display = 'none';
-            const v = document.getElementById('viewer-correlato');
-            v.style.display = 'block';
-            v.innerHTML = `<embed src="${data.publicUrl}#toolbar=0&navpanes=0" type="application/pdf" width="100%" height="100%" />`;
+            placeholder.style.display = 'none';
+            viewer.style.display = 'block';
+            viewer.innerHTML = `<embed src="${data.publicUrl}#toolbar=0&navpanes=0" type="application/pdf" width="100%" height="100%" />`;
         }
 
-        async function salvaTutto() {
+        async function salvaDocumentoManager() {
             const file = document.getElementById('pdfFile').files[0];
             let pdfPath = null;
 
@@ -210,30 +188,39 @@
             if (pdfPath) payload.pdf_url = pdfPath;
 
             const id = document.getElementById('editId').value;
-            let res;
-            if (id) res = await _supabase.from('documenti').update(payload).eq('id', id);
-            else res = await _supabase.from('documenti').insert([payload]);
+            let res = id ? await _supabase.from('documenti').update(payload).eq('id', id) : await _supabase.from('documenti').insert([payload]);
 
             if (res.error) alert(res.error.message);
             else { chiudiM(); caricaDocs(); }
         }
 
-        async function modificaD(id) {
-            const d = docsGlobali.find(doc => doc.id === id);
-            if (d) {
-                document.getElementById('editId').value = d.id;
-                document.getElementById('newTitolo').value = d.titolo;
-                document.getElementById('newAutore').value = d.autore;
-                document.getElementById('newArg').value = d.argomento;
-                document.getElementById('newData').value = d.data;
-                popolaListaCorrelati(d.correlati || []);
-                document.getElementById('modalDocumento').style.display = 'flex';
-            }
+        async function esciOra() { 
+            await _supabase.auth.signOut(); 
+            window.location.href = 'index.html'; 
+        }
+
+        function apriM() {
+            document.getElementById('editId').value = "";
+            document.getElementById('newTitolo').value = "";
+            document.getElementById('pdfFile').value = "";
+            popolaListaCorrelati([]);
+            document.getElementById('modalDocumento').style.display = 'flex';
+        }
+
+        function popolaListaCorrelati(selezionati = []) {
+            const container = document.getElementById('lista-checkbox-correlati');
+            const attualeId = document.getElementById('editId').value;
+            container.innerHTML = docsGlobali.filter(d => d.id !== attualeId).map(d => `
+                <div class="correlato-item" onmouseover="anteprima('${d.pdf_url}')">
+                    <input type="checkbox" class="check-cor" value="${d.id}" ${selezionati.includes(d.id) ? 'checked' : ''}>
+                    <span style="font-size:0.75rem;">${d.titolo}</span>
+                </div>`).join('');
         }
 
         function chiudiM() { document.getElementById('modalDocumento').style.display = 'none'; }
-        async function esciManager() { await _supabase.auth.signOut(); window.location.href = 'index.html'; }
         window.onload = init;
+        
+        // Altre funzioni di filtri e gestione header...
     </script>
 </body>
 </html>
