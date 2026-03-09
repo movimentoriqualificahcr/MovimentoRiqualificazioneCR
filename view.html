@@ -6,48 +6,72 @@
     <title>Visualizza Documento - Ospedale Cremona</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding-top: 100px; overflow-x: hidden; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding-top: 80px; overflow-x: hidden; }
+        
         header { 
             background: #003366; color: white; padding: 10px 20px; position: fixed; top: 0; width: 100%; 
-            z-index: 2000; display: grid; grid-template-columns: 150px 1fr 150px; align-items: center; 
-            box-sizing: border-box; box-shadow: 0 2px 10px rgba(0,0,0,0.3); min-height: 70px;
+            z-index: 2000; display: grid; grid-template-columns: 120px 1fr 120px; align-items: center; 
+            box-sizing: border-box; box-shadow: 0 2px 10px rgba(0,0,0,0.3); min-height: 60px;
         }
-        header h1 { margin: 0; font-size: 1.1rem; text-align: center; grid-column: 2; line-height: 1.2; }
-        .btn-back-link { grid-column: 1; color: white; text-decoration: none; font-weight: bold; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.4); padding: 8px 12px; border-radius: 50px; text-align: center; width: fit-content; }
-        main { display: flex; max-width: 1400px; margin: 20px auto; gap: 20px; padding: 0 20px; height: calc(100vh - 140px); }
-        .sidebar-left { width: 300px; display: flex; flex-direction: column; gap: 15px; }
-        .info-box { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; }
-        .pdf-display-area { flex: 1; background: #525659; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; }
-        iframe { width: 100%; height: 100%; border: none; }
-        .corr-link { display: block; padding: 10px; background: #f8f9fa; border-radius: 8px; text-decoration: none; color: #003366; font-weight: bold; font-size: 0.85rem; margin-top: 8px; border: 1px solid #eee; }
+        header h1 { margin: 0; font-size: 1rem; text-align: center; grid-column: 2; line-height: 1.2; }
+
+        .btn-back-link { 
+            grid-column: 1; color: white; text-decoration: none; font-weight: bold; 
+            font-size: 0.75rem; border: 1px solid rgba(255,255,255,0.4); 
+            padding: 6px 10px; border-radius: 50px; text-align: center; width: fit-content;
+        }
+
+        main { 
+            display: flex; max-width: 1400px; margin: 20px auto; gap: 20px; padding: 0 15px; 
+            min-height: calc(100vh - 120px); flex-wrap: wrap; 
+        }
         
-        .error-msg { color: #d9534f; font-weight: bold; text-align: center; padding: 50px; }
+        /* Sidebar sinistra adattiva */
+        .sidebar-left { flex: 1; min-width: 280px; max-width: 320px; display: flex; flex-direction: column; gap: 15px; }
+        .info-box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; }
+        .info-box h2 { color: #003366; font-size: 1.1rem; margin: 0 0 10px 0; border-bottom: 2px solid #f0f2f5; padding-bottom: 5px; }
+
+        /* Area PDF che occupa lo spazio rimanente */
+        .pdf-display-area { flex: 3; min-width: 320px; background: #525659; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); min-height: 600px; }
+        iframe { width: 100%; height: 100%; border: none; }
+
+        .corr-link { display: block; padding: 10px; background: #f8f9fa; border-radius: 8px; text-decoration: none; color: #003366; font-weight: bold; font-size: 0.8rem; margin-top: 8px; border: 1px solid #eee; }
+
+        /* Correzione per Mobile  */
+        @media (max-width: 768px) {
+            main { flex-direction: column; }
+            .sidebar-left { max-width: 100%; width: 100%; }
+            .pdf-display-area { height: 500px; min-height: 500px; }
+            header h1 { font-size: 0.85rem; }
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <a href="index.html" class="btn-back-link">← Torna alla lista</a>
-        <h1 id="header-title">Dettaglio Documento</h1>
+        <a href="index.html" class="btn-back-link">← Lista</a>
+        <h1 id="header-title">Documento</h1>
         <div></div>
     </header>
 
     <main>
         <div class="sidebar-left">
             <div class="info-box">
-                <h2 id="doc-titolo" style="color: #003366; font-size: 1.2rem; margin-bottom: 10px;">Caricamento in corso...</h2>
+                <h2 id="doc-titolo">Caricamento...</h2>
                 <p><b>Autore:</b> <span id="doc-autore">...</span></p>
                 <p><b>Data:</b> <span id="doc-data">...</span></p>
             </div>
+
             <div class="info-box">
-                <h2 style="font-size: 1rem; color: #003366;">Documenti Correlati</h2>
-                <div id="correlati-lista"></div>
+                <h2 style="font-size: 0.9rem;">Documenti Correlati</h2>
+                <div id="correlati-lista">
+                    <p style="font-size: 0.75rem; color: #999;">Nessun correlato.</p>
+                </div>
             </div>
         </div>
+
         <div class="pdf-display-area" id="pdf-view">
-            <div id="pdf-loader" style="color: white; text-align: center; padding-top: 100px;">
-                <p>Recupero del file dal server...</p>
-            </div>
+            <p style="color: white; text-align: center; padding-top: 100px;">Recupero del file...</p>
         </div>
     </main>
 
@@ -57,61 +81,29 @@
         async function initView() {
             const urlParams = new URLSearchParams(window.location.search);
             const id = urlParams.get('id');
-            
-            if (!id) {
-                showError("ID documento mancante nell'URL.");
-                return;
-            }
+            if (!id) return;
 
-            // Recupero dati documento con gestione errori migliorata
-            const { data: d, error } = await _supabase.from('documenti').select('*').eq('id', id).maybeSingle();
-            
-            if (error) {
-                showError("Errore di connessione al database: " + error.message);
-                return;
-            }
+            const { data: d, error } = await _supabase.from('documenti').select('*').eq('id', id).single();
+            if (error || !d) return;
 
-            if (!d) {
-                showError("Documento non trovato. L'ID potrebbe essere errato o il file è stato eliminato.");
-                return;
-            }
-
-            // Popolamento dati
             document.getElementById('header-title').innerText = d.titolo;
             document.getElementById('doc-titolo').innerText = d.titolo;
-            document.getElementById('doc-autore').innerText = d.autore || "Autore non disponibile";
-            document.getElementById('doc-data').innerText = d.data || "Data non disponibile";
+            document.getElementById('doc-autore').innerText = d.autore || "N/A";
+            document.getElementById('doc-data').innerText = d.data || "N/A";
 
-            // Caricamento PDF
             if (d.pdf_url) {
                 const { data: urlData } = _supabase.storage.from('pdf_riservati').getPublicUrl(d.pdf_url);
-                if (urlData) {
-                    document.getElementById('pdf-view').innerHTML = `<iframe src="${urlData.publicUrl}"></iframe>`;
-                } else {
-                    document.getElementById('pdf-view').innerHTML = `<div class="error-msg">Impossibile generare l'URL del file.</div>`;
-                }
-            } else {
-                document.getElementById('pdf-view').innerHTML = `<div class="error-msg">Nessun file PDF associato a questo documento.</div>`;
+                document.getElementById('pdf-view').innerHTML = `<iframe src="${urlData.publicUrl}"></iframe>`;
             }
 
-            // Caricamento Correlati
             if (d.correlati && d.correlati.length > 0) {
                 const { data: corr } = await _supabase.from('documenti').select('id, titolo').in('id', d.correlati);
-                if (corr && corr.length > 0) {
+                if (corr) {
                     document.getElementById('correlati-lista').innerHTML = corr.map(c => 
                         `<a href="view.html?id=${c.id}" class="corr-link">📄 ${c.titolo}</a>`
                     ).join('');
-                } else {
-                    document.getElementById('correlati-lista').innerHTML = "Nessun correlato trovato.";
                 }
-            } else {
-                document.getElementById('correlati-lista').innerHTML = "Nessun documento correlato impostato.";
             }
-        }
-
-        function showError(msg) {
-            document.getElementById('doc-titolo').innerText = "Errore";
-            document.getElementById('pdf-view').innerHTML = `<div class="error-msg">${msg}</div>`;
         }
 
         window.onload = initView;
