@@ -8,7 +8,7 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding-top: 100px; overflow-x: hidden; }
         
-        /* Header con titolo perfettamente centrato */
+        /* Header con titolo centrato */
         header { 
             background: #003366; color: white; padding: 10px 20px; position: fixed; top: 0; width: 100%; 
             z-index: 2000; display: grid; grid-template-columns: 50px 1fr 50px; align-items: center; 
@@ -16,63 +16,53 @@
         }
         header h1 { margin: 0; font-size: 1.1rem; text-align: center; grid-column: 2; line-height: 1.2; }
 
-        /* Menu Hamburger migliorato con tasto chiusura */
+        /* Menu Hamburger migliorato */
         .hamburger { cursor: pointer; display: flex; flex-direction: column; gap: 5px; grid-column: 3; justify-self: end; padding: 10px; }
         .hamburger span { width: 25px; height: 3px; background: white; border-radius: 2px; }
         
+        /* Menu a comparsa flottante (non a tutta altezza) */
         .nav-menu { 
-            position: fixed; top: 0; right: -100%; width: 280px; height: 100vh; background: #002244; 
-            display: flex; flex-direction: column; padding: 20px; gap: 15px; transition: 0.4s; z-index: 2500;
+            position: fixed; top: 80px; right: -100%; width: 280px; 
+            background: #002244; border-radius: 15px 0 0 15px;
+            display: flex; flex-direction: column; padding: 20px; gap: 12px; 
+            transition: 0.4s ease-in-out; z-index: 2500;
+            box-shadow: -5px 5px 15px rgba(0,0,0,0.3);
         }
-        .nav-menu.active { right: 0; box-shadow: -5px 0 15px rgba(0,0,0,0.5); }
-        .btn-close-menu { align-self: flex-end; background: none; border: none; color: white; font-size: 2rem; cursor: pointer; margin-bottom: 20px; }
+        .nav-menu.active { right: 0; }
+        .btn-close-menu { align-self: flex-end; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
         
         .contact-item { 
-            background-color: #0056b3; color: white !important; padding: 15px; border-radius: 8px; 
+            background-color: #0056b3; color: white !important; padding: 12px; border-radius: 8px; 
             font-size: 0.9rem; font-weight: bold; text-decoration: none; text-align: center; transition: 0.3s;
         }
-        .contact-item:hover { background-color: #007bff; }
-        .btn-logout { background: #d9534f; border: none; color: white; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: auto; }
+        .btn-logout { background: #d9534f; border: none; color: white; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
-        /* Barra Impostazioni */
-        .settings-bar { 
+        /* Barra Impostazioni e Filtri */
+        .settings-bar, .filter-section { 
             background: white; border: 1px solid #ddd; border-radius: 12px; padding: 20px; 
-            max-width: 1100px; margin: 20px auto; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            max-width: 1100px; margin: 20px auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
-        .settings-row { display: flex; flex-wrap: wrap; gap: 10px; }
+        .settings-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
         .settings-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 200px; }
         .settings-group label { font-size: 0.75rem; font-weight: bold; color: #003366; }
-        .settings-group input { padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.85rem; }
+        .settings-group input { padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
 
-        /* Filtri di ricerca distanziati */
-        .filter-section { margin: 20px auto; max-width: 1100px; padding: 0 15px; }
-        .filter-container { 
-            display: flex; gap: 12px; flex-wrap: wrap; background: white; padding: 20px; 
-            border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); justify-content: center;
-        }
-        .filter-container input, .filter-container select { padding: 12px; border-radius: 8px; border: 1px solid #ddd; min-width: 200px; outline: none; }
-
-        /* Griglia documenti */
+        /* Griglia e Card */
         .grid-dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; padding: 20px; max-width: 1200px; margin: 0 auto; }
         .card { background: white; padding: 25px; border-radius: 15px; border: 1px solid #eee; text-align: center; position: relative; transition: 0.3s; display: flex; flex-direction: column; align-items: center; }
         .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .btn-gestione { margin-top: 15px; padding: 10px 25px; background: #003366; color: white; border: none; border-radius: 50px; cursor: pointer; font-size: 0.85rem; }
-
-        /* Notifiche Overlay Toast */
+        
+        /* Notifiche Toast Overlay */
         #notification-container { position: fixed; top: 90px; right: 20px; z-index: 4000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
         .notification-toast { background: white; padding: 15px 25px; border-radius: 10px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); border-left: 5px solid #28a745; min-width: 250px; opacity: 0; transform: translateX(50px); transition: 0.4s; pointer-events: auto; }
         .notification-toast.show { opacity: 1; transform: translateX(0); }
-
-        @media (max-width: 600px) {
-            header h1 { font-size: 0.9rem; }
-            .filter-container input, .filter-container select { min-width: 100%; }
-        }
+        .notification-toast.error { border-left-color: #d9534f; }
     </style>
 </head>
 <body>
 
     <header>
-        <h1 id="header-title">Caricamento titolo...</h1>
+        <h1 id="header-title">Caricamento...</h1>
         <div class="hamburger" onclick="toggleMenu()">
             <span></span><span></span><span></span>
         </div>
@@ -83,7 +73,7 @@
         <a href="#" id="outEmail" class="contact-item">📩 Email</a>
         <a href="#" id="outMoney" class="contact-item">💰 Raccolta Fondi</a>
         <a href="#" id="outSign" class="contact-item">✍️ Firma Petizione</a>
-        <button onclick="esciOra()" class="btn-logout">Esci dall'Area Manager</button>
+        <button onclick="esciOra()" class="btn-logout">Esci</button>
     </nav>
 
     <div id="notification-container"></div>
@@ -97,21 +87,21 @@
                 </div>
             </div>
             <div class="settings-row">
-                <div class="settings-group"><label>Link Email:</label><input type="text" id="linkEmail"></div>
-                <div class="settings-group"><label>Link Raccolta:</label><input type="text" id="linkMoney"></div>
-                <div class="settings-group"><label>Link Firma:</label><input type="text" id="linkSign"></div>
+                <div class="settings-group"><label>Email:</label><input type="text" id="linkEmail"></div>
+                <div class="settings-group"><label>Raccolta:</label><input type="text" id="linkMoney"></div>
+                <div class="settings-group"><label>Firma:</label><input type="text" id="linkSign"></div>
             </div>
-            <button onclick="salvaHeader()" style="background:#003366; color:white; border:none; padding:15px; border-radius:8px; cursor:pointer; font-weight:bold; margin-top:10px;">Salva Impostazioni Header</button>
+            <button onclick="salvaHeader()" style="background:#003366; color:white; border:none; padding:15px; border-radius:8px; cursor:pointer; font-weight:bold; width:100%;">Salva Header</button>
         </div>
 
-        <section class="filter-section">
-            <div class="filter-container">
-                <input type="text" id="cercaTitolo" placeholder="🔍 Cerca per titolo..." oninput="applicaFiltri()">
-                <select id="fArg" onchange="applicaFiltri()"><option value="tutti">Tutti gli argomenti</option></select>
-                <select id="fAut" onchange="applicaFiltri()"><option value="tutti">Tutti gli autori</option></select>
-                <select id="fData" onchange="applicaFiltri()"><option value="tutti">Tutti gli anni</option></select>
+        <div class="filter-section">
+            <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+                <input type="text" id="cercaTitolo" placeholder="🔍 Cerca..." oninput="applicaFiltri()" style="padding:10px; border-radius:8px; border:1px solid #ddd; min-width:200px;">
+                <select id="fArg" onchange="applicaFiltri()" style="padding:10px; border-radius:8px; border:1px solid #ddd;"><option value="tutti">Tutti gli argomenti</option></select>
+                <select id="fAut" onchange="applicaFiltri()" style="padding:10px; border-radius:8px; border:1px solid #ddd;"><option value="tutti">Tutti gli autori</option></select>
+                <select id="fData" onchange="applicaFiltri()" style="padding:10px; border-radius:8px; border:1px solid #ddd;"><option value="tutti">Tutti gli anni</option></select>
             </div>
-        </section>
+        </div>
 
         <div class="grid-dashboard" id="main-grid"></div>
     </main>
@@ -120,9 +110,7 @@
         const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
         let docsGlobali = [];
 
-        function toggleMenu() {
-            document.getElementById('navMenu').classList.toggle('active');
-        }
+        function toggleMenu() { document.getElementById('navMenu').classList.toggle('active'); }
 
         function showNotification(title, message, isError = false) {
             const container = document.getElementById('notification-container');
@@ -136,7 +124,7 @@
         async function init() {
             const { data: settings } = await _supabase.from('settings').select('*');
             if (settings) {
-                const title = settings.find(s => s.key === 'site_title')?.valore || "Manager Dashboard";
+                const title = settings.find(s => s.key === 'site_title')?.valore || "Dashboard";
                 document.getElementById('header-title').innerText = title;
                 document.getElementById('siteTitleInput').value = title;
                 document.getElementById('linkEmail').value = settings.find(s => s.key === 'link_email')?.valore || "";
@@ -154,8 +142,8 @@
 
         function renderizzaGrid(docs) {
             const grid = document.getElementById('main-grid');
-            grid.innerHTML = `<div class="card" onclick="apriM()" style="border:2px dashed #28a745; cursor:pointer; justify-content:center;"><span style="font-size:3rem; color:#28a745;">+</span><h3 style="color:#28a745;">Aggiungi Nuovo</h3></div>` +
-                docs.map(d => `<div class="card"><div style="font-size:2rem; color:#ccc;">📄</div><h3 style="font-size:1rem; margin:10px 0;">${d.titolo}</h3><p style="font-size:0.8rem; color:#666;">${d.autore}</p><button class="btn-gestione" onclick="modificaD('${d.id}')">Gestione →</button></div>`).join('');
+            grid.innerHTML = `<div class="card" onclick="apriM()" style="border:2px dashed #28a745; cursor:pointer; justify-content:center;"><span style="font-size:2rem;">+</span><h3>Nuovo</h3></div>` +
+                docs.map(d => `<div class="card"><h3>${d.titolo}</h3><p>${d.autore}</p><button onclick="modificaD('${d.id}')" style="background:#003366; color:white; border:none; padding:8px 15px; border-radius:50px; cursor:pointer;">Gestione →</button></div>`).join('');
         }
 
         async function salvaHeader() {
@@ -169,7 +157,7 @@
             if (error) showNotification("Errore", error.message, true);
             else {
                 document.getElementById('header-title').innerText = document.getElementById('siteTitleInput').value;
-                showNotification("Successo", "Impostazioni aggiornate correttamente!");
+                showNotification("Successo", "Header aggiornato!");
                 if(document.getElementById('navMenu').classList.contains('active')) toggleMenu();
             }
         }
