@@ -40,27 +40,31 @@
         .card { background: white; padding: 25px; border-radius: 15px; border: 1px solid #eee; text-align: center; position: relative; display: flex; flex-direction: column; align-items: center; transition: 0.3s; }
         .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         
-        /* MODALE A DUE COLONNE CON ZOOM */
-        #modalDoc { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:3000; justify-content:center; align-items:center; }
-        .modal-content { background:white; padding:30px; border-radius:20px; width:95%; max-width:1000px; max-height: 90vh; overflow-y: auto; box-shadow:0 10px 30px rgba(0,0,0,0.3); }
-        .modal-body { display: flex; gap: 25px; flex-wrap: wrap; }
-        .col-fields { flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 10px; }
-        .col-preview { flex: 1.5; min-width: 400px; background: #f9f9f9; border: 1px solid #eee; border-radius: 12px; min-height: 500px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        /* MODALE STILE "VIEW" */
+        #modalDoc { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:3000; justify-content:center; align-items:center; }
+        .modal-content { background:#f0f2f5; border-radius:20px; width:98%; max-width:1400px; height: 95vh; overflow: hidden; box-shadow:0 10px-50px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
         
-        .frame-wrapper { flex: 1; overflow: auto; width: 100%; height: 100%; position: relative; background: #525659; }
-        #preview-frame { width: 100%; height: 100%; transform-origin: top left; transition: transform 0.2s; }
+        .modal-header { background: #003366; color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .modal-body-view { display: flex; flex: 1; overflow: hidden; padding: 20px; gap: 20px; }
+        
+        /* Sidebar sinistra (Info e Correlati) */
+        .view-sidebar { width: 320px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
+        .view-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .view-card h3 { margin: 0 0 15px 0; font-size: 0.9rem; color: #003366; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        
+        /* Area PDF destra */
+        .view-pdf-area { flex: 1; background: #525659; border-radius: 12px; overflow: hidden; position: relative; display: flex; flex-direction: column; }
+        #preview-frame { width: 100%; height: 100%; border: none; }
 
-        .zoom-controls { position: absolute; top: 10px; right: 10px; z-index: 10; display: flex; gap: 5px; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 8px; }
-        .zoom-btn { background: white; border: none; border-radius: 4px; width: 30px; height: 30px; font-weight: bold; cursor: pointer; }
-
-        .correlati-area { border: 1px solid #eee; border-radius: 8px; padding: 10px; max-height: 150px; overflow-y: auto; background: #fff; }
-        .corr-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; padding: 6px; border-radius: 6px; cursor: pointer; }
+        .modal-input { width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; }
+        .correlati-list { max-height: 200px; overflow-y: auto; }
+        .corr-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; padding: 8px; border-radius: 6px; cursor: pointer; transition: 0.2s; }
         .corr-item:hover { background: #e3f2fd; }
 
         #notification-container { position: fixed; top: 90px; right: 20px; z-index: 4000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
         .notification-toast { background: white; padding: 15px 25px; border-radius: 10px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); border-left: 5px solid #28a745; min-width: 250px; opacity: 0; transform: translateX(50px); transition: 0.4s; pointer-events: auto; }
         .notification-toast.show { opacity: 1; transform: translateX(0); }
-        .notification-toast.error { border-left-color: #d9534f; }
     </style>
 </head>
 <body>
@@ -100,35 +104,42 @@
 
     <div id="modalDoc">
         <div class="modal-content">
-            <div class="modal-body">
-                <div class="col-fields">
-                    <h2 id="mTitle" style="color:#003366; margin:0 0 15px 0;">Gestione Documento</h2>
-                    <input type="hidden" id="editId">
-                    <input type="text" id="nTitolo" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;" placeholder="Titolo">
-                    <input type="text" id="nAutore" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;" placeholder="Autore">
-                    <input type="text" id="nArg" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;" placeholder="Argomento">
-                    <input type="text" id="nData" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;" placeholder="Data (es: 09/03/2026)">
-                    
-                    <label style="font-size:0.75rem; font-weight:bold;">File PDF (Max 50MB):</label>
-                    <input type="file" id="nFile" accept="application/pdf" style="margin-bottom:10px; font-size:0.8rem;">
-                    
-                    <label style="font-size:0.75rem; font-weight:bold;">Correla Documenti:</label>
-                    <div id="lista-correlati" class="correlati-area"></div>
-                    
-                    <div style="display:flex; gap:10px; margin-top:auto;">
-                        <button onclick="salvaDoc()" id="btnSalvaDoc" style="flex:1; padding:12px; background:#28a745; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Salva Online</button>
-                        <button onclick="chiudiM()" style="flex:1; padding:12px; background:#6c757d; color:white; border:none; border-radius:8px;">Annulla</button>
+            <div class="modal-header">
+                <h2 id="mTitle" style="margin:0; font-size:1.2rem;">Dettaglio Documento (Anteprima)</h2>
+                <div style="display:flex; gap:10px;">
+                    <button onclick="salvaDoc()" id="btnSalvaDoc" style="padding:10px 20px; background:#28a745; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Salva Online</button>
+                    <button onclick="chiudiM()" style="padding:10px 20px; background:#d9534f; color:white; border:none; border-radius:8px; cursor:pointer;">Chiudi</button>
+                </div>
+            </div>
+            
+            <div class="modal-body-view">
+                <div class="view-sidebar">
+                    <div class="view-card">
+                        <h3>Dati Documento</h3>
+                        <input type="hidden" id="editId">
+                        <label style="font-size:0.7rem; font-weight:bold;">TITOLO</label>
+                        <input type="text" id="nTitolo" class="modal-input">
+                        <label style="font-size:0.7rem; font-weight:bold;">AUTORE</label>
+                        <input type="text" id="nAutore" class="modal-input">
+                        <label style="font-size:0.7rem; font-weight:bold;">ARGOMENTO</label>
+                        <input type="text" id="nArg" class="modal-input">
+                        <label style="font-size:0.7rem; font-weight:bold;">DATA</label>
+                        <input type="text" id="nData" class="modal-input">
+                        
+                        <label style="font-size:0.7rem; font-weight:bold; color:#003366;">FILE PDF (Max 50MB):</label>
+                        <input type="file" id="nFile" accept="application/pdf" style="font-size:0.7rem; margin-top:5px;">
+                    </div>
+
+                    <div class="view-card">
+                        <h3>Documenti Correlati</h3>
+                        <div id="lista-correlati" class="correlati-list"></div>
                     </div>
                 </div>
 
-                <div class="col-preview">
-                    <div class="zoom-controls">
-                        <button class="zoom-btn" onclick="cambiaZoom(0.2)">+</button>
-                        <button class="zoom-btn" onclick="cambiaZoom(-0.2)">-</button>
-                    </div>
-                    <div class="frame-wrapper">
-                        <p id="preview-placeholder" style="color:#999; font-size:0.8rem; text-align:center; padding-top:200px;">Passa il mouse su un correlato<br>per l'anteprima zoomabile.</p>
-                        <div id="preview-frame" style="display:none;"></div>
+                <div class="view-pdf-area">
+                    <p id="preview-placeholder" style="color:white; text-align:center; padding-top:200px;">Passa il mouse su un correlato per l'anteprima.</p>
+                    <div id="preview-frame-container" style="width:100%; height:100%; display:none;">
+                        <div id="preview-frame"></div>
                     </div>
                 </div>
             </div>
@@ -137,12 +148,10 @@
 
     <script>
         const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
-        let docsGlobali = [], livelloZoom = 1;
+        let docsGlobali = [];
 
         function toggleMenu() { document.getElementById('navMenu').classList.toggle('active'); }
         function chiudiM() { document.getElementById('modalDoc').style.display = 'none'; }
-        function cambiaZoom(v) { livelloZoom = Math.max(0.5, Math.min(3, livelloZoom + v)); applicaZoom(); }
-        function applicaZoom() { const f = document.getElementById('preview-frame'); f.style.transform = `scale(${livelloZoom})`; f.style.width = (100/livelloZoom)+'%'; f.style.height = (100/livelloZoom)+'%'; }
 
         function showNotification(t, m, e = false) {
             const c = document.getElementById('notification-container');
@@ -154,12 +163,15 @@
         }
 
         async function mostraAnteprima(path) {
-            const frame = document.getElementById('preview-frame'), placeholder = document.getElementById('preview-placeholder');
-            if (!path || path === 'null') { frame.style.display = 'none'; placeholder.style.display = 'block'; return; }
+            const container = document.getElementById('preview-frame-container');
+            const frame = document.getElementById('preview-frame');
+            const placeholder = document.getElementById('preview-placeholder');
+            
+            if (!path || path === 'null') { container.style.display = 'none'; placeholder.style.display = 'block'; return; }
+            
             const { data } = _supabase.storage.from('pdf_riservati').getPublicUrl(path);
-            placeholder.style.display = 'none'; frame.style.display = 'block';
-            frame.innerHTML = `<embed src="${data.publicUrl}#toolbar=0&navpanes=0" type="application/pdf" width="100%" height="100%" />`;
-            livelloZoom = 1; applicaZoom();
+            placeholder.style.display = 'none'; container.style.display = 'block';
+            frame.innerHTML = `<embed src="${data.publicUrl}#toolbar=0" type="application/pdf" width="100%" height="100%" style="height:90vh;"/>`;
         }
 
         async function init() {
@@ -183,7 +195,7 @@
 
         function renderizzaGrid(docs) {
             const g = document.getElementById('main-grid');
-            g.innerHTML = `<div class="card" onclick="apriM()" style="border:2px dashed #28a745; cursor:pointer; justify-content:center; min-height: 180px;"><span style="font-size:2rem; color:#28a745;">+</span><h3 style="color:#28a745;">Nuovo</h3></div>` +
+            g.innerHTML = `<div class="card" onclick="apriM()" style="border:2px dashed #28a745; cursor:pointer; justify-content:center; min-height: 180px;"><span style="font-size:2rem; color:#28a745;">+</span><h3 style="color:#28a745;">Aggiungi Nuovo</h3></div>` +
                 docs.map(d => `<div class="card" style="min-height: 180px;">
                     <button onclick="eliminaD('${d.id}')" style="position:absolute; top:10px; right:10px; border:none; background:none; color:#d9534f; cursor:pointer;">✕</button>
                     <div style="font-size:2rem; color:#ccc;">📄</div>
@@ -219,7 +231,7 @@
             document.getElementById('editId').value = ""; document.getElementById('nTitolo').value = ""; 
             document.getElementById('nAutore').value = ""; document.getElementById('nArg').value = ""; 
             document.getElementById('nData').value = ""; document.getElementById('nFile').value = "";
-            document.getElementById('preview-frame').style.display = 'none';
+            document.getElementById('preview-frame-container').style.display = 'none';
             document.getElementById('preview-placeholder').style.display = 'block';
             popolaCheckCorrelati([]); document.getElementById('modalDoc').style.display = 'flex'; 
         }
@@ -231,6 +243,7 @@
                 document.getElementById('nAutore').value = d.autore; document.getElementById('nArg').value = d.argomento;
                 document.getElementById('nData').value = d.data; popolaCheckCorrelati(d.correlati || []);
                 document.getElementById('modalDoc').style.display = 'flex';
+                mostraAnteprima(d.pdf_url);
             }
         }
 
@@ -248,6 +261,11 @@
             const u = [{ key: 'site_title', valore: document.getElementById('siteTitleInput').value }, { key: 'link_email', valore: document.getElementById('linkEmail').value }, { key: 'link_money', valore: document.getElementById('linkMoney').value }, { key: 'link_sign', valore: document.getElementById('linkSign').value }];
             await _supabase.from('settings').upsert(u, { onConflict: 'key' });
             showNotification("Successo", "Header salvato!"); document.getElementById('header-title').innerText = document.getElementById('siteTitleInput').value;
+        }
+
+        function applicaFiltri() {
+            const t = document.getElementById('cercaTitolo').value.toLowerCase();
+            renderizzaGrid(docsGlobali.filter(x => x.titolo.toLowerCase().includes(t)));
         }
 
         async function esciOra() { await _supabase.auth.signOut(); window.location.href = 'index.html'; }
