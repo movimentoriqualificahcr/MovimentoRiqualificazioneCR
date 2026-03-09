@@ -12,29 +12,20 @@
         .header-contacts-extreme { position: absolute; right: 25px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
         .contact-item { background-color: #0056b3; color: white !important; padding: 6px 14px; border-radius: 50px; font-size: 0.75rem; font-weight: bold; border: 1px solid rgba(255,255,255,0.2); text-decoration: none; }
         .btn-logout { background: none; border: none; color: rgba(255,255,255,0.7); font-size: 0.65rem; font-weight: bold; cursor: pointer; }
-        
         .settings-bar { background: #e3f2fd; border: 1.5px solid #003366; border-radius: 12px; padding: 15px; max-width: 1200px; margin: 20px auto; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; }
         .settings-group { display: flex; align-items: center; gap: 5px; background: white; padding: 5px 10px; border-radius: 8px; border: 1px solid #ccc; }
         .settings-group input { border: none; font-size: 0.8rem; outline: none; width: 150px; }
-
         .filter-section { margin: 10px auto; max-width: 1200px; display: flex; justify-content: center; }
         .filter-container { display: flex; gap: 8px; flex-wrap: wrap; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-
         .grid-dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; padding: 20px 30px; max-width: 1200px; margin: 0 auto; }
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eef0f2; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; transition: 0.3s; }
-        
         #modalDocumento { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; justify-content:center; align-items:center; }
         .modal-content { background: white; padding: 30px; border-radius: 20px; width: 95%; max-width: 900px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         .col-input { flex: 1; display: flex; flex-direction: column; gap: 10px; }
         .col-preview { flex: 1.2; border: 1px solid #eee; border-radius: 12px; background: #f9f9f9; min-height: 400px; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center; padding: 10px; }
-        
         .correlati-list { max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 8px; background: #fff; text-align: left; }
         .correlato-item { display: flex; align-items: center; gap: 8px; padding: 4px; border-radius: 4px; transition: 0.2s; cursor: pointer; }
         .correlato-item:hover { background: #e3f2fd; }
-
-        #progress-container { width: 100%; background-color: #eee; border-radius: 10px; margin: 15px 0; display: none; overflow: hidden; }
-        #progress-bar { width: 0%; height: 16px; background-color: #28a745; transition: width 0.3s ease; }
-        #progress-text { font-size: 0.75rem; color: #333; text-align: center; margin-top: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -85,11 +76,6 @@
                         <input type="file" id="pdfFile" accept="application/pdf">
                         <label style="font-weight:bold; font-size:0.75rem; color:#003366; margin-top:5px;">Correla Documenti:</label>
                         <div id="lista-checkbox-correlati" class="correlati-list"></div>
-                        
-                        <div id="progress-container">
-                            <div id="progress-bar"></div>
-                            <div id="progress-text">Caricamento: 0%</div>
-                        </div>
                     </div>
                     <div class="col-preview" id="area-anteprima">
                         <p id="placeholder-text" style="color:#999; font-size:0.8rem;">Passa sopra un correlato per l'anteprima</p>
@@ -144,49 +130,19 @@
             grid.innerHTML = html;
         }
 
-        async function salvaHeader() {
-            const updates = [
-                { key: 'site_title', valore: document.getElementById('siteTitleInput').value },
-                { key: 'link_email', valore: document.getElementById('linkEmail').value },
-                { key: 'link_money', valore: document.getElementById('linkMoney').value },
-                { key: 'link_sign', valore: document.getElementById('linkSign').value }
-            ];
-            const { error } = await _supabase.from('settings').upsert(updates, { onConflict: 'key' });
-            if (error) alert("Errore: " + error.message);
-            else {
-                document.getElementById('header-title').innerText = document.getElementById('siteTitleInput').value;
-                alert("Header aggiornato!");
-            }
-        }
-
         async function salvaDocumentoManager() {
             const file = document.getElementById('pdfFile').files[0];
-            const progContainer = document.getElementById('progress-container');
-            const progBar = document.getElementById('progress-bar');
-            const progText = document.getElementById('progress-text');
             const btnSalva = document.getElementById('btnSalva');
             let pdfPath = null;
 
             if (file) {
-                progContainer.style.display = 'block';
                 btnSalva.disabled = true;
-                btnSalva.innerText = "Caricamento...";
-
+                btnSalva.innerText = "Salvataggio...";
                 const name = `${Date.now()}_${file.name}`;
-
-                const { data, error: uploadError } = await _supabase.storage
-                    .from('pdf_riservati')
-                    .upload(name, file, {
-                        onUploadProgress: (evt) => {
-                            const percent = Math.round((evt.loaded / evt.total) * 100);
-                            progBar.style.width = percent + '%';
-                            progText.innerText = `Caricamento: ${percent}%`;
-                        },
-                    });
+                const { data, error: uploadError } = await _supabase.storage.from('pdf_riservati').upload(name, file);
 
                 if (uploadError) {
                     alert("Errore PDF: " + uploadError.message);
-                    progContainer.style.display = 'none';
                     btnSalva.disabled = false;
                     btnSalva.innerText = "Salva Online";
                     return;
@@ -206,14 +162,11 @@
 
             if (pdfPath) payload.pdf_url = pdfPath;
             const id = document.getElementById('editId').value;
-            const { error: dbError } = id 
-                ? await _supabase.from('documenti').update(payload).eq('id', id) 
-                : await _supabase.from('documenti').insert([payload]);
+            const { error: dbError } = id ? await _supabase.from('documenti').update(payload).eq('id', id) : await _supabase.from('documenti').insert([payload]);
 
             if (dbError) alert("Errore database: " + dbError.message);
             else {
                 alert("Salvato correttamente!");
-                progContainer.style.display = 'none';
                 btnSalva.disabled = false;
                 btnSalva.innerText = "Salva Online";
                 chiudiM(); caricaDocs();
@@ -243,8 +196,6 @@
             document.getElementById('newArg').value = "";
             document.getElementById('newData').value = "";
             document.getElementById('pdfFile').value = "";
-            document.getElementById('progress-container').style.display = 'none';
-            document.getElementById('progress-bar').style.width = '0%';
             popolaListaCorrelati([]);
             document.getElementById('modalDocumento').style.display = 'flex';
         }
@@ -301,6 +252,21 @@
             if(confirm("Eliminare?")) {
                 await _supabase.from('documenti').delete().eq('id', id);
                 caricaDocs();
+            }
+        }
+
+        async function salvaHeader() {
+            const updates = [
+                { key: 'site_title', valore: document.getElementById('siteTitleInput').value },
+                { key: 'link_email', valore: document.getElementById('linkEmail').value },
+                { key: 'link_money', valore: document.getElementById('linkMoney').value },
+                { key: 'link_sign', valore: document.getElementById('linkSign').value }
+            ];
+            const { error } = await _supabase.from('settings').upsert(updates, { onConflict: 'key' });
+            if (error) alert("Errore: " + error.message);
+            else {
+                document.getElementById('header-title').innerText = document.getElementById('siteTitleInput').value;
+                alert("Header aggiornato!");
             }
         }
 
