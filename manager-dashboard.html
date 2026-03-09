@@ -43,7 +43,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            pointer-events: none; /* Non blocca i clic sotto se vuoto */
+            pointer-events: none;
         }
 
         .notification-toast {
@@ -52,34 +52,27 @@
             padding: 15px 20px;
             border-radius: 12px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-            border-left: 5px solid #d9534f; /* Rosso errore */
+            border-left: 5px solid #28a745; /* Verde default (successo) */
             min-width: 300px;
             max-width: 450px;
             opacity: 0;
             transform: translateX(50px);
             transition: opacity 0.4s ease, transform 0.4s ease;
-            pointer-events: auto; /* Riattiva i clic per la notifica stessa */
+            pointer-events: auto;
             display: flex;
             align-items: start;
             gap: 12px;
         }
 
-        .notification-toast.show {
-            opacity: 1;
-            transform: translateX(0);
-        }
+        .notification-toast.error { border-left-color: #d9534f; }
+        .notification-toast.show { opacity: 1; transform: translateX(0); }
+        .notification-toast.hide { opacity: 0; transform: translateX(50px); }
 
-        .notification-toast.hide {
-            opacity: 0;
-            transform: translateX(50px);
-        }
-
-        .toast-icon { font-size: 1.4rem; color: #d9534f; margin-top: 2px; }
+        .toast-icon { font-size: 1.4rem; margin-top: 2px; }
         .toast-content { flex: 1; }
         .toast-title { font-weight: bold; color: #003366; margin-bottom: 3px; font-size: 0.95rem; }
         .toast-message { font-size: 0.85rem; color: #666; line-height: 1.4; }
-        .toast-close { background: none; border: none; color: #aaa; cursor: pointer; font-size: 1.1rem; padding: 0; margin-left: 5px; }
-        .toast-close:hover { color: #333; }
+        .toast-close { background: none; border: none; color: #aaa; cursor: pointer; font-size: 1.1rem; margin-left: 5px; }
     </style>
 </head>
 <body>
@@ -151,14 +144,13 @@
         const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
         let docsGlobali = [];
 
-        // --- FUNZIONE PER MOSTRARE LA NOTIFICA MIGLIORE ---
-        function showNotification(title, message) {
+        function showNotification(title, message, isError = false) {
             const container = document.getElementById('notification-container');
             const toast = document.createElement('div');
-            toast.className = 'notification-toast';
+            toast.className = `notification-toast ${isError ? 'error' : ''}`;
             
             toast.innerHTML = `
-                <span class="toast-icon">⚠️</span>
+                <span class="toast-icon">${isError ? '⚠️' : '✅'}</span>
                 <div class="toast-content">
                     <div class="toast-title">${title}</div>
                     <div class="toast-message">${message}</div>
@@ -167,15 +159,11 @@
             `;
             
             container.appendChild(toast);
-            
-            // Trigger animazione
             setTimeout(() => toast.classList.add('show'), 10);
-            
-            // Auto-remove dopo 7 secondi
             setTimeout(() => {
                 toast.classList.add('hide');
-                setTimeout(() => toast.remove(), 400); // Rimuove dopo animazione
-            }, 7000);
+                setTimeout(() => toast.remove(), 400);
+            }, 5000);
         }
 
         async function init() {
@@ -214,7 +202,6 @@
             grid.innerHTML = html;
         }
 
-        // Listener con NOTIFICA MIGLIORE
         document.getElementById('pdfFile').addEventListener('change', function() {
             const file = this.files[0];
             const info = document.getElementById('info-file');
@@ -225,10 +212,10 @@
                 info.innerText = `Dimensione file: ${dimensioneRealeMB} MB / Max: ${limiteMaxMB} MB`;
                 
                 if (parseFloat(dimensioneRealeMB) > limiteMaxMB) {
-                    // Sostituito alert() con notifica custom
                     showNotification(
                         "File troppo grande",
-                        `Il file selezionato è di <strong>${dimensioneRealeMB} MB</strong>, ma il limite supportato è di <strong>${limiteMaxMB} MB</strong>.<br><br>Per favore, comprimi il PDF prima di caricarlo.`
+                        `Il file è di <strong>${dimensioneRealeMB} MB</strong>. Il limite massimo è <strong>${limiteMaxMB} MB</strong>.`,
+                        true
                     );
                     this.value = ""; 
                     info.innerText = "";
@@ -244,23 +231,13 @@
             let pdfPath = null;
 
             if (file) {
-                const dimensioneMB = file.size / (1024 * 1024);
-                if (dimensioneMB > 50) {
-                    showNotification("Caricamento Annullato", "Il file supera i 50 MB supportati.");
-                    return;
-                }
-
                 btnSalva.disabled = true;
                 btnSalva.innerText = "Salvataggio...";
-                
                 const name = `${Date.now()}_${file.name}`;
                 const { data, error: uploadError } = await _supabase.storage.from('pdf_riservati').upload(name, file);
 
                 if (uploadError) {
-                    showNotification(
-                        "Errore PDF Server",
-                        `${uploadError.message}<br><br>Verifica che il limite del bucket sia impostato a 50 MB e non a 0.`
-                    );
+                    showNotification("Errore PDF Server", uploadError.message, true);
                     btnSalva.disabled = false;
                     btnSalva.innerText = "Salva Online";
                     return;
@@ -268,13 +245,12 @@
                 pdfPath = data.path;
             }
 
-            const idCorrelati = Array.from(document.querySelectorAll('.check-cor:checked')).map(c => c.value);
             const payload = {
                 titolo: document.getElementById('newTitolo').value,
                 autore: document.getElementById('newAutore').value,
                 argomento: document.getElementById('newArg').value,
                 data: document.getElementById('newData').value,
-                correlati: idCorrelati,
+                correlati: Array.from(document.querySelectorAll('.check-cor:checked')).map(c => c.value),
                 timestamp: Date.now()
             };
 
@@ -282,13 +258,27 @@
             const id = document.getElementById('editId').value;
             const { error: dbError } = id ? await _supabase.from('documenti').update(payload).eq('id', id) : await _supabase.from('documenti').insert([payload]);
 
-            if (dbError) {
-                showNotification("Errore Database", dbError.message);
-            } else {
-                alert("Salvato correttamente!"); // Questo alert di successo lo lascio, è meno intrusivo
+            if (dbError) showNotification("Errore Database", dbError.message, true);
+            else {
+                showNotification("Documento Salvato", "Le modifiche sono ora online.");
                 btnSalva.disabled = false;
                 btnSalva.innerText = "Salva Online";
                 chiudiM(); caricaDocs();
+            }
+        }
+
+        async function salvaHeader() {
+            const updates = [
+                { key: 'site_title', valore: document.getElementById('siteTitleInput').value },
+                { key: 'link_email', valore: document.getElementById('linkEmail').value },
+                { key: 'link_money', valore: document.getElementById('linkMoney').value },
+                { key: 'link_sign', valore: document.getElementById('linkSign').value }
+            ];
+            const { error } = await _supabase.from('settings').upsert(updates, { onConflict: 'key' });
+            if (error) showNotification("Errore Aggiornamento", error.message, true);
+            else {
+                document.getElementById('header-title').innerText = document.getElementById('siteTitleInput').value;
+                showNotification("Header Aggiornato", "Le impostazioni generali sono state salvate.");
             }
         }
 
@@ -372,21 +362,7 @@
             if(confirm("Eliminare?")) {
                 await _supabase.from('documenti').delete().eq('id', id);
                 caricaDocs();
-            }
-        }
-
-        async function salvaHeader() {
-            const updates = [
-                { key: 'site_title', valore: document.getElementById('siteTitleInput').value },
-                { key: 'link_email', valore: document.getElementById('linkEmail').value },
-                { key: 'link_money', valore: document.getElementById('linkMoney').value },
-                { key: 'link_sign', valore: document.getElementById('linkSign').value }
-            ];
-            const { error } = await _supabase.from('settings').upsert(updates, { onConflict: 'key' });
-            if (error) alert("Errore: " + error.message);
-            else {
-                document.getElementById('header-title').innerText = document.getElementById('siteTitleInput').value;
-                alert("Header aggiornato!");
+                showNotification("Eliminato", "Documento rimosso correttamente.");
             }
         }
 
