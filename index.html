@@ -15,10 +15,11 @@
         }
         header h1 { margin: 0; font-size: 1.3rem; text-align: center; max-width: 45%; line-height: 1.3; }
 
-        /* Bottoni Header dinamici */
+        /* Bottoni Header */
         .header-contacts-extreme { position: absolute; right: 25px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
         .contact-item { background-color: #0056b3; color: white !important; padding: 6px 14px; border-radius: 50px; font-size: 0.75rem; font-weight: bold; border: 1px solid rgba(255,255,255,0.2); text-decoration: none; transition: 0.3s; }
         .contact-item:hover { background-color: white; color: #003366 !important; transform: scale(1.05); }
+        
         .login-sub-link { color: rgba(255,255,255,0.7) !important; font-size: 0.65rem; font-weight: bold; text-decoration: none; margin-top: 2px; }
         .login-sub-link:hover { color: white !important; text-decoration: underline; }
 
@@ -53,27 +54,27 @@
     </main>
 
     <script>
-        const _supabase = supabase.createClient('IL_TUO_URL', 'LA_TUA_KEY');
+        const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
 
         async function init() {
             try {
-                // 1. CARICA IMPOSTAZIONI HEADER (Titolo e Link)
+                // 1. Legge le impostazioni dell'header dalla tabella settings
                 const { data: settings } = await _supabase.from('settings').select('*');
                 if (settings) {
-                    const titleObj = settings.find(s => s.key === 'site_title');
-                    if (titleObj) document.getElementById('main-title').innerText = titleObj.valore;
+                    const title = settings.find(s => s.key === 'site_title')?.valore;
+                    if (title) document.getElementById('main-title').innerText = title;
 
-                    const emailObj = settings.find(s => s.key === 'link_email');
-                    if (emailObj) document.getElementById('link-email').href = emailObj.valore;
+                    const email = settings.find(s => s.key === 'link_email')?.valore;
+                    if (email) document.getElementById('link-email').href = email;
 
-                    const moneyObj = settings.find(s => s.key === 'link_money');
-                    if (moneyObj) document.getElementById('link-raccolta').href = moneyObj.valore;
+                    const money = settings.find(s => s.key === 'link_money')?.valore;
+                    if (money) document.getElementById('link-raccolta').href = money;
 
-                    const signObj = settings.find(s => s.key === 'link_sign');
-                    if (signObj) document.getElementById('link-firma').href = signObj.valore;
+                    const sign = settings.find(s => s.key === 'link_sign')?.valore;
+                    if (sign) document.getElementById('link-firma').href = sign;
                 }
 
-                // 2. CARICA DOCUMENTI
+                // 2. Carica i documenti pubblici
                 const { data: docs } = await _supabase.from('documenti').select('*').order('timestamp', { ascending: false });
                 if (docs) {
                     document.getElementById('grid-pubblica').innerHTML = docs.map(d => `
@@ -86,7 +87,7 @@
                         </div>`).join('');
                 }
             } catch (err) {
-                console.error("Errore caricamento dati:", err);
+                console.error("Errore durante il caricamento:", err);
             }
         }
 
