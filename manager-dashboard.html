@@ -6,33 +6,41 @@
     <title>Area Manager - Ospedale Cremona</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* --- STILE MANAGER --- */
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding-top: 120px; }
-        header { background: #003366; color: white; padding: 20px 0; position: fixed; top: 0; width: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center; min-height: 100px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
-        header h1 { margin: 0; font-size: 1.3rem; text-align: center; max-width: 45%; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding-top: 120px; overflow-x: hidden; }
         
+        header { 
+            background: #003366; color: white; padding: 20px 0; position: fixed; top: 0; width: 100%; 
+            z-index: 1000; display: flex; justify-content: center; align-items: center; min-height: 100px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); 
+        }
+        
+        header h1 { margin: 0; font-size: 1.3rem; text-align: center; max-width: 45%; }
+
         .header-contacts-extreme { position: absolute; right: 25px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
         .contact-item { background-color: #0056b3; color: white !important; padding: 6px 14px; border-radius: 50px; font-size: 0.75rem; font-weight: bold; border: 1px solid rgba(255,255,255,0.2); text-decoration: none; }
-        .btn-logout { color: rgba(255,255,255,0.7) !important; font-size: 0.65rem; font-weight: bold; text-decoration: none; margin-top: 2px; background: none; border: none; cursor: pointer; }
+        
+        .btn-logout { background: none; border: none; color: rgba(255,255,255,0.7); font-size: 0.65rem; font-weight: bold; cursor: pointer; }
 
-        /* Barra Gestione Header */
         .settings-bar { background: #e3f2fd; border: 1.5px solid #003366; border-radius: 12px; padding: 15px; max-width: 1200px; margin: 20px auto; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; }
         .settings-group { display: flex; align-items: center; gap: 5px; background: white; padding: 5px 10px; border-radius: 8px; border: 1px solid #ccc; }
         .settings-group input { border: none; font-size: 0.8rem; outline: none; width: 150px; }
-        
-        /* FILTRI */
+
         .filter-section { margin: 10px auto; max-width: 1200px; display: flex; justify-content: center; }
         .filter-container { display: flex; gap: 8px; flex-wrap: wrap; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .filter-container input, .filter-container select { padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 0.85rem; }
 
         .grid-dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; padding: 20px 30px; max-width: 1200px; margin: 0 auto; }
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eef0f2; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; }
         
-        .btn-gestione { margin-top: 15px; padding: 8px 20px; background: #003366; color: white; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; font-size: 0.8rem; }
-        .btn-elimina { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #d9534f; cursor: pointer; font-weight: bold; }
-
+        /* MODALE POTENZIATA */
         #modalDocumento { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; justify-content:center; align-items:center; }
-        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 500px; }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 95%; max-width: 900px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        
+        .col-input { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        .col-preview { flex: 1.2; border: 1px solid #eee; border-radius: 12px; background: #f9f9f9; min-height: 400px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        
+        .correlati-list { max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 8px; background: #fff; }
+        .correlato-item { display: flex; align-items: center; gap: 8px; padding: 4px; border-radius: 4px; transition: 0.2s; cursor: pointer; }
+        .correlato-item:hover { background: #e3f2fd; }
     </style>
 </head>
 <body>
@@ -45,7 +53,7 @@
                 <a href="#" class="contact-item">💰 Raccolta</a>
                 <a href="#" class="contact-item">✍️ Firma</a>
             </div>
-            <button onclick="esciOra()" class="btn-logout">Esci (Manager)</button>
+            <button onclick="esciManager()" class="btn-logout">Esci (Manager)</button>
         </div>
     </header>
 
@@ -55,15 +63,15 @@
             <div class="settings-group"><label>Email:</label><input type="text" id="linkEmail"></div>
             <div class="settings-group"><label>Raccolta:</label><input type="text" id="linkMoney"></div>
             <div class="settings-group"><label>Firma:</label><input type="text" id="linkSign"></div>
-            <button onclick="salvaHeaderNuovo()" style="background:#003366; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">Salva Header</button>
+            <button onclick="salvaHeader()" style="background:#003366; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">Salva Header</button>
         </div>
 
         <section class="filter-section">
             <div class="filter-container">
-                <input type="text" id="cercaTitolo" placeholder="Cerca titolo...">
-                <select id="fArg"><option value="tutti">Tutti gli argomenti</option></select>
-                <select id="fAut"><option value="tutti">Tutti gli autori</option></select>
-                <select id="fData"><option value="tutti">Tutti gli anni</option></select>
+                <input type="text" id="cercaTitolo" placeholder="Cerca titolo..." oninput="applicaFiltri()">
+                <select id="fArg" onchange="applicaFiltri()"><option value="tutti">Tutti gli argomenti</option></select>
+                <select id="fAut" onchange="applicaFiltri()"><option value="tutti">Tutti gli autori</option></select>
+                <select id="fData" onchange="applicaFiltri()"><option value="tutti">Tutti gli anni</option></select>
             </div>
         </section>
 
@@ -71,15 +79,32 @@
 
         <div id="modalDocumento">
             <div class="modal-content">
-                <h3 id="modalTitle">Gestione Documento</h3>
+                <h3 id="modalTitle" style="color:#003366; margin-top:0;">Gestione Documento</h3>
                 <input type="hidden" id="editId">
-                <input type="text" id="newTitolo" placeholder="Titolo" style="width:100%; margin-bottom:10px; padding:10px; box-sizing:border-box;">
-                <input type="text" id="newAutore" placeholder="Autore" style="width:100%; margin-bottom:10px; padding:10px; box-sizing:border-box;">
-                <input type="text" id="newArg" placeholder="Argomento" style="width:100%; margin-bottom:10px; padding:10px; box-sizing:border-box;">
-                <input type="text" id="newData" placeholder="Data (es. 09/03/2026)" style="width:100%; margin-bottom:20px; padding:10px; box-sizing:border-box;">
-                <div style="display:flex; gap:10px;">
-                    <button onclick="salvaDocumento()" style="flex:1; padding:12px; background:#28a745; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Salva</button>
-                    <button onclick="chiudiModal()" style="flex:1; padding:12px; background:#6c757d; color:white; border:none; border-radius:8px; cursor:pointer;">Annulla</button>
+                
+                <div style="display: flex; gap: 20px;">
+                    <div class="col-input">
+                        <input type="text" id="newTitolo" placeholder="Titolo" style="padding:10px; border-radius:8px; border:1px solid #ddd;">
+                        <input type="text" id="newAutore" placeholder="Autore" style="padding:10px; border-radius:8px; border:1px solid #ddd;">
+                        <input type="text" id="newArg" placeholder="Argomento" style="padding:10px; border-radius:8px; border:1px solid #ddd;">
+                        <input type="text" id="newData" placeholder="Data (es. 09/03/2026)" style="padding:10px; border-radius:8px; border:1px solid #ddd;">
+                        
+                        <label style="font-weight:bold; font-size:0.75rem; color:#003366;">File PDF:</label>
+                        <input type="file" id="pdfFile" accept="application/pdf">
+
+                        <label style="font-weight:bold; font-size:0.75rem; color:#003366; margin-top:5px;">Correla Documenti:</label>
+                        <div id="lista-checkbox-correlati" class="correlati-list"></div>
+                    </div>
+
+                    <div class="col-preview" id="area-anteprima">
+                        <p id="placeholder-text" style="color:#999; font-size:0.8rem;">Passa sopra un correlato per l'anteprima</p>
+                        <div id="viewer-correlato" style="width:100%; height:100%; display:none;"></div>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button onclick="salvaTutto()" style="flex:1; padding:12px; background:#28a745; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Salva Online</button>
+                    <button onclick="chiudiM()" style="flex:1; padding:12px; background:#6c757d; color:white; border:none; border-radius:8px; cursor:pointer;">Annulla</button>
                 </div>
             </div>
         </div>
@@ -90,136 +115,124 @@
         let docsGlobali = [];
 
         async function init() {
-            // Carica Settings
             const { data: settings } = await _supabase.from('settings').select('*');
             if (settings) {
                 const title = settings.find(s => s.key === 'site_title')?.valore || "Movimento Ospedale";
                 document.getElementById('header-title').innerText = title;
                 document.getElementById('siteTitleInput').value = title;
-                document.getElementById('linkEmail').value = settings.find(s => s.key === 'link_email')?.valore || "";
-                document.getElementById('linkMoney').value = settings.find(s => s.key === 'link_money')?.valore || "";
-                document.getElementById('linkSign').value = settings.find(s => s.key === 'link_sign')?.valore || "";
             }
             caricaDocs();
         }
 
         async function caricaDocs() {
             const { data: docs } = await _supabase.from('documenti').select('*').order('timestamp', { ascending: false });
-            if (docs) {
-                docsGlobali = docs;
-                popolaFiltri(docs);
-                renderizza(docs);
-            }
+            docsGlobali = docs || [];
+            popolaFiltriMenu();
+            renderizzaGrid(docsGlobali);
         }
 
-        function popolaFiltri(docs) {
-            const fArg = document.getElementById('fArg');
-            const fAut = document.getElementById('fAut');
-            const fData = document.getElementById('fData');
+        function popolaFiltriMenu() {
+            const arg = document.getElementById('fArg'), aut = document.getElementById('fAut'), dat = document.getElementById('fData');
+            arg.innerHTML = '<option value="tutti">Tutti gli argomenti</option>';
+            aut.innerHTML = '<option value="tutti">Tutti gli autori</option>';
+            dat.innerHTML = '<option value="tutti">Tutti gli anni</option>';
             
-            // Svuota e aggiungi opzione "tutti"
-            fArg.innerHTML = '<option value="tutti">Tutti gli argomenti</option>';
-            fAut.innerHTML = '<option value="tutti">Tutti gli autori</option>';
-            fData.innerHTML = '<option value="tutti">Tutti gli anni</option>';
-
-            const argomenti = [...new Set(docs.map(d => d.argomento))].sort();
-            const autori = [...new Set(docs.map(d => d.autore))].sort();
-            const anni = [...new Set(docs.map(d => d.data ? d.data.split('/').pop() : ""))].filter(Boolean).sort((a,b) => b-a);
-
-            argomenti.forEach(a => { if(a) fArg.innerHTML += `<option value="${a}">${a}</option>`; });
-            autori.forEach(a => { if(a) fAut.innerHTML += `<option value="${a}">${a}</option>`; });
-            anni.forEach(a => { if(a) fData.innerHTML += `<option value="${a}">${a}</option>`; });
+            [...new Set(docsGlobali.map(d => d.argomento))].sort().forEach(a => { if(a) arg.innerHTML += `<option value="${a}">${a}</option>`; });
+            [...new Set(docsGlobali.map(d => d.autore))].sort().forEach(a => { if(a) aut.innerHTML += `<option value="${a}">${a}</option>`; });
+            [...new Set(docsGlobali.map(d => d.data?.split('/').pop()))].filter(Boolean).sort((a,b)=>b-a).forEach(a => { dat.innerHTML += `<option value="${a}">${a}</option>`; });
         }
 
-        function renderizza(docs) {
+        function renderizzaGrid(docs) {
             const grid = document.getElementById('main-grid');
-            let html = `<div class="card" onclick="apriNuovo()" style="border:2px dashed #28a745; cursor:pointer; min-height:200px; justify-content:center;">
-                            <span style="font-size:3rem; color:#28a745;">+</span>
-                            <h3 style="color:#28a745; font-size:1rem;">Aggiungi Nuovo</h3>
-                        </div>`;
-            html += docs.map(d => `
+            grid.innerHTML = `<div class="card" onclick="apriM()" style="border:2px dashed #28a745; cursor:pointer; justify-content:center;"><span style="font-size:3rem; color:#28a745;">+</span><h3 style="color:#28a745;">Aggiungi Nuovo</h3></div>` +
+                docs.map(d => `
                 <div class="card">
-                    <button onclick="eliminaD('${d.id}')" class="btn-elimina">✕</button>
+                    <button onclick="eliminaD('${d.id}')" style="position:absolute; top:10px; right:10px; border:none; background:none; color:#d9534f; cursor:pointer;">✕</button>
                     <div style="font-size: 2.5rem; margin-bottom: 10px; color:#ccc;">📄</div>
-                    <h3 style="font-size:1rem; color:#003366; margin:0 0 10px 0;">${d.titolo}</h3>
-                    <p style="font-size:0.8rem; color:#666; margin:0;">${d.autore}<br>${d.data}</p>
-                    <button onclick="modificaD('${d.id}')" class="btn-gestione">Gestione →</button>
+                    <h3 style="font-size:1rem; color:#003366;">${d.titolo}</h3>
+                    <p style="font-size:0.8rem; color:#666;">${d.autore}<br>${d.data}</p>
+                    <button onclick="modificaD('${d.id}')" style="margin-top:15px; padding:8px 20px; background:#003366; color:white; border:none; border-radius:50px; cursor:pointer;">Gestione →</button>
                 </div>`).join('');
-            grid.innerHTML = html;
         }
 
-        function applicaFiltri() {
-            const t = document.getElementById('cercaTitolo').value.toLowerCase();
-            const arg = document.getElementById('fArg').value;
-            const aut = document.getElementById('fAut').value;
-            const anno = document.getElementById('fData').value;
-
-            const filtrati = docsGlobali.filter(d => {
-                const matchT = d.titolo.toLowerCase().includes(t);
-                const matchArg = arg === 'tutti' || d.argomento === arg;
-                const matchAut = aut === 'tutti' || d.autore === aut;
-                const matchAnno = anno === 'tutti' || (d.data && d.data.endsWith(anno));
-                return matchT && matchArg && matchAut && matchAnno;
-            });
-            renderizza(filtrati);
-        }
-
-        // --- FUNZIONI GESTIONE ---
-        async function salvaHeaderNuovo() {
-            const updates = [
-                { key: 'site_title', valore: document.getElementById('siteTitleInput').value },
-                { key: 'link_email', valore: document.getElementById('linkEmail').value },
-                { key: 'link_money', valore: document.getElementById('linkMoney').value },
-                { key: 'link_sign', valore: document.getElementById('linkSign').value }
-            ];
-            const { error } = await _supabase.from('settings').upsert(updates, { onConflict: 'key' });
-            if (error) alert(error.message); else {
-                document.getElementById('header-title').innerText = document.getElementById('siteTitleInput').value;
-                alert("Header aggiornato!");
-            }
-        }
-
-        function apriNuovo() { 
+        // FUNZIONI MODALE
+        function apriM() {
             document.getElementById('editId').value = "";
-            document.getElementById('newTitolo').value = ""; document.getElementById('newAutore').value = "";
-            document.getElementById('newArg').value = ""; document.getElementById('newData').value = "";
-            document.getElementById('modalDocumento').style.display = 'flex'; 
+            document.getElementById('newTitolo').value = "";
+            document.getElementById('pdfFile').value = "";
+            popolaListaCorrelati([]);
+            document.getElementById('modalDocumento').style.display = 'flex';
+        }
+
+        function popolaListaCorrelati(selezionati = []) {
+            const container = document.getElementById('lista-checkbox-correlati');
+            const attualeId = document.getElementById('editId').value;
+            
+            container.innerHTML = docsGlobali
+                .filter(d => d.id !== attualeId)
+                .map(d => `
+                    <div class="correlato-item" onmouseover="anteprima('${d.pdf_url}')">
+                        <input type="checkbox" class="check-cor" value="${d.id}" ${selezionati.includes(d.id) ? 'checked' : ''}>
+                        <span style="font-size:0.75rem;">${d.titolo}</span>
+                    </div>
+                `).join('');
+        }
+
+        function anteprima(path) {
+            if(!path) return;
+            const { data } = _supabase.storage.from('pdf_riservati').getPublicUrl(path);
+            document.getElementById('placeholder-text').style.display = 'none';
+            const v = document.getElementById('viewer-correlato');
+            v.style.display = 'block';
+            v.innerHTML = `<embed src="${data.publicUrl}#toolbar=0&navpanes=0" type="application/pdf" width="100%" height="100%" />`;
+        }
+
+        async function salvaTutto() {
+            const file = document.getElementById('pdfFile').files[0];
+            let pdfPath = null;
+
+            if (file) {
+                const name = `${Date.now()}_${file.name}`;
+                const { data, error } = await _supabase.storage.from('pdf_riservati').upload(name, file);
+                if (error) return alert("Errore PDF: " + error.message);
+                pdfPath = data.path;
+            }
+
+            const idCorrelati = Array.from(document.querySelectorAll('.check-cor:checked')).map(c => c.value);
+            const payload = {
+                titolo: document.getElementById('newTitolo').value,
+                autore: document.getElementById('newAutore').value,
+                argomento: document.getElementById('newArg').value,
+                data: document.getElementById('newData').value,
+                correlati: idCorrelati,
+                timestamp: Date.now()
+            };
+            if (pdfPath) payload.pdf_url = pdfPath;
+
+            const id = document.getElementById('editId').value;
+            let res;
+            if (id) res = await _supabase.from('documenti').update(payload).eq('id', id);
+            else res = await _supabase.from('documenti').insert([payload]);
+
+            if (res.error) alert(res.error.message);
+            else { chiudiM(); caricaDocs(); }
         }
 
         async function modificaD(id) {
-            const { data } = await _supabase.from('documenti').select('*').eq('id', id).single();
-            if (data) {
-                document.getElementById('editId').value = data.id;
-                document.getElementById('newTitolo').value = data.titolo;
-                document.getElementById('newAutore').value = data.autore;
-                document.getElementById('newArg').value = data.argomento;
-                document.getElementById('newData').value = data.data;
+            const d = docsGlobali.find(doc => doc.id === id);
+            if (d) {
+                document.getElementById('editId').value = d.id;
+                document.getElementById('newTitolo').value = d.titolo;
+                document.getElementById('newAutore').value = d.autore;
+                document.getElementById('newArg').value = d.argomento;
+                document.getElementById('newData').value = d.data;
+                popolaListaCorrelati(d.correlati || []);
                 document.getElementById('modalDocumento').style.display = 'flex';
             }
         }
 
-        async function salvaDocumento() {
-            const id = document.getElementById('editId').value;
-            const payload = { titolo: document.getElementById('newTitolo').value, autore: document.getElementById('newAutore').value, argomento: document.getElementById('newArg').value, data: document.getElementById('newData').value, timestamp: Date.now() };
-            if (id) await _supabase.from('documenti').update(payload).eq('id', id);
-            else await _supabase.from('documenti').insert([payload]);
-            chiudiModal(); caricaDocs();
-        }
-
-        function chiudiModal() { document.getElementById('modalDocumento').style.display = 'none'; }
-
-        async function eliminaD(id) {
-            if(confirm("Eliminare?")) { await _supabase.from('documenti').delete().eq('id', id); caricaDocs(); }
-        }
-
-        async function esciOra() { await _supabase.auth.signOut(); window.location.href = 'index.html'; }
-
-        // Listener Filtri
-        document.getElementById('cercaTitolo').addEventListener('input', applicaFiltri);
-        document.getElementById('fArg').addEventListener('change', applicaFiltri);
-        document.getElementById('fAut').addEventListener('change', applicaFiltri);
-        document.getElementById('fData').addEventListener('change', applicaFiltri);
-
+        function chiudiM() { document.getElementById('modalDocumento').style.display = 'none'; }
+        async function esciManager() { await _supabase.auth.signOut(); window.location.href = 'index.html'; }
         window.onload = init;
     </script>
 </body>
