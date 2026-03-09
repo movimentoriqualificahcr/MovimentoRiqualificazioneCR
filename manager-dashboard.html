@@ -7,43 +7,41 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding-top: 100px; overflow-x: hidden; }
-        
         header { 
             background: #003366; color: white; padding: 10px 20px; position: fixed; top: 0; width: 100%; 
             z-index: 2000; display: grid; grid-template-columns: 50px 1fr 50px; align-items: center; 
             box-sizing: border-box; box-shadow: 0 2px 10px rgba(0,0,0,0.3); min-height: 70px;
         }
         header h1 { margin: 0; font-size: 1.1rem; text-align: center; grid-column: 2; line-height: 1.2; }
-
         .hamburger { cursor: pointer; display: flex; flex-direction: column; gap: 5px; grid-column: 3; justify-self: end; padding: 10px; }
         .hamburger span { width: 25px; height: 3px; background: white; border-radius: 2px; }
-        
         .nav-menu { 
             position: fixed; top: 80px; right: -100%; width: 280px; 
             background: #002244; border-radius: 15px 0 0 15px;
             display: flex; flex-direction: column; padding: 20px; gap: 12px; 
             transition: 0.4s ease-in-out; z-index: 2500;
-            box-shadow: -5px 5px 15px rgba(0,0,0,0.3);
         }
         .nav-menu.active { right: 0; }
         .btn-close-menu { align-self: flex-end; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
-        
-        .contact-item { background-color: #0056b3; color: white !important; padding: 12px; border-radius: 8px; font-size: 0.9rem; font-weight: bold; text-decoration: none; text-align: center; }
+        .contact-item { background-color: #0056b3; color: white !important; padding: 12px; border-radius: 8px; text-decoration: none; text-align: center; }
         .btn-logout { background: #d9534f; border: none; color: white; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-
         .settings-bar, .filter-section { background: white; border: 1px solid #ddd; border-radius: 12px; padding: 20px; max-width: 1100px; margin: 20px auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .settings-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
         .settings-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 200px; }
         .settings-group label { font-size: 0.75rem; font-weight: bold; color: #003366; }
         .settings-group input { padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
-
         .grid-dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; padding: 20px; max-width: 1200px; margin: 0 auto; }
-        .card { background: white; padding: 25px; border-radius: 15px; border: 1px solid #eee; text-align: center; position: relative; transition: 0.3s; display: flex; flex-direction: column; align-items: center; }
+        .card { background: white; padding: 25px; border-radius: 15px; border: 1px solid #eee; text-align: center; position: relative; display: flex; flex-direction: column; align-items: center; }
         
-        /* Modale Gestione */
+        /* MODALE */
         #modalDoc { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:3000; justify-content:center; align-items:center; }
-        .modal-content { background:white; padding:30px; border-radius:20px; width:95%; max-width:600px; box-shadow:0 10px 30px rgba(0,0,0,0.3); }
-
+        .modal-content { background:white; padding:30px; border-radius:20px; width:95%; max-width:500px; max-height: 90vh; overflow-y: auto; box-shadow:0 10px 30px rgba(0,0,0,0.3); }
+        .modal-input { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd; box-sizing: border-box; }
+        
+        /* LISTA CORRELATI NELLA MODALE */
+        .correlati-area { border: 1px solid #eee; border-radius: 8px; padding: 10px; max-height: 120px; overflow-y: auto; margin-bottom: 15px; background: #fafafa; }
+        .corr-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; padding: 4px 0; border-bottom: 1px solid #eee; }
+        
         #notification-container { position: fixed; top: 90px; right: 20px; z-index: 4000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
         .notification-toast { background: white; padding: 15px 25px; border-radius: 10px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); border-left: 5px solid #28a745; min-width: 250px; opacity: 0; transform: translateX(50px); transition: 0.4s; pointer-events: auto; }
         .notification-toast.show { opacity: 1; transform: translateX(0); }
@@ -80,7 +78,7 @@
         </div>
 
         <div class="filter-section">
-            <input type="text" id="cercaTitolo" placeholder="🔍 Cerca..." oninput="applicaFiltri()" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
+            <input type="text" id="cercaTitolo" placeholder="🔍 Cerca per titolo..." oninput="applicaFiltri()" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; box-sizing: border-box;">
         </div>
 
         <div class="grid-dashboard" id="main-grid"></div>
@@ -88,18 +86,23 @@
 
     <div id="modalDoc">
         <div class="modal-content">
-            <h2 id="mTitle" style="color:#003366;">Gestione Documento</h2>
+            <h2 id="mTitle" style="color:#003366; margin-top: 0;">Gestione Documento</h2>
             <input type="hidden" id="editId">
-            <input type="text" id="nTitolo" placeholder="Titolo" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
-            <input type="text" id="nAutore" placeholder="Autore" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
-            <input type="text" id="nArg" placeholder="Argomento" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
-            <input type="text" id="nData" placeholder="Data (GG/MM/AAAA)" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
-            <label style="font-size:0.8rem; font-weight:bold;">File PDF:</label>
-            <input type="file" id="nFile" accept="application/pdf" style="margin-bottom:20px;">
+            <input type="text" id="nTitolo" class="modal-input" placeholder="Titolo">
+            <input type="text" id="nAutore" class="modal-input" placeholder="Autore">
+            <input type="text" id="nArg" class="modal-input" placeholder="Argomento">
+            <input type="text" id="nData" class="modal-input" placeholder="Data (es: 09/03/2026)">
+            
+            <label style="font-size:0.75rem; font-weight:bold; color:#003366;">File PDF:</label>
+            <input type="file" id="nFile" accept="application/pdf" style="margin-bottom:15px; font-size: 0.8rem;">
+            
+            <label style="font-size:0.75rem; font-weight:bold; color:#003366;">Correla altri documenti:</label>
+            <div id="lista-correlati" class="correlati-area">
+                </div>
             
             <div style="display:flex; gap:10px;">
-                <button onclick="salvaDoc()" id="btnSalvaDoc" style="flex:1; padding:12px; background:#28a745; color:white; border:none; border-radius:8px; font-weight:bold;">Salva Online</button>
-                <button onclick="chiudiM()" style="flex:1; padding:12px; background:#6c757d; color:white; border:none; border-radius:8px;">Annulla</button>
+                <button onclick="salvaDoc()" id="btnSalvaDoc" style="flex:1; padding:12px; background:#28a745; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Salva Online</button>
+                <button onclick="chiudiM()" style="flex:1; padding:12px; background:#6c757d; color:white; border:none; border-radius:8px; cursor:pointer;">Annulla</button>
             </div>
         </div>
     </div>
@@ -110,9 +113,14 @@
 
         function toggleMenu() { document.getElementById('navMenu').classList.toggle('active'); }
         function chiudiM() { document.getElementById('modalDoc').style.display = 'none'; }
+        
         function apriM() { 
             document.getElementById('editId').value = "";
             document.getElementById('nTitolo').value = "";
+            document.getElementById('nAutore').value = "";
+            document.getElementById('nArg').value = "";
+            document.getElementById('nData').value = "";
+            popolaCheckCorrelati([]);
             document.getElementById('modalDoc').style.display = 'flex'; 
         }
 
@@ -145,27 +153,41 @@
 
         function renderizzaGrid(docs) {
             const g = document.getElementById('main-grid');
-            g.innerHTML = `<div class="card" onclick="apriM()" style="border:2px dashed #28a745; cursor:pointer;"><h3>+ Nuovo</h3></div>` +
-                docs.map(d => `<div class="card">
-                    <button onclick="eliminaD('${d.id}')" style="position:absolute; top:10px; right:10px; border:none; background:none; color:#d9534f; cursor:pointer; font-size:1.2rem;">✕</button>
+            g.innerHTML = `<div class="card" onclick="apriM()" style="border:2px dashed #28a745; cursor:pointer; justify-content:center; min-height: 180px;"><span style="font-size:2rem; color:#28a745;">+</span><h3 style="color:#28a745;">Aggiungi Nuovo</h3></div>` +
+                docs.map(d => `<div class="card" style="min-height: 180px;">
+                    <button onclick="eliminaD('${d.id}')" style="position:absolute; top:10px; right:10px; border:none; background:none; color:#d9534f; cursor:pointer;">✕</button>
                     <div style="font-size:2rem; color:#ccc;">📄</div>
-                    <h3 style="font-size:1rem; margin:10px 0;">${d.titolo}</h3>
-                    <p style="font-size:0.8rem; color:#666;">${d.autore}</p>
-                    <button onclick="modificaD('${d.id}')" style="margin-top:10px; background:#003366; color:white; border:none; padding:8px 15px; border-radius:50px; cursor:pointer;">Gestione →</button>
+                    <h3 style="font-size:0.9rem; margin:10px 0;">${d.titolo}</h3>
+                    <button onclick="modificaD('${d.id}')" style="margin-top:auto; background:#003366; color:white; border:none; padding:8px 15px; border-radius:50px; cursor:pointer; font-size: 0.75rem;">Gestione →</button>
                 </div>`).join('');
+        }
+
+        function popolaCheckCorrelati(selezionati = []) {
+            const container = document.getElementById('lista-correlati');
+            const attualeId = document.getElementById('editId').value;
+            
+            container.innerHTML = docsGlobali
+                .filter(d => d.id !== attualeId)
+                .map(d => `
+                    <div class="corr-item">
+                        <input type="checkbox" class="check-cor" value="${d.id}" ${selezionati.includes(d.id) ? 'checked' : ''}>
+                        <span>${d.titolo}</span>
+                    </div>
+                `).join('') || '<p style="font-size:0.7rem; color:#999;">Nessun altro documento disponibile.</p>';
         }
 
         async function salvaDoc() {
             const f = document.getElementById('nFile').files[0];
             const btn = document.getElementById('btnSalvaDoc');
+            const idCorrelati = Array.from(document.querySelectorAll('.check-cor:checked')).map(c => c.value);
             let p = null;
 
             btn.disabled = true; btn.innerText = "Salvataggio...";
 
             if (f) {
-                if (f.size / (1024 * 1024) > 50) { showNotification("Errore", "Max 50MB", true); btn.disabled = false; return; }
+                if (f.size / (1024 * 1024) > 50) { showNotification("Errore", "Il file supera 50MB", true); btn.disabled = false; btn.innerText = "Salva Online"; return; }
                 const { data, error } = await _supabase.storage.from('pdf_riservati').upload(`${Date.now()}_${f.name}`, f);
-                if (error) { showNotification("Errore PDF", error.message, true); btn.disabled = false; return; }
+                if (error) { showNotification("Errore PDF", error.message, true); btn.disabled = false; btn.innerText = "Salva Online"; return; }
                 p = data.path;
             }
 
@@ -174,6 +196,7 @@
                 autore: document.getElementById('nAutore').value,
                 argomento: document.getElementById('nArg').value,
                 data: document.getElementById('nData').value,
+                correlati: idCorrelati,
                 timestamp: Date.now()
             };
             if (p) payload.pdf_url = p;
@@ -181,8 +204,8 @@
             const id = document.getElementById('editId').value;
             const { error: dbE } = id ? await _supabase.from('documenti').update(payload).eq('id', id) : await _supabase.from('documenti').insert([payload]);
 
-            if (dbE) showNotification("Errore DB", dbE.message, true);
-            else { showNotification("Successo", "Salvato!"); chiudiM(); caricaDocs(); }
+            if (dbE) showNotification("Errore Database", dbE.message, true);
+            else { showNotification("Successo", "Documento salvato!"); chiudiM(); caricaDocs(); }
             btn.disabled = false; btn.innerText = "Salva Online";
         }
 
@@ -194,12 +217,13 @@
                 document.getElementById('nAutore').value = d.autore;
                 document.getElementById('nArg').value = d.argomento;
                 document.getElementById('nData').value = d.data;
+                popolaCheckCorrelati(d.correlati || []);
                 document.getElementById('modalDoc').style.display = 'flex';
             }
         }
 
         async function eliminaD(id) {
-            if(confirm("Eliminare?")) {
+            if(confirm("Eliminare definitivamente questo documento?")) {
                 await _supabase.from('documenti').delete().eq('id', id);
                 showNotification("Eliminato", "Documento rimosso.");
                 caricaDocs();
