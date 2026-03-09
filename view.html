@@ -6,7 +6,7 @@
     <title>Visualizza Documento - Ospedale Cremona</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* HEADER STANDARD (Identico a Index/Dashboard) */
+        /* HEADER IDENTICO A INDEX */
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding-top: 100px; overflow-x: hidden; }
         
         header { 
@@ -17,13 +17,12 @@
         header h1 { margin: 0; font-size: 1.1rem; text-align: center; grid-column: 2; line-height: 1.2; }
 
         .btn-back-header { 
-            grid-column: 1; color: white; text-decoration: none; font-size: 1.2rem; 
+            grid-column: 1; color: white; text-decoration: none; font-size: 1.5rem; 
             display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;
-            border-radius: 50%; transition: 0.3s;
+            border-radius: 50%; transition: 0.3s; font-weight: bold;
         }
         .btn-back-header:hover { background: rgba(255,255,255,0.1); }
 
-        /* Icona Hamburger estetica per simmetria */
         .hamburger-placeholder { grid-column: 3; display: flex; flex-direction: column; gap: 5px; justify-self: end; opacity: 0.5; }
         .hamburger-placeholder span { width: 25px; height: 3px; background: white; border-radius: 2px; }
 
@@ -63,7 +62,7 @@
 
     <header>
         <a href="index.html" class="btn-back-header" title="Torna alla lista">‹</a>
-        <h1 id="header-title">Documento</h1>
+        <h1 id="header-title">Movimento Ospedale Cremona</h1>
         <div class="hamburger-placeholder"><span></span><span></span><span></span></div>
     </header>
 
@@ -89,6 +88,13 @@
         const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
 
         async function initView() {
+            // Carica titolo del sito dalle impostazioni per uniformità totale
+            const { data: settings } = await _supabase.from('settings').select('*');
+            if (settings) {
+                const title = settings.find(s => s.key === 'site_title')?.valore;
+                if(title) document.getElementById('header-title').innerText = title;
+            }
+
             const urlParams = new URLSearchParams(window.location.search);
             const id = urlParams.get('id');
             if (!id) return;
@@ -96,7 +102,6 @@
             const { data: d, error } = await _supabase.from('documenti').select('*').eq('id', id).single();
             if (error || !d) return;
 
-            document.getElementById('header-title').innerText = d.titolo;
             document.getElementById('doc-titolo').innerText = d.titolo;
             document.getElementById('doc-autore').innerText = d.autore || "N/A";
             document.getElementById('doc-data').innerText = d.data || "N/A";
