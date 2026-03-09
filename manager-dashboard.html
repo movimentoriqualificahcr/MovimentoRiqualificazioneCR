@@ -26,6 +26,7 @@
         .correlati-list { max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 8px; background: #fff; text-align: left; }
         .correlato-item { display: flex; align-items: center; gap: 8px; padding: 4px; border-radius: 4px; transition: 0.2s; cursor: pointer; }
         .correlato-item:hover { background: #e3f2fd; }
+        #info-file { font-size: 0.75rem; color: #666; margin-top: 2px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -74,6 +75,7 @@
                         <input type="text" id="newData" placeholder="Data (es. 09/03/2026)" style="padding:10px; border-radius:8px; border:1px solid #ddd;">
                         <label style="font-weight:bold; font-size:0.75rem; color:#003366;">File PDF:</label>
                         <input type="file" id="pdfFile" accept="application/pdf">
+                        <div id="info-file"></div>
                         <label style="font-weight:bold; font-size:0.75rem; color:#003366; margin-top:5px;">Correla Documenti:</label>
                         <div id="lista-checkbox-correlati" class="correlati-list"></div>
                     </div>
@@ -130,19 +132,45 @@
             grid.innerHTML = html;
         }
 
+        document.getElementById('pdfFile').addEventListener('change', function() {
+            const file = this.files[0];
+            const info = document.getElementById('info-file');
+            const limiteMaxMB = 50; 
+            
+            if (file) {
+                const dimensioneRealeMB = (file.size / (1024 * 1024)).toFixed(2);
+                info.innerText = `Dimensione file: ${dimensioneRealeMB} MB / Max: ${limiteMaxMB} MB`;
+                
+                if (parseFloat(dimensioneRealeMB) > limiteMaxMB) {
+                    alert(`Il file selezionato è troppo grande (${dimensioneRealeMB} MB).\nIl limite massimo supportato è di ${limiteMaxMB} MB.\n\nPer favore, comprimi il PDF prima di caricarlo.`);
+                    this.value = ""; 
+                    info.innerText = "";
+                } else {
+                    info.style.color = "#28a745";
+                }
+            }
+        });
+
         async function salvaDocumentoManager() {
             const file = document.getElementById('pdfFile').files[0];
             const btnSalva = document.getElementById('btnSalva');
             let pdfPath = null;
 
             if (file) {
+                const dimensioneMB = file.size / (1024 * 1024);
+                if (dimensioneMB > 50) {
+                    alert("Caricamento annullato: il file supera i 50 MB supportati.");
+                    return;
+                }
+
                 btnSalva.disabled = true;
                 btnSalva.innerText = "Salvataggio...";
+                
                 const name = `${Date.now()}_${file.name}`;
                 const { data, error: uploadError } = await _supabase.storage.from('pdf_riservati').upload(name, file);
 
                 if (uploadError) {
-                    alert("Errore PDF: " + uploadError.message);
+                    alert(`Errore PDF: ${uploadError.message}\n\nAssicurati che nelle impostazioni del bucket il limite sia impostato a 50 MB e non a 0.`);
                     btnSalva.disabled = false;
                     btnSalva.innerText = "Salva Online";
                     return;
@@ -196,6 +224,7 @@
             document.getElementById('newArg').value = "";
             document.getElementById('newData').value = "";
             document.getElementById('pdfFile').value = "";
+            document.getElementById('info-file').innerText = "";
             popolaListaCorrelati([]);
             document.getElementById('modalDocumento').style.display = 'flex';
         }
