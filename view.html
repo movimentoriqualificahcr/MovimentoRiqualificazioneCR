@@ -22,19 +22,17 @@
         .info-box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; }
         .info-box h2 { color: #003366; font-size: 1.1rem; margin: 0 0 10px 0; border-bottom: 2px solid #f0f2f5; padding-bottom: 5px; }
 
-        /* FIX PER SCROLL PDF SU MOBILE */
         .pdf-display-area { 
             flex: 999 1 400px; 
             background: #525659; border-radius: 15px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
             min-height: 600px;
             position: relative;
-            -webkit-overflow-scrolling: touch; /* Forza lo scroll fluido su iOS */
+            -webkit-overflow-scrolling: touch;
             overflow-y: auto;
         }
 
-        /* Utilizziamo EMBED invece di IFRAME per migliore compatibilità mobile */
-        embed, object { 
+        embed { 
             width: 100%; 
             height: 100%; 
             min-height: 80vh; 
@@ -42,7 +40,23 @@
             display: block;
         }
 
-        .corr-link { display: block; padding: 10px; background: #f8f9fa; border-radius: 8px; text-decoration: none; color: #003366; font-weight: bold; font-size: 0.8rem; margin-top: 8px; border: 1px solid #eee; }
+        /* STILE CORRELATI CON DATA */
+        .corr-link { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 12px; 
+            background: #f8f9fa; 
+            border-radius: 8px; 
+            text-decoration: none; 
+            color: #003366; 
+            margin-top: 8px; 
+            border: 1px solid #eee;
+            transition: 0.2s;
+        }
+        .corr-link:hover { background: #eef2f7; border-color: #003366; }
+        .corr-title { font-weight: bold; font-size: 0.8rem; flex: 1; padding-right: 10px; }
+        .corr-date { font-size: 0.7rem; color: #666; background: #eee; padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
 
         @media (max-width: 800px) {
             main { flex-direction: column; }
@@ -95,19 +109,24 @@
 
             if (d.pdf_url) {
                 const { data: urlData } = _supabase.storage.from('pdf_riservati').getPublicUrl(d.pdf_url);
-                // Usiamo il tag <embed> che è più "malleabile" per lo scorrimento mobile
                 document.getElementById('pdf-view').innerHTML = `
                     <embed src="${urlData.publicUrl}#toolbar=1&navpanes=0&scrollbar=1" type="application/pdf" />
                 `;
             }
 
             if (d.correlati && d.correlati.length > 0) {
-                const { data: corr } = await _supabase.from('documenti').select('id, titolo').in('id', d.correlati);
+                // MODIFICA: Recupero anche il campo 'data'
+                const { data: corr } = await _supabase.from('documenti').select('id, titolo, data').in('id', d.correlati);
                 if (corr) {
-                    document.getElementById('correlati-lista').innerHTML = corr.map(c => 
-                        `<a href="view.html?id=${c.id}" class="corr-link">📄 ${c.titolo}</a>`
-                    ).join('');
+                    document.getElementById('correlati-lista').innerHTML = corr.map(c => `
+                        <a href="view.html?id=${c.id}" class="corr-link">
+                            <span class="corr-title">📄 ${c.titolo}</span>
+                            <span class="corr-date">${c.data || 'N/D'}</span>
+                        </a>
+                    `).join('');
                 }
+            } else {
+                document.getElementById('correlati-lista').innerHTML = '<p style="font-size: 0.75rem; color: #999;">Nessun documento correlato.</p>';
             }
         }
 
