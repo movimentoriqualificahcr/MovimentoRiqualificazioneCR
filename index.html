@@ -6,8 +6,8 @@
     <title>Movimento Ospedale Cremona</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* --- STILE IDENTICO AL MANAGER --- */
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding-top: 120px; }
+        
         header { 
             background: #003366; color: white; padding: 20px 0; position: fixed; top: 0; width: 100%; 
             z-index: 1000; display: flex; justify-content: center; align-items: center; min-height: 100px; 
@@ -15,15 +15,15 @@
         }
         header h1 { margin: 0; font-size: 1.3rem; text-align: center; max-width: 45%; line-height: 1.3; }
 
-        /* Bottoni Header */
         .header-contacts-extreme { position: absolute; right: 25px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
         .contact-item { background-color: #0056b3; color: white !important; padding: 6px 14px; border-radius: 50px; font-size: 0.75rem; font-weight: bold; border: 1px solid rgba(255,255,255,0.2); text-decoration: none; transition: 0.3s; }
-        .contact-item:hover { background-color: white; color: #003366 !important; transform: scale(1.05); }
         
-        .login-sub-link { color: rgba(255,255,255,0.7) !important; font-size: 0.65rem; font-weight: bold; text-decoration: none; margin-top: 2px; }
-        .login-sub-link:hover { color: white !important; text-decoration: underline; }
+        /* SEZIONE FILTRI */
+        .filter-section { margin: 20px auto; max-width: 1200px; display: flex; justify-content: center; padding: 0 20px; }
+        .filter-container { display: flex; gap: 10px; flex-wrap: wrap; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); width: 100%; justify-content: center; }
+        .filter-container input, .filter-container select { padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 0.85rem; outline: none; min-width: 150px; }
+        .filter-container input:focus { border-color: #003366; }
 
-        /* Griglia Card */
         .grid-dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; padding: 20px 30px; max-width: 1200px; margin: 0 auto; }
         .card { background: white; padding: 25px 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eef0f2; display: flex; flex-direction: column; align-items: center; text-align: center; transition: 0.3s ease; }
         .btn-consulta { margin-top: 15px; padding: 6px 18px; background-color: #003366; color: white !important; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 0.75rem; }
@@ -31,65 +31,118 @@
         @media (max-width: 768px) {
             header { flex-direction: column; padding: 15px 0; height: auto; }
             .header-contacts-extreme { position: static; align-items: center; margin-top: 10px; transform: none; }
+            .filter-container { flex-direction: column; align-items: stretch; }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <h1 id="main-title">Caricamento titolo...</h1>
+        <h1 id="main-title">Caricamento...</h1>
         <div class="header-contacts-extreme">
             <div style="display: flex; gap: 6px;">
                 <a href="#" id="link-email" class="contact-item">📩 Email</a>
                 <a href="#" id="link-raccolta" class="contact-item">💰 Raccolta</a>
                 <a href="#" id="link-firma" class="contact-item">✍️ Firma</a>
             </div>
-            <a href="login.html" class="login-sub-link">Area Manager Login</a>
-        </div>
-    </header>
+            <a href="login.html" style="color: rgba(255,255,255,0.7); font-size: 0.65rem; text-decoration: none; margin-top:2px;">Area Manager Login</a>
+        </header>
 
     <main>
-        <div class="grid-dashboard" id="grid-pubblica">
+        <section class="filter-section">
+            <div class="filter-container">
+                <input type="text" id="cercaTitolo" placeholder="Cerca titolo...">
+                <select id="fArg"><option value="tutti">Tutti gli argomenti</option></select>
+                <select id="fAut"><option value="tutti">Tutti gli autori</option></select>
+                <select id="fData"><option value="tutti">Tutti gli anni</option></select>
             </div>
+        </section>
+
+        <div class="grid-dashboard" id="grid-pubblica"></div>
     </main>
 
     <script>
         const _supabase = supabase.createClient('https://ovfufqbpgxpmfxpbhjfn.supabase.co', 'sb_publishable_WvKdPIkgPeXv8AIB6eW8VQ_B9DATrKz');
+        let docsGlobali = [];
 
         async function init() {
             try {
-                // 1. Legge le impostazioni dell'header dalla tabella settings
+                // 1. Carica Settings Header
                 const { data: settings } = await _supabase.from('settings').select('*');
                 if (settings) {
                     const title = settings.find(s => s.key === 'site_title')?.valore;
                     if (title) document.getElementById('main-title').innerText = title;
-
+                    
                     const email = settings.find(s => s.key === 'link_email')?.valore;
                     if (email) document.getElementById('link-email').href = email;
-
+                    
                     const money = settings.find(s => s.key === 'link_money')?.valore;
                     if (money) document.getElementById('link-raccolta').href = money;
-
+                    
                     const sign = settings.find(s => s.key === 'link_sign')?.valore;
                     if (sign) document.getElementById('link-firma').href = sign;
                 }
 
-                // 2. Carica i documenti pubblici
+                // 2. Carica Documenti
                 const { data: docs } = await _supabase.from('documenti').select('*').order('timestamp', { ascending: false });
                 if (docs) {
-                    document.getElementById('grid-pubblica').innerHTML = docs.map(d => `
-                        <div class="card">
-                            <div style="font-size: 2rem; margin-bottom: 15px; color: #ccc;">📄</div>
-                            <h3 style="font-size: 1rem; margin: 0 0 10px 0; color: #003366;">${d.titolo}</h3>
-                            <p style="font-size: 0.8rem; color: #666; margin: 0;">${d.argomento}<br>${d.autore}<br>
-                            <span style="color: #999; font-size: 0.75rem;">Data: ${d.data}</span></p>
-                            <a href="documento.html?id=${d.id}" class="btn-consulta">Consulta documento →</a>
-                        </div>`).join('');
+                    docsGlobali = docs;
+                    popolaFiltri(docs);
+                    renderizza(docs);
                 }
-            } catch (err) {
-                console.error("Errore durante il caricamento:", err);
-            }
+            } catch (err) { console.error(err); }
         }
+
+        // Funzione per riempire i menu a tendina dinamicamente
+        function popolaFiltri(docs) {
+            const fArg = document.getElementById('fArg');
+            const fAut = document.getElementById('fAut');
+            const fData = document.getElementById('fData');
+
+            const argomenti = [...new Set(docs.map(d => d.argomento))].sort();
+            const autori = [...new Set(docs.map(d => d.autore))].sort();
+            const anni = [...new Set(docs.map(d => d.data ? d.data.split('/').pop() : ""))].filter(Boolean).sort((a,b) => b-a);
+
+            argomenti.forEach(a => { if(a) fArg.innerHTML += `<option value="${a}">${a}</option>`; });
+            autori.forEach(a => { if(a) fAut.innerHTML += `<option value="${a}">${a}</option>`; });
+            anni.forEach(a => { if(a) fData.innerHTML += `<option value="${a}">${a}</option>`; });
+        }
+
+        // Funzione di visualizzazione
+        function renderizza(docs) {
+            const grid = document.getElementById('grid-pubblica');
+            grid.innerHTML = docs.map(d => `
+                <div class="card">
+                    <div style="font-size: 2rem; margin-bottom: 15px; color: #ccc;">📄</div>
+                    <h3 style="font-size: 1rem; margin: 0 0 10px 0; color: #003366;">${d.titolo}</h3>
+                    <p style="font-size: 0.8rem; color: #666; margin: 0;">${d.argomento}<br>${d.autore}<br>
+                    <span style="color: #999; font-size: 0.75rem;">Data: ${d.data}</span></p>
+                    <a href="documento.html?id=${d.id}" class="btn-consulta">Consulta documento →</a>
+                </div>`).join('');
+        }
+
+        // Logica di filtraggio dinamico
+        function applicaFiltri() {
+            const t = document.getElementById('cercaTitolo').value.toLowerCase();
+            const arg = document.getElementById('fArg').value;
+            const aut = document.getElementById('fAut').value;
+            const anno = document.getElementById('fData').value;
+
+            const filtrati = docsGlobali.filter(d => {
+                const matchT = d.titolo.toLowerCase().includes(t);
+                const matchArg = arg === 'tutti' || d.argomento === arg;
+                const matchAut = aut === 'tutti' || d.autore === aut;
+                const matchAnno = anno === 'tutti' || (d.data && d.data.endsWith(anno));
+                return matchT && matchArg && matchAut && matchAnno;
+            });
+            renderizza(filtrati);
+        }
+
+        // Event Listeners per i filtri
+        document.getElementById('cercaTitolo').addEventListener('input', applicaFiltri);
+        document.getElementById('fArg').addEventListener('change', applicaFiltri);
+        document.getElementById('fAut').addEventListener('change', applicaFiltri);
+        document.getElementById('fData').addEventListener('change', applicaFiltri);
 
         window.onload = init;
     </script>
